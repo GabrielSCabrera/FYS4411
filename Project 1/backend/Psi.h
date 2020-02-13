@@ -4,17 +4,24 @@
 #define PSI_H
 
 class Psi {
+
   protected:
+
+    double alpha;
 
   public:
 
     // CONSTRUCTORS
 
-    Psi();
+    Psi(const double& alpha);
 
     // DESTRUCTOR
 
     ~Psi();
+
+    // UPDATERS
+
+    void update_alpha(const double& alpha);
 };
 
 #endif

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cassert>
 #include <stdlib.h>
-#include "Vec.h"
-#include "Mat.h"
-#include "tools.h"
+#include "../matpak/Vec.h"
+#include "../matpak/Mat.h"
+#include "../matpak/tools.h"
 
 void tests_Vec() {
 

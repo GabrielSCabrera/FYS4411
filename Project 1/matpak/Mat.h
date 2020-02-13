@@ -5,13 +5,16 @@
 #define MAT_H
 
 class Mat {
+
   protected:
+
     double* values;
     int dims = 0;
     int len = 1;
     int* size;
     int* idx_increments;
     double tol = std::pow(10,-6);
+
   public:
 
     // CONSTRUCTORS

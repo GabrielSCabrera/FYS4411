@@ -5,12 +5,18 @@
 
 // CONSTRUCTOR
 
-Psi::Psi() {
-
+Psi::Psi(const double& alpha) {
+  this->alpha = alpha;
 }
 
 // DESTRUCTOR
 
 Psi::~Psi() {
 
+}
+
+// UPDATERS
+
+void Psi::update_alpha(const double& alpha) {
+  this->alpha = alpha;
 }
