@@ -1,5 +1,6 @@
+#include <iostream>
+
 #include "Vec.h"
-#include <cmath>
 
 #ifndef MAT_H
 #define MAT_H
@@ -13,7 +14,7 @@ class Mat {
     int len = 1;
     int* size;
     int* idx_increments;
-    double tol = std::pow(10,-6);
+    double tol = 1E-6;
 
   public:
 
@@ -22,6 +23,7 @@ class Mat {
     Mat(const int& d1, const int& d2 = 0, const int& d3 = 0, const int& d4 = 0, const int& d5 = 0, const int& d6 = 0);
 
     Mat(const Mat& u);
+
     // DESTRUCTOR
 
     ~Mat();

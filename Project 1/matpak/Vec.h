@@ -1,5 +1,3 @@
-#include <cmath>
-
 #ifndef VEC_H
 #define VEC_H
 
@@ -7,7 +5,7 @@ class Vec {
   protected:
     double* values;
     int len;
-    double tol = std::pow(10,-6);
+    double tol = 1E-6;
   public:
 
     // CONSTRUCTORS

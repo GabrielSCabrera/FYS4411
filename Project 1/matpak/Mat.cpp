@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cmath>
+
 #include "Vec.h"
 #include "Mat.h"
 #include "tools.h"
-#include <cassert>
 
 // CONSTRUCTOR
 

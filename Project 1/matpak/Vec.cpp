@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include <string.h>
-#include "Vec.h"
+
 #include "tools.h"
+#include "Vec.h"
 
 // CONSTRUCTORS
 Vec::Vec(const int& a) {

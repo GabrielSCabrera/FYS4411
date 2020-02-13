@@ -1,6 +1,6 @@
 COMPILE:
 
-g++ -o main *.cpp ./matpak/*.cpp ./backend/*.cpp -std=c++17 -fopenmp -O3
+g++ -o main *.cpp ./matpak/*.cpp ./backend/*.cpp ./tests/*.cpp -std=c++17 -fopenmp -O3
 
 MEMTEST:
 

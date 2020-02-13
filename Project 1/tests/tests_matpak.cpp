@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <stdlib.h>
+
 #include "../matpak/Vec.h"
 #include "../matpak/Mat.h"
 #include "../matpak/tools.h"
@@ -753,11 +754,4 @@ void tests_Mat() {
   Mat o1(3,4);
   o1 = "[[2,2,0,3],[1,1,0,2],[0,0,0,1]]";
   // print(o1.rref());
-}
-
-void tests_MP() {
-  Mat a1(1000, 1000);
-  Mat a2 = a1 + a1;
-  Mat a3 = a1.prod(a1);
-  Mat a4 = a1.mat_mul(a1);
 }
