@@ -1,4 +1,5 @@
 #include "Psi.h"
+#include "../matpak/Mat.h"
 
 // CONSTRUCTOR
 

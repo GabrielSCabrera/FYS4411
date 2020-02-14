@@ -65,6 +65,8 @@ class Mat {
 
     void print();
 
+    // ARITHMETIC
+
     Mat operator+(const Mat& u);
 
     Mat operator-(const Mat& u);
@@ -73,9 +75,15 @@ class Mat {
 
     Mat operator*(const double& a);
 
+    Mat operator*(const Mat& u);
+
     Mat operator/(const double& a);
 
-    Mat prod(const Mat& u);
+    Mat operator/(const Mat& u);
+
+    Mat pow (const double& a);
+
+    Mat pow(const Mat& u);
 
     // INPLACE OPERATORS
 

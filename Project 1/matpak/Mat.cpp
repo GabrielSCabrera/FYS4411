@@ -59,7 +59,6 @@ Mat::Mat(const Mat& u) {
 }
 
 // DESTRUCTOR
-
 Mat::~Mat() {
   delete[] size;
   delete[] idx_increments;
@@ -333,6 +332,16 @@ Mat Mat::operator* (const double& a) {
   return v;
 }
 
+Mat Mat::operator*(const Mat& u) {
+  check_size(u);
+  Mat v(size[0], size[1], size[2], size[3], size[4], size[5]);
+  #pragma omp parallel for
+  for (int i = 0; i < len; i++){
+    v.values[i] = values[i]*u.values[i];
+  }
+  return v;
+}
+
 Mat Mat::operator/ (const double& a) {
   Mat v(size[0], size[1], size[2], size[3], size[4], size[5]);
   double reciprocal = 1/a;
@@ -343,12 +352,31 @@ Mat Mat::operator/ (const double& a) {
   return v;
 }
 
-Mat Mat::prod(const Mat& u) {
+Mat Mat::operator/ (const Mat& u) {
   check_size(u);
   Mat v(size[0], size[1], size[2], size[3], size[4], size[5]);
   #pragma omp parallel for
   for (int i = 0; i < len; i++){
-    v.values[i] = values[i]*u.values[i];
+    v.values[i] = values[i]/u.values[i];
+  }
+  return v;
+}
+
+Mat Mat::pow (const double& a) {
+  Mat v(size[0], size[1], size[2], size[3], size[4], size[5]);
+  #pragma omp parallel for
+  for (int i = 0; i < len; i++){
+    v.values[i] = std::pow(a, values[i]);
+  }
+  return v;
+}
+
+Mat Mat::pow(const Mat& u) {
+  check_size(u);
+  Mat v(size[0], size[1], size[2], size[3], size[4], size[5]);
+  #pragma omp parallel for
+  for (int i = 0; i < len; i++){
+    v.values[i] = std::pow(values[i], u.values[i]);
   }
   return v;
 }
@@ -730,7 +758,7 @@ void Mat::operator= (const std::string& s) {
   std::string c;
 
   // Iterating through the string, gathering data
-  for (int i = 0; i < s.length(); i++) {
+  for (unsigned int i = 0; i < s.length(); i++) {
 
     c = s.at(i);
     if (c == "[") {
@@ -777,7 +805,7 @@ void Mat::operator= (const std::string& s) {
   std::string elements_s[N_s];
   int e = 0;
   bool increment = true;
-  for (int i = 0; i < s.length(); i++) {
+  for (unsigned int i = 0; i < s.length(); i++) {
     c = s.at(i);
     if (c == "]" || c == ",") {
       if (increment == true) {
