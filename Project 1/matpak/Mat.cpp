@@ -281,7 +281,11 @@ void Mat::print() {
     for (int i = 0; i < size[0]; i++) {
       std::cout << "[";
       for (int j = 0; j < size[1]; j++) {
-        std::cout << sci_not(get(i, j), 1, 2);
+        std::string number = sci_not(get(i, j), 1, 2);
+        if (get(i, j) >= 0) {
+          std::cout << " ";
+        }
+        std::cout << number;
         if (j < size[1]-1) {
           std::cout << ", ";
         }

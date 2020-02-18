@@ -47,8 +47,9 @@ double Psi::get_a() {
 
 // CALLING
 
-double Psi::operator()(Mat particles) {
-  return 0;
+double Psi::operator()(Mat P) {
+  int N = P.shape().get(0);
+  return Psi_ob(P, N)*Psi_c(P, N);
 }
 
 // CALCULATIONS
