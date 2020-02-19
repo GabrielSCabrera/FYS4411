@@ -1,27 +1,36 @@
-#include <cmath>
-
-#include "../backend/Psi.h"
 #include "../matpak/Mat.h"
+#include "../backend/Psi.h"
+#include "../backend/random.h"
 
-double step = 1;
+double step_size = 1;     // Step size during random walk
+int samples = 1E2;        // Number of Monte-Carle samples per cycle
+int cycles = 1E1;         // Number of Monte-Carlo cycles
 
-double random(double N_max) {
-  return N_max*(2*static_cast<double>(rand()) / RAND_MAX - 1);
-}
+double monte_carlo_1b() {
+  int j; double alpha = 1; double beta = 0; double a = 0;
+  // Initialize Wave Function
+  Psi PDF(alpha, beta, a);
+  // Initialize Random Particle Array
+  Mat P = random_particles(5, 10);
+  // Array of Energies
+  // double energy = PDF.energy();
+  // Old Probability
+  double Psi_old = PDF(P);
+  // New Probabilities
+  double Psi_new;
+  // Monte-Carlo Cycles
+  for (int i = 0; i < cycles; i++) {
+    // Samples per Cycle
+    #pragma omp parallel for
+    for (j = 0; j < samples; j++) {
+      // Random Walk
+      P = random_walk(P, step_size);
 
-double normal_distribution(double N_max, double mu = 1, double sigma = 0.5) {
-  return N_max * std::exp(-0.5*std::pow((random(sigma*5) - mu)/sigma, 2)) /
-                         (sigma*std::sqrt(2*3.141592653589793238));
-}
-
-Mat random_particles(int N, double x_max) {
-  Mat P(N,3);
-  for (int i = 0; i < P.length(); i++) {
-      P.set_raw(random(x_max), i);
+    }
   }
-  return P;
+  return 0.0;
 }
 
 void project_1b_main() {
-  random_particles(5, 10);
+
 }

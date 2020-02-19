@@ -13,7 +13,7 @@ void run_all_tests() {
 }
 
 void run_all_parts() {
-  project_1b_main();
+  monte_carlo_1b();
 }
 
 int main() {

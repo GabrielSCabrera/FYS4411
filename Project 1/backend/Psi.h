@@ -47,6 +47,10 @@ class Psi {
 
     double Psi_c(Mat P, int N);
 
+    double energy();
+
+    double var_phi(double x, double y, double z);
+
 };
 
 #endif

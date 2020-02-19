@@ -99,3 +99,14 @@ double Psi::Psi_c(Mat P, int N) {
   stop:
   return product;
 }
+
+double Psi::energy() {
+  /*
+    NOT IMPLEMENTED YET
+  */
+  return 0;
+}
+
+double Psi::var_phi(double x, double y, double z) {
+  return std::exp(-(this->alpha)*(x*x + y*y + (this->beta)*z*z));
+}

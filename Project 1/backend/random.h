@@ -1,14 +1,14 @@
 #include "../matpak/Mat.h"
 
-#ifndef PROJECT_1B_H
-#define PROJECT_1B_H
+#ifndef RANDOM_H
+#define RANDOM_H
 
-double random(double N_max);
+double rand_double(double N_max);
 
 double normal_distribution(double N_max, double mu = 1, double sigma = 1);
 
 Mat random_particles(int N, double x_max);
 
-void monte_carlo_1b();
+Mat random_walk(Mat P, double step_size);
 
 #endif

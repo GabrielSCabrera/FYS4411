@@ -59,6 +59,7 @@ Mat::Mat(const Mat& u) {
 }
 
 // DESTRUCTOR
+
 Mat::~Mat() {
   delete[] size;
   delete[] idx_increments;
