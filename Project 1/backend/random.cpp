@@ -38,26 +38,27 @@ Mat random_particles(int N, double x_max) {
 
 Mat random_walk(Mat P, double step_size) {
   /*
-    Iterates through a <Mat> instance 'P' of shape (N,3) and moves each vector
-    (or row in 'P') by a fixed 'step_size', but in a random direction.
+    Given a <Mat> instance 'P' of shape (N, 3), selects a random index in
+    the range (0, N-1) and moves it by a random direction with a magnitude
+    given by the 'step_size' parameter.
 
     Note: New <Mat> instance is created
 
-    Note: Loop is parallelized.
   */
   Mat P_new(P);
+
   int N = P_new.shape().get(0);
-  double x; double y; double z; double mag;
-  #pragma omp parallel for
-  for (int i = 0; i < N; i++) {
-    x = rand_double(1);
-    y = rand_double(1);
-    z = rand_double(1);
-    mag = std::sqrt(std::pow(x,2) + std::pow(y,2) + std::pow(z,2)) / step_size;
-    P_new.set(P_new.get(i,0) + x/mag, i, 0);
-    P_new.set(P_new.get(i,1) + y/mag, i, 1);
-    P_new.set(P_new.get(i,2) + z/mag, i, 2);
-  }
+  int idx = rand() % N;
+
+  double x = rand_double(1);
+  double y = rand_double(1);
+  double z = rand_double(1);
+
+  double mag = std::sqrt(x*x + y*y + z*z) / step_size;
+
+  P_new.set(P_new.get(idx,0) + x/mag, idx, 0);
+  P_new.set(P_new.get(idx,1) + y/mag, idx, 1);
+  P_new.set(P_new.get(idx,2) + z/mag, idx, 2);
 
   return P_new;
 }

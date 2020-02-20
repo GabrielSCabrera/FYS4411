@@ -19,7 +19,7 @@ void tests_Psi() {
   double a_1 = 1E-5;
 
   // Initializing Psi instance
-  Psi Wf1(alpha_0, beta_0, a_0);
+  Psi Wf1(alpha_0, beta_0, a_0, 1, 1, 1);
 
   // Testing get_alpha()
   assert(Wf1.get_alpha() == alpha_0);

@@ -1,36 +1,44 @@
+#include <cmath>
+
 #include "../matpak/Mat.h"
 #include "../backend/Psi.h"
 #include "../backend/random.h"
 
-double step_size = 1;     // Step size during random walk
-int samples = 1E2;        // Number of Monte-Carle samples per cycle
-int cycles = 1E1;         // Number of Monte-Carlo cycles
 
-double monte_carlo_1b() {
-  int j; double alpha = 1; double beta = 0; double a = 0;
+
+double monte_carlo_1b(double step_size, int steps, int cycles, int N,
+                      double x_max, double alpha, double beta, double a,
+                      double omega, double omega_z, double mass) {
   // Initialize Wave Function
-  Psi PDF(alpha, beta, a);
+  Psi PDF(alpha, beta, a, omega, omega_z, mass);
   // Initialize Random Particle Array
-  Mat P = random_particles(5, 10);
-  // Array of Energies
-  // double energy = PDF.energy();
+  Mat P = random_particles(N, x_max);
+  // Initialize Secondary Random Particle Array
+  Mat P_new(N,3);
   // Old Probability
   double Psi_old = PDF(P);
-  // New Probabilities
+  // New Probability
   double Psi_new;
+  // Energy
+  double E = PDF.energy(P);
+  // Acceptance Ratio
+  double W;
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     // Samples per Cycle
-    #pragma omp parallel for
-    for (j = 0; j < samples; j++) {
-      // Random Walk
-      P = random_walk(P, step_size);
+    for (int j = 0; j < steps; j++) {
+
+      P_new = random_walk(P, step_size);
+      Psi_new = PDF(P_new);
+
+      W = std::pow(std::abs(Psi_new/Psi_old), 2);
+      if (W >= 0.5) {
+        P = P_new;
+      }
 
     }
+    E = PDF.energy(P);
+    std::cout << E << std::endl;
   }
-  return 0.0;
-}
-
-void project_1b_main() {
-
+  return E;
 }
