@@ -5,8 +5,7 @@
 
 // CONSTRUCTOR
 
-Psi::Psi(double alpha, double beta, double a, double omega, double omega_z,
-         double mass) {
+Psi::Psi(double alpha, double beta, double a, double omega, double omega_z) {
   this->alpha = alpha;
   this->beta = beta;
   this->a = a;
@@ -70,6 +69,19 @@ double Psi::operator()(Mat P) {
 
 // CALCULATIONS
 
+double Psi::V_ext(double x, double y, double z) {
+  return 0.5*(this->omega*this->omega*(x*x + y*y)
+                      + this->omega_z*this->omega_z*z*z);
+}
+
+double* Psi::drift(double x, double y, double z) {
+  double* force = new double [3];
+  force[0] = -4*this->alpha*x;
+  force[1] = -4*this->alpha*y;
+  force[2] = -4*this->alpha*z;
+  return force;
+}
+
 double Psi::Psi_ob(Mat P, int N) {
   /*
     P – Array of type 'Mat' of shape (N,3)
@@ -104,7 +116,7 @@ double Psi::Psi_c(Mat P, int N) {
 
       diff = std::sqrt(dx*dx + dy*dy + dz*dz);
 
-      if (diff <= 0) {
+      if (diff <= this->a) {
         product = 0;
         goto stop;
       } else {
@@ -120,20 +132,23 @@ double Psi::energy(Mat P) {
 
   int N = P.shape().get(0);
 
+  // Kinetic Energy
   double E = 0;
+
+  // Potential Energy (External)
   double V = 0;
 
-  double x1; double y1; double z1;
-  double x2; double y2; double z2;
-  double x3; double y3; double z3;
+  double x_k; double y_k; double z_k;
+  double x_j; double y_j; double z_j;
+  double x_i; double y_i; double z_i;
 
-  double r12; double r13;
+  double r_kj; double r_ki;
 
   // u-prime
-  double up12; double up13;
+  double up_kj; double up_ki;
 
-  double dx12; double dy12; double dz12;
-  double dx13; double dy13; double dz13;
+  double dx_kj; double dy_kj; double dz_kj;
+  double dx_ki; double dy_ki; double dz_ki;
 
   double* gp = new double [3] {0, 0, 0};
   double* term_2 = new double [3] {0, 0, 0};
@@ -141,57 +156,57 @@ double Psi::energy(Mat P) {
 
   for (int k = 0; k < N; k++) {
 
-    x1 = P.get(k,0); y1 = P.get(k,1); z1 = P.get(k,2);
+    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
 
     // START Term 1
-    E += laplace_phi(x1, y1, z1);
+    E += laplace_phi(x_k, y_k, z_k);
     // END Term 1
 
-    gp = grad_phi(x1, y1, z1);
+    gp = grad_phi(x_k, y_k, z_k);
 
     term_2[0] = 0; term_2[1] = 0; term_2[2] = 0;
     term_4[0] = 0; term_4[1] = 0; term_4[2] = 0;
 
-    for (int i = 0; i < N; i++) {
-      if (i == k) {
+    for (int j = 0; j < N; j++) {
+      if (j == k) {
         continue;
       }
 
-      x2 = P.get(i,0); y2 = P.get(i,1); z2 = P.get(i,2);
+      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
 
-      dx12 = x2 - x1; dy12 = y2 - y1; dz12 = z2 - z1;
+      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
 
-      r12 = std::sqrt(dx12*dx12 + dy12*dy12 + dz12*dz12);
+      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
 
-      up12 = u_prime(r12);
+      up_kj = u_prime(r_kj);
 
       // START Term 2
-      term_2[0] += (dx12/r12)*up12;
-      term_2[1] += (dy12/r12)*up12;
-      term_2[2] += (dz12/r12)*up12;
+      term_2[0] += (dx_kj/r_kj)*up_kj;
+      term_2[1] += (dy_kj/r_kj)*up_kj;
+      term_2[2] += (dz_kj/r_kj)*up_kj;
       // END Term 2
 
       // START Term 3
-      for (int j = 0; j < N; j++) {
-        if (j == k) {
+      for (int i = 0; i < N; i++) {
+        if (i == k) {
           continue;
         }
-        x3 = P.get(j,0); y3 = P.get(j,1); z3 = P.get(j,2);
+        x_i = P.get(i,0); y_i = P.get(i,1); z_i = P.get(i,2);
 
-        dx13 = x3 - x1; dy13 = y3 - y1; dz13 = z3 - z1;
+        dx_ki = x_k - x_i; dy_ki = y_k - y_i; dz_ki = z_k - z_i;
 
-        r13 = std::sqrt(dx13*dx13 + dy13*dy13 + dz13*dz13);
+        r_ki = std::sqrt(dx_ki*dx_ki + dy_ki*dy_ki + dz_ki*dz_ki);
 
-        up13 = u_prime(r13);
+        up_ki = u_prime(r_ki);
 
-        term_4[0] += (dx12*dx13)/(r12*r13) * up12 * up13;
-        term_4[1] += (dy12*dy13)/(r12*r13) * up12 * up13;
-        term_4[2] += (dz12*dz13)/(r12*r13) * up12 * up13;
+        term_4[0] += (dx_kj*dx_ki)/(r_kj*r_ki) * up_ki * up_kj;
+        term_4[1] += (dy_kj*dy_ki)/(r_kj*r_ki) * up_ki * up_kj;
+        term_4[2] += (dz_kj*dz_ki)/(r_kj*r_ki) * up_ki * up_kj;
       }
       // END Term 3
 
       // START Term 4
-      E += u_double_prime(r12)*up12 + (2/r12)*up12;
+      E += (u_double_prime(r_kj) + 2/r_kj)*up_kj;
       // END Term 4
 
     }
@@ -209,25 +224,14 @@ double Psi::energy(Mat P) {
     // END Term 4
 
     // START V_ext
-    V += V_ext(x1, y1, z1);
+    V += V_ext(x_k, y_k, z_k);
     // END V_ext
-
-    // // START V_int
-    // for (int i = k+1; i < N; i++) {
-    //   if
-    // }
-    // // END V_int
 
   }
   delete[] gp;
   delete[] term_2;
   delete[] term_4;
-  return -0.5*1.0545718E-34*E/this->mass + V;
-}
-
-double Psi::V_ext(double x, double y, double z) {
-  return 0.5*this->mass*(this->omega*this->omega*(x*x + y*y)
-                      + this->omega_z*this->omega_z*z*z);
+  return -0.5*E + V;
 }
 
 double Psi::phi(double x, double y, double z) {
@@ -267,6 +271,6 @@ double Psi::u_double_prime(double r_jk) {
   if (r_jk <= this-> a) {
     return 0;
   } else {
-    return -1*(1/(r_jk - this->a) + 1/r_jk);
+    return -(1/(r_jk - this->a) + 1/r_jk);
   }
 }

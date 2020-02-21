@@ -12,13 +12,15 @@ class Psi {
     double a;
     double omega;
     double omega_z;
-    double mass;
+    double mass = 1;
+    double hbar = 1;
+    double c = 1;
 
   public:
 
     // CONSTRUCTORS
 
-    Psi(double alpha, double beta, double a, double omega, double omega_z, double mass);
+    Psi(double alpha, double beta, double a, double omega, double omega_z);
 
     // DESTRUCTOR
 
@@ -53,6 +55,8 @@ class Psi {
     // CALCULATIONS
 
     double V_ext(double x, double y, double z);
+
+    double* drift(double x, double y, double z);
 
     double Psi_ob(Mat P, int N);
 

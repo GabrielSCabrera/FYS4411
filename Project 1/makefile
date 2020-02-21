@@ -9,7 +9,7 @@ main.o: main.cpp ./frontend/project_1b.h ./backend/Psi.h ./backend/random.h ./ma
 
 ./frontend/project_1b.o: ./backend/Psi.h ./matpak/Mat.h
 ./backend/Psi.o: ./backend/Psi.h ./matpak/Mat.h
-./backend/random.o: ./matpak/Mat.h
+./backend/random.o: ./matpak/Mat.h ./backend/Psi.h
 ./matpak/Mat.o: ./matpak/Mat.h ./matpak/Vec.h ./matpak/tools.h
 ./matpak/tools.o: ./matpak/tools.h ./matpak/Mat.h ./matpak/Vec.h
 ./matpak/Vec.o: ./matpak/Vec.h ./matpak/tools.h

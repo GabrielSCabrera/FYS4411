@@ -8,11 +8,11 @@
 
 double monte_carlo_1b(double step_size, int steps, int cycles, int N,
                       double x_max, double alpha, double beta, double a,
-                      double omega, double omega_z, double mass) {
+                      double omega, double omega_z) {
   // Initialize Wave Function
-  Psi PDF(alpha, beta, a, omega, omega_z, mass);
+  Psi PDF(alpha, beta, a, omega, omega_z);
   // Initialize Random Particle Array
-  Mat P = random_particles(N, x_max);
+  Mat P = random_particles(N, -x_max, x_max);
   // Initialize Secondary Random Particle Array
   Mat P_new(N,3);
   // Old Probability
@@ -28,17 +28,17 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
     // Samples per Cycle
     for (int j = 0; j < steps; j++) {
 
-      P_new = random_walk(P, step_size);
+      P_new = random_walk(PDF, P, step_size);
       Psi_new = PDF(P_new);
 
-      W = std::pow(std::abs(Psi_new/Psi_old), 2);
-      if (W >= 0.5) {
+      W = std::pow(std::abs(Psi_new)/std::abs(Psi_old), 2);
+      double r = rand_double(0, 1);
+      if (W >= r) {
         P = P_new;
       }
-
     }
     E = PDF.energy(P);
-    std::cout << E << std::endl;
+    std::cout << E << " " << std::endl;
   }
   return E;
 }
