@@ -44,11 +44,10 @@ Mat random_walk(Psi PDF, Mat P, double step_size) {
     given by the 'step_size' parameter.
 
     Note: New <Mat> instance is created
-
   */
   Mat P_new(P);
 
-  int N = P_new.shape().get(0);
+  int N = P.shape().get(0);
   int idx = rand() % N;
 
   double x = rand_double(-1, 1);

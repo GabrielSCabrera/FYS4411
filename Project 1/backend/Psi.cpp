@@ -64,7 +64,11 @@ double Psi::get_a() {
 
 double Psi::operator()(Mat P) {
   int N = P.shape().get(0);
-  return Psi_ob(P, N)*Psi_c(P, N);
+  if (N == 1) {
+    return Psi_ob(P, N);
+  } else {
+    return Psi_ob(P, N)*Psi_c(P, N);
+  }
 }
 
 // CALCULATIONS
@@ -152,7 +156,6 @@ double Psi::energy(Mat P) {
 
   double* gp = new double [3] {0, 0, 0};
   double* term_2 = new double [3] {0, 0, 0};
-  double* term_4 = new double [3] {0, 0, 0};
 
   for (int k = 0; k < N; k++) {
 
@@ -162,76 +165,64 @@ double Psi::energy(Mat P) {
     E += laplace_phi(x_k, y_k, z_k);
     // END Term 1
 
-    gp = grad_phi(x_k, y_k, z_k);
-
     term_2[0] = 0; term_2[1] = 0; term_2[2] = 0;
-    term_4[0] = 0; term_4[1] = 0; term_4[2] = 0;
 
     for (int j = 0; j < N; j++) {
+
       if (j == k) {
         continue;
       }
 
       x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-
       dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
-
       r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
-
       up_kj = u_prime(r_kj);
 
       // START Term 2
-      term_2[0] += (dx_kj/r_kj)*up_kj;
-      term_2[1] += (dy_kj/r_kj)*up_kj;
-      term_2[2] += (dz_kj/r_kj)*up_kj;
+      term_2[0] += dx_kj*up_kj/r_kj;
+      term_2[1] += dy_kj*up_kj/r_kj;
+      term_2[2] += dz_kj*up_kj/r_kj;
       // END Term 2
+
+      // START Term 5
+      E += (u_double_prime(r_kj) + 2/r_kj)*up_kj;
+      // END Term 5
 
       // START Term 3
       for (int i = 0; i < N; i++) {
+
         if (i == k) {
           continue;
         }
+
         x_i = P.get(i,0); y_i = P.get(i,1); z_i = P.get(i,2);
-
         dx_ki = x_k - x_i; dy_ki = y_k - y_i; dz_ki = z_k - z_i;
-
         r_ki = std::sqrt(dx_ki*dx_ki + dy_ki*dy_ki + dz_ki*dz_ki);
-
         up_ki = u_prime(r_ki);
 
-        term_4[0] += (dx_kj*dx_ki)/(r_kj*r_ki) * up_ki * up_kj;
-        term_4[1] += (dy_kj*dy_ki)/(r_kj*r_ki) * up_ki * up_kj;
-        term_4[2] += (dz_kj*dz_ki)/(r_kj*r_ki) * up_ki * up_kj;
-      }
-      // END Term 3
+        // START Term 4
+        E += (dx_kj*dx_ki + dy_kj*dy_ki + dz_kj*dz_ki)*up_ki*up_kj/(r_kj*r_ki);
+        // END Term 4
 
-      // START Term 4
-      E += (u_double_prime(r_kj) + 2/r_kj)*up_kj;
-      // END Term 4
-
-    }
-    // MULTIPLY WITH AND SUM OVER TERM 2!!!
+      } // END LOOP OVER i
+    } // END LOOP OVER j
 
     // START Term 2
-    term_2[0] *= 2*gp[0];
-    term_2[1] *= 2*gp[1];
-    term_2[2] *= 2*gp[2];
-    E += term_2[0] + term_2[1]+ term_2[2];
+    gp = grad_phi(x_k, y_k, z_k);
+    E += 2*(term_2[0]*gp[0] + term_2[1]*gp[1] + term_2[2]*gp[2]);
     // END Term 2
-
-    // START Term 4
-    E += term_4[0] + term_4[1]+ term_4[2];
-    // END Term 4
 
     // START V_ext
     V += V_ext(x_k, y_k, z_k);
     // END V_ext
 
-  }
+  } // END LOOP OVER k
+
   delete[] gp;
   delete[] term_2;
-  delete[] term_4;
+
   return -0.5*E + V;
+
 }
 
 double Psi::phi(double x, double y, double z) {
@@ -253,24 +244,24 @@ double Psi::laplace_phi(double x, double y, double z) {
   /*
     !! Must be multiplied with phi(x, y, z) !!
   */
-  return -2*this->alpha*(3-2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z));
+  return 2*this->alpha*(2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z) - 3);
 }
 
-double Psi::u_prime(double r_jk) {
-  if (r_jk <= this-> a) {
+double Psi::u_prime(double r_kj) {
+  if (r_kj <= this-> a) {
     return 0;
   } else {
-    return this->a/(r_jk*(r_jk + this->a));
+    return this->a/(r_kj*(r_kj - this->a));
   }
 }
 
-double Psi::u_double_prime(double r_jk) {
+double Psi::u_double_prime(double r_kj) {
   /*
-    !! Must be multiplied with u_prime(r_jk) !!
+    !! Must be multiplied with u_prime(r_kj) !!
   */
-  if (r_jk <= this-> a) {
+  if (r_kj <= this-> a) {
     return 0;
   } else {
-    return -(1/(r_jk - this->a) + 1/r_jk);
+    return -(1/(r_kj - this->a) + 1/r_kj);
   }
 }

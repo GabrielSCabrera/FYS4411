@@ -21,3 +21,6 @@ valgrind:
 
 clean:
 	rm -f *.o ./frontend/*.o ./backend/*.o ./matpak/*.o ./tests/*.o
+
+test: main
+	./main
