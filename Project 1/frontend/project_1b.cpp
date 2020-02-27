@@ -29,14 +29,20 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
   double New_perc = 0;
   // Loading Bar Output
   double perc_disp = 0;
+  // Old Probability
+  double Psi_old;
+  // Old Energy
+  double E_old;
+  // Initialize Random Particle Array
+  Mat P = random_particles(N, -x_max, x_max);
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     // Initialize Random Particle Array
     Mat P = random_particles(N, -x_max, x_max);
     // Old Probability
-    double Psi_old = PDF(P);
+    Psi_old = PDF(P);
     // Old Energy
-    double E_old = PDF.energy(P);
+    E_old = PDF.energy(P);
     // Samples per Cycle
     for (int j = 0; j < steps; j++) {
 
@@ -47,7 +53,7 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
       r = rand_double(0, 1);
       E_new = PDF.energy(P_new);
 
-      if ((j < equi_steps && W > r) || (j >= equi_steps && (E_new < E_old || W > r))) {
+      if ((j < equi_steps && W > r) || (j >= equi_steps && (W > r))) {
         P = P_new;
         E_old = E_new;
         Psi_old = Psi_new;
@@ -55,8 +61,8 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
     }
     E_tot += E_old;
     accum_cycles += 1;
-    std::cout << "\r" << ""
-    // std::cout << E_tot/accum_cycles << " " << std::endl;
+    // std::cout << "\r" << ""
+    std::cout << E_tot/accum_cycles << " " << std::endl;
   }
   return E_tot/accum_cycles;
 }
@@ -80,8 +86,10 @@ void run_1b() {
   double alpha; double beta;
 
   for (int i = 0; i < 5; i++) {
-    alpha = alphas[i];
-    beta = betas[i];
+    alpha = 0.2;
+    // alpha = alphas[i];
+    beta = 1.5;
+    // beta = betas[i];
     energies[i] = monte_carlo_1b(step_size, steps, cycles, N, x_max, alpha,
                                  beta, a, omega, omega_z, equi_steps);
   }
