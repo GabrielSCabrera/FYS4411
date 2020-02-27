@@ -23,6 +23,12 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
   double W;
   // Random Number between 0 and 1
   double r;
+  // Loading Percentage
+  double perc = 0;
+  // Loading New Percentage
+  double New_perc = 0;
+  // Loading Bar Output
+  double perc_disp = 0;
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     // Initialize Random Particle Array
@@ -49,7 +55,34 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
     }
     E_tot += E_old;
     accum_cycles += 1;
-    std::cout << E_tot/accum_cycles << " " << std::endl;
+    std::cout << "\r" << ""
+    // std::cout << E_tot/accum_cycles << " " << std::endl;
   }
   return E_tot/accum_cycles;
+}
+
+void run_1b() {
+
+  double step_size = 1E-5;    // Step size during random walk
+  int steps = 1E5;            // Number of Monte-Carle steps per cycle
+  int cycles = 1E4;           // Number of Monte-Carlo cycles
+  int N = 1;                  // Number of Particles
+  int x_max = 1;              // Maximum Initial Distance From Origin
+  double a = 1E-8;            // Atomic Radius
+  double omega = 1;           // Harmonic Oscillator Frequency
+  double omega_z = 1;         // Harmonic Oscillator Z-Frequency
+  int equi_steps = 1E3;       // Number of Steps Dedicated to Equilibriation
+
+  double* alphas = new double[5] {6E-1, 5E-1, 4E-1, 3E-1};  // Hyperparameter
+  double* betas = new double[5] {6E-1, 5E-1, 4E-1, 3E-1};   // Hyperparameter
+  double* energies = new double[5];                         // Final Energies
+
+  double alpha; double beta;
+
+  for (int i = 0; i < 5; i++) {
+    alpha = alphas[i];
+    beta = betas[i];
+    energies[i] = monte_carlo_1b(step_size, steps, cycles, N, x_max, alpha,
+                                 beta, a, omega, omega_z, equi_steps);
+  }
 }
