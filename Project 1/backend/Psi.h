@@ -74,6 +74,16 @@ class Psi {
 
     double u_double_prime(double r_jk);
 
+    double grad_alpha(Mat P);
+
+    double grad_beta(Mat P);
+
+    double grad_alpha_alpha(Mat P);
+
+    double grad_beta_beta(Mat P);
+
+    double grad_beta_alpha(Mat P);
+
 };
 
 #endif

@@ -265,3 +265,151 @@ double Psi::u_double_prime(double r_kj) {
     return -(1/(r_kj - this->a) + 1/r_kj);
   }
 }
+
+double Psi::grad_alpha(Mat P) {
+
+  double beta_sq = this->beta*this->beta;
+
+  double x_k; double y_k; double z_k;
+  double x_j; double y_j; double z_j;
+
+  double r_kj;
+
+  double dx_kj; double dy_kj; double dz_kj;
+
+  int N = P.shape().get(0);
+
+  double term_1 = 0;
+  double term_2 = 0;
+
+  for (int k = 0; k < N; k++) {
+
+    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
+
+    term_1 += x_k*x_k + y_k*y_k + beta_sq*z_k*z_k;
+
+    for (int j = 0; j < N; j++) {
+
+      if (j == k) {
+        continue;
+      }
+
+      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
+      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
+      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
+
+      term_2 += (1/r_kj)*(x_k*dx_kj + y_k*dy_kj + this->beta*z_k*dz_kj)*u_prime(r_kj);
+    }
+  }
+  return 8*this->alpha*term_1 - 2*term_2 - 6*N;
+}
+
+double Psi::grad_beta(Mat P) {
+
+  double x_k; double y_k; double z_k;
+  double x_j; double y_j; double z_j;
+
+  double r_kj;
+
+  double dx_kj; double dy_kj; double dz_kj;
+
+  int N = P.shape().get(0);
+
+  double term_1 = 0;
+  double term_2 = 0;
+
+  for (int k = 0; k < N; k++) {
+
+    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
+
+    term_1 += z_k*z_k;
+
+    for (int j = 0; j < N; j++) {
+
+      if (j == k) {
+        continue;
+      }
+
+      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
+      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
+      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
+
+      term_2 += (1/r_kj)*(z_k*dz_kj)*u_prime(r_kj);
+    }
+  }
+  return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*term_2;
+}
+
+double Psi::grad_alpha_alpha(Mat P) {
+
+  double beta_sq = this->beta*this->beta;
+
+  double x_k; double y_k; double z_k;
+
+  int N = P.shape().get(0);
+
+  double term_1 = 0;
+
+  for (int k = 0; k < N; k++) {
+
+    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
+
+    term_1 += x_k*x_k + y_k*y_k + beta_sq*z_k*z_k;
+
+  }
+  return 8*term_1;
+}
+
+double Psi::grad_beta_beta(Mat P) {
+
+  double z_k;
+
+  int N = P.shape().get(0);
+
+  double term_1 = 0;
+
+  for (int k = 0; k < N; k++) {
+
+    z_k = P.get(k,2);
+
+    term_1 += z_k*z_k;
+
+  }
+  return 8*this->alpha*this->alpha*term_1;
+}
+
+double Psi::grad_beta_alpha(Mat P) {
+
+  double x_k; double y_k; double z_k;
+  double x_j; double y_j; double z_j;
+
+  double r_kj;
+
+  double dx_kj; double dy_kj; double dz_kj;
+
+  int N = P.shape().get(0);
+
+  double term_1 = 0;
+  double term_2 = 0;
+
+  for (int k = 0; k < N; k++) {
+
+    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
+
+    term_1 += z_k*z_k;
+
+    for (int j = 0; j < N; j++) {
+
+      if (j == k) {
+        continue;
+      }
+
+      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
+      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
+      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
+
+      term_2 += (1/r_kj)*(z_k*dz_kj)*u_prime(r_kj);
+    }
+  }
+  return 16*this->beta*this->alpha*term_1 - 2*term_2;
+}
