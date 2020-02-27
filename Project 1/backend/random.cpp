@@ -18,9 +18,11 @@ double normal_distribution(double N_max, double mu = 1, double sigma = 0.5) {
     A random number in the range [-4*sigma, 4*sigma] is generated, then is
     subsequently passed through a Gaussian function with parameters 'mu' and
     'sigma' given as arguments.
+
+    2.5066282746310002 is sqrt(2*pi)
   */
-  return N_max * std::exp(-0.5*std::pow((rand_double(-sigma*4, sigma*4) - mu)/sigma, 2)) /
-                         (sigma*std::sqrt(2*3.141592653589793238));
+  double randval = (rand_double(-sigma*4, sigma*4)- mu)/sigma;
+  return N_max * std::exp(-0.5*randval*randval / (sigma*2.5066282746310002));
 }
 
 Mat random_particles(int N, double min, double max) {

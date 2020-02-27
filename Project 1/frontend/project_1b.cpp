@@ -47,7 +47,8 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
       P_new = random_walk(PDF, P, step_size);
       Psi_new = PDF(P_new);
 
-      W = std::pow(std::abs(Psi_new/Psi_old), 2);
+      W = Psi_new/Psi_old;
+      W *= W;
       r = rand_double(0, 1);
 
       if (W > r) {
@@ -61,7 +62,8 @@ double monte_carlo_1b(double step_size, int steps, int cycles, int N,
       P_new = random_walk(PDF, P, step_size);
       Psi_new = PDF(P_new);
 
-      W = std::pow(std::abs(Psi_new/Psi_old), 2);
+      W = Psi_new/Psi_old;
+      W *= W;
       r = rand_double(0, 1);
       E_new = PDF.energy(P_new);
 
