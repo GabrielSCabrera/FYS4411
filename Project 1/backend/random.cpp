@@ -39,7 +39,7 @@ Mat random_particles(int N, double min, double max) {
   return P;
 }
 
-Mat random_walk(Psi PDF, Mat P, double step_size) {
+Mat random_walk(Psi PDF, Mat P, double step_size, long idx, double Ddt) {
   /*
     Given a <Mat> instance 'P' of shape (N, 3), selects a random index in
     the range (0, N-1) and moves it by a random direction with a magnitude
@@ -49,20 +49,18 @@ Mat random_walk(Psi PDF, Mat P, double step_size) {
   */
   Mat P_new(P);
 
-  int N = P.shape().get(0);
-  int idx = rand() % N;
+  double* force = new double[3];
+  force = PDF.drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
 
-  double x = rand_double(-1, 1);
-  double y = rand_double(-1, 1);
-  double z = rand_double(-1, 1);
+  double x = rand_double(-1, 1)*step_size;
+  double y = rand_double(-1, 1)*step_size;
+  double z = rand_double(-1, 1)*step_size;
 
-  double mag = std::sqrt(x*x + y*y + z*z) / step_size;
-  double* force = PDF.drift(x, y, z);
-
-  P_new.set(P_new.get(idx,0) + x/mag + force[0], idx, 0);
-  P_new.set(P_new.get(idx,1) + y/mag + force[1], idx, 1);
-  P_new.set(P_new.get(idx,2) + z/mag + force[2], idx, 2);
+  P_new.set(P_new.get(idx,0) + x + force[0]*Ddt, idx, 0);
+  P_new.set(P_new.get(idx,1) + y + force[1]*Ddt, idx, 1);
+  P_new.set(P_new.get(idx,2) + z + force[2]*Ddt, idx, 2);
 
   delete [] force;
+
   return P_new;
 }

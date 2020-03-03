@@ -58,6 +58,10 @@ class Psi {
 
     double* drift(double x, double y, double z);
 
+    double greens_ratio(double x0, double y0, double z0,
+                        double x1, double y1, double z1,
+                        double Ddt);
+
     double Psi_ob(Mat P, int N);
 
     double Psi_c(Mat P, int N);

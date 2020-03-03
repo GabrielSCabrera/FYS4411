@@ -86,6 +86,28 @@ double* Psi::drift(double x, double y, double z) {
   return force;
 }
 
+double Psi::greens_ratio(double x0, double y0, double z0,
+                         double x1, double y1, double z1,
+                         double K) {
+  // K = D*dt
+
+  double* terms = new double[3];
+
+
+  double* F = drift(x1, y1, z1);
+  terms[0] = x0-x1-K*F[0]; terms[1] = y0-y1-K*F[1]; terms[2] = z0-z1-K*F[2];
+  double exponent = terms[0]*terms[0] + terms[1]*terms[1] + terms[2]*terms[2];
+
+  F = drift(x0, y0, z0);
+  terms[0] = x1-x0-K*F[0]; terms[1] = y1-y0-K*F[1]; terms[2] = z1-z0-K*F[2];
+  exponent -= terms[0]*terms[0] + terms[1]*terms[1] + terms[2]*terms[2];
+
+  delete [] F;
+
+  delete [] terms;
+  return std::exp(exponent/(4*K));
+}
+
 double Psi::Psi_ob(Mat P, int N) {
   /*
     P – Array of type 'Mat' of shape (N,3)

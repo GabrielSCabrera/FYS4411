@@ -4,7 +4,7 @@
 #include "./tests/tests_matpak.h"
 #include "./tests/tests_backend.h"
 
-#include "./frontend/project_1b.h"
+#include "./frontend/monte_carlo.h"
 
 void run_all_tests() {
   tests_Vec();
@@ -13,7 +13,7 @@ void run_all_tests() {
 }
 
 void run_all_parts() {
-  run_1b();
+  run_monte_carlo();
 }
 
 int main() {
