@@ -11,14 +11,10 @@ double* monte_carlo_1b(double step_size, int steps, int cycles, int N,
   Psi PDF(alpha, beta, a, omega, omega_z);
   // Initialize Secondary Random Particle Array
   Mat P_new(N,3);
-  // New Probability
-  double Psi_new = 0;
-  // New Energy
-  double E_new;
-  // Total Energy
-  double E_tot = 0;
-  // Total Squared Energy
-  double E_squared = 0;
+  // New, Old Probability
+  double Psi_new = 0; double Psi_old = 0;
+  // Cycle-Wise Energy
+  double* E_cycle = new double[cycles];
   // Averaging Factor
   int accum_cycles = 0;
   // Acceptance Ratio
@@ -27,11 +23,12 @@ double* monte_carlo_1b(double step_size, int steps, int cycles, int N,
   double perc = 0;
   // Loading New Percentage
   double perc_new;
-  // Old Probability
-  double Psi_old = 0;
+  // Preparing Function Output
+  double* output = new double[3] {0,0,0};
   // Initialize Random Particle Array
   Mat P = random_particles(N, -x_max, x_max);
   // Monte-Carlo Cycles
+  #pragma omp parallel for
   for (int i = 0; i < cycles; i++) {
     // Initialize Random Particle Array
     Mat P = random_particles(N, -x_max, x_max);
@@ -70,12 +67,11 @@ double* monte_carlo_1b(double step_size, int steps, int cycles, int N,
     }
 
     // Set New Energy
-    E_new = PDF.energy(P_new);
-
-    E_tot += E_new;
-    E_squared += E_new*E_new;
+    E_cycle[i] = PDF.energy(P_new);
+    // Save Total Energy
+    output[0] += E_cycle[i];
     accum_cycles += 1;
-    perc_new = std::trunc(100*i/cycles);
+    perc_new = std::trunc(100*accum_cycles/cycles);
     if (perc_new > perc) {
       perc = perc_new;
       if (perc < 10) {
@@ -87,12 +83,20 @@ double* monte_carlo_1b(double step_size, int steps, int cycles, int N,
       }
     }
   }
+  std::cout << "\r 100%" << std::endl;
 
-  // Preparing Function Output
-  double* output = new double[3];
-  output[0] = E_tot/accum_cycles;
-  output[1] = E_squared/accum_cycles;
+  output[0] /= accum_cycles;
+
+  // Calculating Variance Iteratively
+  for (int i = 0; i < cycles; i++) {
+    output[1] += (E_cycle[i]*E_cycle[i] - output[0]*output[0]) *
+                 (E_cycle[i] - output[0]) * (E_cycle[i] - output[0]);
+  }
+
   output[2] = Psi_old;
+
+  // Cleanup
+  delete [] E_cycle;
 
   return output;
 }
@@ -111,18 +115,22 @@ void run_1b() {
 
   // Final Energies
   double* energies = new double[5];
-  double* energies_squared = new double[5];
+  double* variances = new double[5];
   double* probabilities = new double[5];
   double alpha; double beta;
 
   for (int i = 0; i < 5; i++) {
-    alpha = 0.2;
-    beta = 1.5;
+    alpha = 0.5;
+    beta = 1;
 
     // Function Outputs
     double* output = new double [3];
     output = monte_carlo_1b(step_size, steps, cycles, N, x_max, alpha,
                             beta, a, omega, omega_z, equi_steps);
+    energies[i] = output[0];
+    variances[i] = output[1];
+    probabilities[i] = output[2];
+    std::cout << "E: " << output[0] << ", var: " << output[1] << ", P: " << output[2] << std::endl;
     delete[] output;
   }
   delete[] energies;
