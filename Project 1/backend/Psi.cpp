@@ -63,7 +63,7 @@ double Psi::get_a() {
 // CALLING
 
 double Psi::operator()(Mat P) {
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
   if (N == 1) {
     return Psi_ob(P, N);
   } else {
@@ -156,7 +156,7 @@ double Psi::Psi_c(Mat P, int N) {
 
 double Psi::energy(Mat P) {
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   // Kinetic Energy
   double E = 0;
@@ -299,7 +299,7 @@ double Psi::grad_alpha(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   double term_1 = 0;
   double term_2 = 0;
@@ -335,7 +335,7 @@ double Psi::grad_beta(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   double term_1 = 0;
   double term_2 = 0;
@@ -368,7 +368,7 @@ double Psi::grad_alpha_alpha(Mat P) {
 
   double x_k; double y_k; double z_k;
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   double term_1 = 0;
 
@@ -386,7 +386,7 @@ double Psi::grad_beta_beta(Mat P) {
 
   double z_k;
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   double term_1 = 0;
 
@@ -409,7 +409,7 @@ double Psi::grad_beta_alpha(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape().get(0);
+  int N = P.shape()[0];
 
   double term_1 = 0;
   double term_2 = 0;

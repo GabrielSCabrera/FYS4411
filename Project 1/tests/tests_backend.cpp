@@ -3,7 +3,6 @@
 #include <cmath>
 
 #include "../backend/Psi.h"
-#include "../matpak/Mat.h"
 
 void tests_Psi() {
 

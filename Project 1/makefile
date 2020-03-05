@@ -1,20 +1,17 @@
 CXX = g++
 CXXFLAGS = -Wall -g -std=c++17 -fopenmp -O3
 
-main: main.o ./frontend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./matpak/tools.o ./matpak/Vec.o ./tests/tests_backend.o ./tests/tests_matpak.o
-	$(CXX) $(CXXFLAGS) -o main main.o ./frontend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./matpak/tools.o ./matpak/Vec.o ./tests/tests_backend.o ./tests/tests_matpak.o
+main: main.o ./frontend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
+	$(CXX) $(CXXFLAGS) -o main main.o ./frontend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
 
-main.o: main.cpp ./frontend/monte_carlo.h ./backend/Psi.h ./backend/random.h ./matpak/Mat.h ./matpak/tools.h ./matpak/Vec.h ./tests/tests_backend.h ./tests/tests_matpak.h
+main.o: main.cpp ./frontend/monte_carlo.h ./backend/Psi.h ./backend/random.h ./matpak/Mat.h ./tests/tests_backend.h
 	$(CXX) $(CXXFLAGS) -c main.cpp
 
 ./frontend/monte_carlo.o: ./backend/Psi.h ./matpak/Mat.h
 ./backend/Psi.o: ./backend/Psi.h ./matpak/Mat.h
 ./backend/random.o: ./matpak/Mat.h ./backend/Psi.h
-./matpak/Mat.o: ./matpak/Mat.h ./matpak/Vec.h ./matpak/tools.h
-./matpak/tools.o: ./matpak/tools.h ./matpak/Mat.h ./matpak/Vec.h
-./matpak/Vec.o: ./matpak/Vec.h ./matpak/tools.h
+./matpak/Mat.o: ./matpak/Mat.h
 ./tests/tests_backend.o: ./tests/tests_backend.h ./backend/Psi.h ./matpak/Mat.h
-./tests/tests_matpak.o: ./tests/tests_matpak.h ./matpak/Mat.h ./matpak/Vec.h ./matpak/tools.h
 
 valgrind:
 	valgrind --leak-check=full ./main
