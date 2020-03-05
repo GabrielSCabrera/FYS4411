@@ -1,14 +1,14 @@
 CXX = g++
 CXXFLAGS = -Wall -g -std=c++17 -fopenmp -O3
 
-main: main.o ./frontend/monte_carlo.o ./backend/adagrad.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
-	$(CXX) $(CXXFLAGS) -o main main.o ./frontend/monte_carlo.o ./backend/adagrad.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
+main: main.o ./frontend/adagrad.o ./backend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
+	$(CXX) $(CXXFLAGS) -o main main.o ./frontend/adagrad.o ./backend/monte_carlo.o ./backend/Psi.o ./backend/random.o ./matpak/Mat.o ./tests/tests_backend.o
 
-main.o: main.cpp ./frontend/monte_carlo.h ./backend/adagrad.h ./backend/Psi.h ./backend/random.h ./matpak/Mat.h ./tests/tests_backend.h
+main.o: main.cpp ./frontend/adagrad.h ./backend/monte_carlo.h ./backend/Psi.h ./backend/random.h ./matpak/Mat.h ./tests/tests_backend.h
 	$(CXX) $(CXXFLAGS) -c main.cpp
 
-./frontend/monte_carlo.o: ./backend/Psi.h ./matpak/Mat.h
-./backend/adagrad.o: ./matpak/Mat.h
+./frontend/adagrad.o: ./matpak/Mat.h ./backend/monte_carlo.h
+./backend/monte_carlo.o: ./backend/Psi.h ./matpak/Mat.h
 ./backend/Psi.o: ./backend/Psi.h ./matpak/Mat.h
 ./backend/random.o: ./matpak/Mat.h ./backend/Psi.h
 ./matpak/Mat.o: ./matpak/Mat.h

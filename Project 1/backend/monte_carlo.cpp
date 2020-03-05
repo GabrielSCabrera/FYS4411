@@ -1,8 +1,9 @@
 #include <cmath>
 
 #include "../matpak/Mat.h"
-#include "../backend/Psi.h"
-#include "../backend/random.h"
+#include "Psi.h"
+#include "random.h"
+#include "monte_carlo.h"
 
 double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
                     double beta, double a, double omega, double omega_z,
@@ -122,8 +123,8 @@ double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
 
 void run_monte_carlo() {
 
-  int steps = 1E4;            // Number of Monte-Carle steps per cycle
-  int cycles = 1E4;           // Number of Monte-Carlo cycles
+  int steps = 1E3;            // Number of Monte-Carle steps per cycle
+  int cycles = 1E3;           // Number of Monte-Carlo cycles
   int N = 25;                // Number of Particles
   int x_max = 1;              // Maximum Initial Distance From Origin
   double a = 1E-8;            // Atomic Radius

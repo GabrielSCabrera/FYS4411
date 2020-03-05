@@ -2,7 +2,7 @@
 #include <chrono>
 
 #include "./tests/tests_backend.h"
-#include "./frontend/monte_carlo.h"
+#include "./backend/monte_carlo.h"
 
 void run_all_tests() {
   tests_Psi();
