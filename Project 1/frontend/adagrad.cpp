@@ -2,13 +2,13 @@
 #include "../backend/monte_carlo.h"
 #include "../matpak/Mat.h"
 
-double* adagrad() {
+double get_energy(double alpha, double beta) {
 
-  // CONSTANT TERMS
+  // HARDCODED CONSTANTS
 
   int steps = 1E4;            // Number of Monte-Carle steps per cycle
   int cycles = 1E4;           // Number of Monte-Carlo cycles
-  int N = 25;                // Number of Particles
+  int N = 25;                 // Number of Particles
   int x_max = 1;              // Maximum Initial Distance From Origin
   double a = 1E-8;            // Atomic Radius
   double omega = 1;           // Harmonic Oscillator Frequency
@@ -17,31 +17,50 @@ double* adagrad() {
   double dt = 1E-3;           // Time Step
   double D = 0.5;             // Diffusion Constant
 
-  // Final Energies
-  double* energies = new double[5];
-  double* variances = new double[5];
-  double* probabilities = new double[5];
-  double* acceptance_rate = new double[5];
-  double alpha; double beta;
+  // Function Outputs
+  double* output = monte_carlo(steps, cycles, N, x_max, alpha, beta, a, omega,
+                       omega_z, equi_steps, dt, D);
 
-  for (int i = 0; i < 1; i++) {
-    alpha = 0.5;
-    beta = 1;
+  double energy = output[0];
+  delete[] output;
+  return energy;
 
-    // Function Outputs
-    double* output = monte_carlo(steps, cycles, N, x_max, alpha, beta, a, omega,
-                         omega_z, equi_steps, dt, D);
-    energies[i] = output[0];
-    variances[i] = output[1];
-    probabilities[i] = output[2];
-    acceptance_rate[i] = output[3];
-    std::cout << "E: " << output[0] << ", var: " << output[1] << ", P: "
-              << output[2] << ", Acc. Rate: " << output[3] << std::endl;
-    delete[] output;
+}
+
+double* adagrad() {
+
+  // Gradient Descent Parameters
+
+  int N_steps = 1E2;      // Number of AdaGrad steps
+
+  double alpha_0 = 0.5;   // Initial value of alpha
+  double alpha_1 = 0.51;  // Second value of alpha
+
+  double beta_0 = 1;      // Initial value of beta
+  double beta_1 = 1.1;    // Second value of beta
+
+  // Arrays
+
+  double* energies = new double[N_steps];
+  double* alphas = new double[N_steps+2];
+  double* betas = new double[N_steps+2];
+
+  alphas[0] = alpha_0;
+  alphas[1] = alpha_1;
+
+  betas[0] = beta_0;
+  betas[1] = beta_1;
+
+  // Allocation of Temporary Variables
+
+  double learn_rate;
+
+  for (int i = 0; i < N_steps; i++) {
+    
   }
-  delete[] energies;
-  delete[] variances;
-  delete[] probabilities;
-  delete[] acceptance_rate;
+
+  delete [] energies;
+  delete [] alphas;
+  delete [] betas;
   return 0;
 }

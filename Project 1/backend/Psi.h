@@ -86,8 +86,6 @@ class Psi {
 
     double grad_beta_beta(Mat P);
 
-    double grad_beta_alpha(Mat P);
-
 };
 
 #endif
