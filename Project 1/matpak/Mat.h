@@ -32,7 +32,9 @@ class Mat {
 
     int dimension();
 
-    int* shape();
+    int shape0();
+
+    int shape1();
 
     // INDEXING
     int locate(const int& idx1, const int& idx2);

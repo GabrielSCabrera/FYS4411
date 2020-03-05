@@ -122,8 +122,8 @@ double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
 
 void run_monte_carlo() {
 
-  int steps = 1E3;            // Number of Monte-Carle steps per cycle
-  int cycles = 1E3;           // Number of Monte-Carlo cycles
+  int steps = 1E4;            // Number of Monte-Carle steps per cycle
+  int cycles = 1E4;           // Number of Monte-Carlo cycles
   int N = 25;                // Number of Particles
   int x_max = 1;              // Maximum Initial Distance From Origin
   double a = 1E-8;            // Atomic Radius
@@ -140,13 +140,12 @@ void run_monte_carlo() {
   double* acceptance_rate = new double[5];
   double alpha; double beta;
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 1; i++) {
     alpha = 0.5;
     beta = 1;
 
     // Function Outputs
-    double* output = new double [4];
-    output = monte_carlo(steps, cycles, N, x_max, alpha, beta, a, omega,
+    double* output = monte_carlo(steps, cycles, N, x_max, alpha, beta, a, omega,
                          omega_z, equi_steps, dt, D);
     energies[i] = output[0];
     variances[i] = output[1];
@@ -157,4 +156,7 @@ void run_monte_carlo() {
     delete[] output;
   }
   delete[] energies;
+  delete[] variances;
+  delete[] probabilities;
+  delete[] acceptance_rate;
 }

@@ -58,8 +58,12 @@ int Mat::dimension() {
   return dims;
 }
 
-int* Mat::shape() {
-  return size;
+int Mat::shape0() {
+  return size[0];
+}
+
+int Mat::shape1() {
+  return size[1];
 }
 
 // INDEXING
@@ -185,7 +189,6 @@ void Mat::operator= (const std::string& s) {
 
 void Mat::operator= (const Mat& u) {
   check_size(u);
-  #pragma omp parallel for
   for (int i = 0; i < len; i++) {
     values[i] = u.values[i];
   }

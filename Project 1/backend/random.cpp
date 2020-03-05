@@ -32,7 +32,6 @@ Mat random_particles(int N, double min, double max) {
     Note: Loop is parallelized.
   */
   Mat P(N,3);
-  #pragma omp parallel for
   for (int i = 0; i < P.length(); i++) {
       P.set_raw(rand_double(min, max), i);
   }
@@ -49,8 +48,7 @@ Mat random_walk(Psi PDF, Mat P, double step_size, long idx, double Ddt) {
   */
   Mat P_new(P);
 
-  double* force = new double[3];
-  force = PDF.drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
+  double* force = PDF.drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
 
   double x = rand_double(-1, 1)*step_size;
   double y = rand_double(-1, 1)*step_size;

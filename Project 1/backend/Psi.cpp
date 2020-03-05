@@ -63,7 +63,7 @@ double Psi::get_a() {
 // CALLING
 
 double Psi::operator()(Mat P) {
-  int N = P.shape()[0];
+  int N = P.shape0();
   if (N == 1) {
     return Psi_ob(P, N);
   } else {
@@ -93,17 +93,16 @@ double Psi::greens_ratio(double x0, double y0, double z0,
 
   double* terms = new double[3];
 
-
-  double* F = drift(x1, y1, z1);
-  terms[0] = x0-x1-K*F[0]; terms[1] = y0-y1-K*F[1]; terms[2] = z0-z1-K*F[2];
+  double* F1 = drift(x1, y1, z1);
+  terms[0] = x0-x1-K*F1[0]; terms[1] = y0-y1-K*F1[1]; terms[2] = z0-z1-K*F1[2];
   double exponent = terms[0]*terms[0] + terms[1]*terms[1] + terms[2]*terms[2];
+  delete [] F1;
 
-  F = drift(x0, y0, z0);
-  terms[0] = x1-x0-K*F[0]; terms[1] = y1-y0-K*F[1]; terms[2] = z1-z0-K*F[2];
+  double* F2 = drift(x0, y0, z0);
+  terms[0] = x1-x0-K*F2[0]; terms[1] = y1-y0-K*F2[1]; terms[2] = z1-z0-K*F2[2];
   exponent -= terms[0]*terms[0] + terms[1]*terms[1] + terms[2]*terms[2];
 
-  delete [] F;
-
+  delete [] F2;
   delete [] terms;
   return std::exp(exponent/(4*K));
 }
@@ -156,7 +155,7 @@ double Psi::Psi_c(Mat P, int N) {
 
 double Psi::energy(Mat P) {
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   // Kinetic Energy
   double E = 0;
@@ -176,7 +175,6 @@ double Psi::energy(Mat P) {
   double dx_kj; double dy_kj; double dz_kj;
   double dx_ki; double dy_ki; double dz_ki;
 
-  double* gp = new double [3] {0, 0, 0};
   double* term_2 = new double [3] {0, 0, 0};
 
   for (int k = 0; k < N; k++) {
@@ -230,7 +228,7 @@ double Psi::energy(Mat P) {
     } // END LOOP OVER j
 
     // START Term 2
-    gp = grad_phi(x_k, y_k, z_k);
+    double* gp = grad_phi(x_k, y_k, z_k);
     E += 2*(term_2[0]*gp[0] + term_2[1]*gp[1] + term_2[2]*gp[2]);
     // END Term 2
 
@@ -238,9 +236,9 @@ double Psi::energy(Mat P) {
     V += V_ext(x_k, y_k, z_k);
     // END V_ext
 
+    delete[] gp;
   } // END LOOP OVER k
 
-  delete[] gp;
   delete[] term_2;
 
   return -0.5*E + V;
@@ -266,7 +264,7 @@ double Psi::laplace_phi(double x, double y, double z) {
   /*
     !! Must be multiplied with phi(x, y, z) !!
   */
-  return 2*this->alpha*(2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z) - 3);
+  return 2*this->alpha*(2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z) - 2 - this->beta);
 }
 
 double Psi::u_prime(double r_kj) {
@@ -299,7 +297,7 @@ double Psi::grad_alpha(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   double term_1 = 0;
   double term_2 = 0;
@@ -335,7 +333,7 @@ double Psi::grad_beta(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   double term_1 = 0;
   double term_2 = 0;
@@ -368,7 +366,7 @@ double Psi::grad_alpha_alpha(Mat P) {
 
   double x_k; double y_k; double z_k;
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   double term_1 = 0;
 
@@ -386,7 +384,7 @@ double Psi::grad_beta_beta(Mat P) {
 
   double z_k;
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   double term_1 = 0;
 
@@ -409,7 +407,7 @@ double Psi::grad_beta_alpha(Mat P) {
 
   double dx_kj; double dy_kj; double dz_kj;
 
-  int N = P.shape()[0];
+  int N = P.shape0();
 
   double term_1 = 0;
   double term_2 = 0;
