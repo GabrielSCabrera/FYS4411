@@ -2,7 +2,7 @@
 #include <chrono>
 
 #include "./tests/tests_backend.h"
-#include "./backend/monte_carlo.h"
+#include "./frontend/adagrad.h"
 
 void run_all_tests() {
   tests_Psi();
@@ -10,7 +10,7 @@ void run_all_tests() {
 
 
 void run_all_parts() {
-  run_monte_carlo();
+  adagrad();
 }
 
 int main() {

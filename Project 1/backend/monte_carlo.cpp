@@ -5,13 +5,10 @@
 #include "random.h"
 #include "monte_carlo.h"
 
-double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
-                    double beta, double a, double omega, double omega_z,
+double* monte_carlo(Psi PDF, int steps, int cycles, int N, double x_max,
                     int equi_steps, double dt, double D) {
   // Step Size
   double step_size = std::sqrt(dt);
-  // Initialize Wave Function
-  Psi PDF(alpha, beta, a, omega, omega_z);
   // Initialize Secondary Random Particle Array
   Mat P_new(N,3);
   // New, Old Probability
@@ -25,7 +22,7 @@ double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
   // Loading Old, New Percentage
   double perc = 0; double perc_new;
   // Preparing Function Output
-  double* output = new double[4] {0,0,0,0};
+  double* output = new double[6] {0,0,0,0,0,0};
   // Initialize Random Particle Array
   Mat P = random_particles(N, -x_max, x_max);
   // Random Vector Selector
@@ -114,6 +111,8 @@ double* monte_carlo(int steps, int cycles, int N, double x_max, double alpha,
 
   output[2] = Psi_old;
   output[3] /= cycles*steps;
+  output[4] = PDF.grad_alpha(P);
+  output[5] = PDF.grad_beta(P);
 
   // Cleanup
   delete [] E_cycle;
@@ -145,9 +144,11 @@ void run_monte_carlo() {
     alpha = 0.5;
     beta = 1;
 
+    // Initialize Wave Function
+    Psi PDF(alpha, beta, a, omega, omega_z);
+
     // Function Outputs
-    double* output = monte_carlo(steps, cycles, N, x_max, alpha, beta, a, omega,
-                         omega_z, equi_steps, dt, D);
+    double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);
     energies[i] = output[0];
     variances[i] = output[1];
     probabilities[i] = output[2];

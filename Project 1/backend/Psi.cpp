@@ -60,6 +60,18 @@ double Psi::get_a() {
   return this->a;
 }
 
+double Psi::get_omega() {
+  return this->omega;
+}
+
+double Psi::get_omega_z() {
+  return this->omega_z;
+}
+
+double Psi::get_mass() {
+  return this->mass;
+}
+
 // CALLING
 
 double Psi::operator()(Mat P) {
@@ -275,6 +287,14 @@ double Psi::u_prime(double r_kj) {
   }
 }
 
+// double Psi::u_prime(double r_kj) {
+//   if (r_kj <= this-> a) {
+//     return 0;
+//   } else {
+//     return this->a/r_kj;
+//   }
+// }
+
 double Psi::u_double_prime(double r_kj) {
   /*
     !! Must be multiplied with u_prime(r_kj) !!
@@ -285,6 +305,17 @@ double Psi::u_double_prime(double r_kj) {
     return -(1/(r_kj - this->a) + 1/r_kj);
   }
 }
+
+// double Psi::u_double_prime(double r_kj) {
+//   /*
+//     !! Must be multiplied with u_prime(r_kj) !!
+//   */
+//   if (r_kj <= this-> a) {
+//     return 0;
+//   } else {
+//     return -1;
+//   }
+// }
 
 double Psi::grad_alpha(Mat P) {
 
@@ -315,13 +346,13 @@ double Psi::grad_alpha(Mat P) {
       }
 
       x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
+      dx_kj = x_j - x_k; dy_kj = y_j - y_k; dz_kj = z_j - z_k;
       r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
 
-      term_2 += (1/r_kj)*(x_k*dx_kj + y_k*dy_kj + this->beta*z_k*dz_kj)*u_prime(r_kj);
+      term_2 += (x_k*dx_kj + y_k*dy_kj + this->beta*z_k*dz_kj)*u_prime(r_kj)/r_kj;
     }
   }
-  return 8*this->alpha*term_1 - 2*term_2 - 6*N;
+  return 8*this->alpha*term_1 - 2*term_2 - 4*N - 2*this->beta*N;
 }
 
 double Psi::grad_beta(Mat P) {
@@ -351,13 +382,13 @@ double Psi::grad_beta(Mat P) {
       }
 
       x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
+      dx_kj = x_j - x_k; dy_kj = y_j - y_k; dz_kj = z_j - z_k;
       r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
 
-      term_2 += (1/r_kj)*(z_k*dz_kj)*u_prime(r_kj);
+      term_2 += z_k*dz_kj*u_prime(r_kj)/r_kj;
     }
   }
-  return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*term_2;
+  return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*(term_2 + N);
 }
 
 double Psi::grad_alpha_alpha(Mat P) {

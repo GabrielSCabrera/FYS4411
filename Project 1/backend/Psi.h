@@ -48,6 +48,12 @@ class Psi {
 
     double get_a();
 
+    double get_omega();
+
+    double get_omega_z();
+
+    double get_mass();
+
     // CALLING
 
     double operator()(Mat P);
