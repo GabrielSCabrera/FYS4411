@@ -13,7 +13,7 @@ All the original code is still in importance_sampling.cpp
 
 double* monte_carlo(Psi* PDF, int N, int dim, double x_max, int cycles, int equi_steps) {
   // Initialize Secondary Random Particle Array
-  Mat P = random_particles(N, -x_max, x_max);
+  Mat P; = random_particles(N, -x_max, x_max);
   Mat P_new(N, dim);
   double Psi_new, Psi_old;
   double* E_cycle = new double[cycles];         // Cycle-Wise Energy
