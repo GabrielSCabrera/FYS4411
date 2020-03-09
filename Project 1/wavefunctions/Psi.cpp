@@ -6,12 +6,12 @@
 // CONSTRUCTOR
 
 Psi::Psi(double alpha, double beta, double a, double omega, double omega_z) {
-  update_alpha(double alpha);
-  update_beta(double beta);
-  update_a(double a);
-  update_omega(double omega);
-  update_omega_z(double omega_z);
-  update_mass(double mass);
+  update_alpha(alpha);
+  update_beta(beta);
+  update_a(a);
+  update_omega(omega);
+  update_omega_z(omega_z);
+  update_mass(mass);
 }
 
 // DESTRUCTOR

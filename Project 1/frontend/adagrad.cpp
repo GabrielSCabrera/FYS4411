@@ -8,7 +8,7 @@
 #include "adagrad.h"
 
 
-double* adagrad(bool onebody = false) {
+double* adagrad(Psi* PDF) {
   // Monte Carlo Parameters
   int steps = 1E4;            // Number of Monte-Carle steps per cycle
   int cycles = 1E2;           // Number of Monte-Carlo cycles
@@ -45,11 +45,17 @@ double* adagrad(bool onebody = false) {
   betas[1] = beta_1;
 
   // Initialize Wavefunctions
-  if (onebody) {
-    Psi_OB PDF(alpha_0, beta_0, a, omega, omega_z);
-  } else {
-    Psi_T PDF(alpha_0, beta_0, a, omega, omega_z);
-  }
+  PDF->update_alpha(alpha_0);
+  PDF->update_beta(beta_0);
+  PDF->update_a(a);
+  PDF->update_omega(omega);
+  PDF->update_omega_z(omega_z);
+
+  // if (onebody) {
+  //   Psi_OB PDF(alpha_0, beta_0, a, omega, omega_z);
+  // } else {
+  //   Psi_T PDF(alpha_0, beta_0, a, omega, omega_z);
+  // }
 
   // Allocation of Temporary Variables for the Learning Rate
   // in Both the Directions of Alpha and Beta
@@ -70,8 +76,8 @@ double* adagrad(bool onebody = false) {
   for (int i = 0; i < N_steps; i++) {
 
     // Updating Wavefunctions
-    PDF.update_alpha(alphas[i+1]);
-    // PDF.update_beta(betas[i+1]);
+    PDF->update_alpha(alphas[i+1]);
+    // PDF->update_beta(betas[i+1]);
 
     // Running Monte-Carlo
     double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);

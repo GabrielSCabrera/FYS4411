@@ -1,7 +1,6 @@
 #include <cmath>
 
 #include "../matpak/Mat.h"
-#include "Psi.h"
 #include "../wavefunctions/Psi.h"
 #include "../wavefunctions/Psi_T.h"
 #include "../wavefunctions/Psi_OB.h"
@@ -41,7 +40,7 @@ Mat random_particles(int N, double min, double max) {
   return P;
 }
 
-Mat random_walk(Psi PDF, Mat P, double step_size, long idx, double Ddt) {
+Mat random_walk(Psi* PDF, Mat P, double step_size, long idx, double Ddt) {
   /*
     Given a <Mat> instance 'P' of shape (N, 3), selects a random index in
     the range (0, N-1) and moves it by a random direction with a magnitude
@@ -51,7 +50,7 @@ Mat random_walk(Psi PDF, Mat P, double step_size, long idx, double Ddt) {
   */
   Mat P_new(P);
 
-  double* force = PDF.drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
+  double* force = PDF->drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
 
   double x = rand_double(-1, 1)*step_size;
   double y = rand_double(-1, 1)*step_size;

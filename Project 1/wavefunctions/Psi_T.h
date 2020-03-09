@@ -1,4 +1,5 @@
 #include "../matpak/Mat.h"
+#include "Psi.h"
 
 #ifndef PSI_T_H
 #define PSI_T_H
@@ -7,13 +8,7 @@ class Psi_T : public Psi {
 
   public:
 
-    // CONSTRUCTORS
-
-    Psi_T(double alpha, double beta, double a, double omega, double omega_z);
-
-    // DESTRUCTOR
-
-    ~Psi_T();
+    using Psi::Psi;
 
     // CALLING
 

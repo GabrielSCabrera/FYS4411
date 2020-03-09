@@ -8,13 +8,7 @@ class Psi_OB : public Psi  {
 
   public:
 
-    // CONSTRUCTORS
-
-    Psi_OB(double alpha, double beta, double a, double omega, double omega_z);
-
-    // DESTRUCTOR
-
-    ~Psi_OB();
+    using Psi::Psi;
 
     // CALLING
 
