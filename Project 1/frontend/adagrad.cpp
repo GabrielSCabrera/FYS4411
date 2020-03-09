@@ -11,11 +11,11 @@
 double* adagrad(Psi* PDF) {
   // Monte Carlo Parameters
   int steps = 1E4;            // Number of Monte-Carle steps per cycle
-  int cycles = 1E2;           // Number of Monte-Carlo cycles
+  int cycles = 2E2;           // Number of Monte-Carlo cycles
   int N = 1;                  // Number of Particles
   int x_max = 1;              // Maximum Initial Distance From Origin
-  int equi_steps = 1E2;       // Number of Steps Dedicated to Equilibriation
-  double dt = 1E-3;           // Time Step
+  int equi_steps = 1E3;       // Number of Steps Dedicated to Equilibriation
+  double dt = 1E-2;           // Time Step
   double D = 0.5;             // Diffusion Constant
   double eta = 1E-2;          // Learning Rate
   // double eps = 1E-8;          // Small Number Correction
@@ -30,8 +30,8 @@ double* adagrad(Psi* PDF) {
   int N_steps = 1E2;          // Number of AdaGrad steps
   double alpha_0 = 1;         // Second value of alpha
   double alpha_1 = 0.9;       // First  value of alpha
-  double beta_0 = 1.5;        // Second value of beta
-  double beta_1 = 1.45;       // First  value of beta
+  double beta_0 = 1;          // Second value of beta
+  double beta_1 = 1;          // First  value of beta
 
   // Arrays
   double* energies = new double[N_steps];
@@ -50,12 +50,6 @@ double* adagrad(Psi* PDF) {
   PDF->update_a(a);
   PDF->update_gamma(gamma);
   PDF->update_mass(mass);
-
-  // if (onebody) {
-  //   Psi_OB PDF(alpha_0, beta_0, a, omega, omega_z);
-  // } else {
-  //   Psi_T PDF(alpha_0, beta_0, a, omega, omega_z);
-  // }
 
   // Allocation of Temporary Variables for the Learning Rate
   // in Both the Directions of Alpha and Beta

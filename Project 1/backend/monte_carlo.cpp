@@ -50,8 +50,8 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
       W *= W;
       // Include Drift Force
       G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1),
-                                 P.get(idx, 2), P_new.get(idx, 0),
-                                 P_new.get(idx, 1), P_new.get(idx, 2), G_K);
+                                  P.get(idx, 2), P_new.get(idx, 0),
+                                  P_new.get(idx, 1), P_new.get(idx, 2), G_K);
       W *= G_ratio;
       // Determine whether or not to accept movement
       if (W > rand_double(0, 1)) {
@@ -70,9 +70,9 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1),
-                                 P.get(idx, 2), P_new.get(idx, 0),
-                                 P_new.get(idx, 1), P_new.get(idx, 2), G_K);
+      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2),
+                                  P_new.get(idx, 0), P_new.get(idx, 1),
+                                  P_new.get(idx, 2), G_K);
       W *= G_ratio;
       // Determine whether or not to accept movement
       if (W > rand_double(0, 1)) {

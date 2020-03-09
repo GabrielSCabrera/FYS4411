@@ -12,7 +12,7 @@
 // }
 
 void run_all_parts() {
-  bool one_body = false;  // true: interacting mode, false: one-body mode
+  bool one_body = true;  // true: interacting mode, false: one-body mode
   if (one_body) {
     Psi_OB PDF(0, 0, 0, 0, 0);
     adagrad(&PDF);
