@@ -17,7 +17,7 @@ double* adagrad(Psi* PDF) {
   int equi_steps = 1E3;       // Number of Steps Dedicated to Equilibriation
   double dt = 1E-2;           // Time Step
   double D = 0.5;             // Diffusion Constant
-  double eta = 1E-2;          // Learning Rate
+  double eta = 1E-4;          // Learning Rate
   // double eps = 1E-8;          // Small Number Correction
   // double gamma = 0.9;         // Momentum Term
 

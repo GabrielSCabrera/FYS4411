@@ -63,7 +63,7 @@ double Psi_OB::grad_alpha(Mat P) {
   for (int k = 0; k < P.shape0(); k++) {
     x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
     E += x_k*x_k + y_k*y_k + this->beta_squared*z_k*z_k;
-  } // END LOOP OVER k
+  }
 
   return P.shape0()*(P.shape1() - 1 + this->beta) - 4*this->alpha*E;
 }
@@ -78,7 +78,7 @@ double Psi_OB::grad_beta(Mat P) {
     for (int k = 0; k < P.shape0(); k++) {
       z_k = P.get(k,2);
       E += z_k*z_k;
-    } // END LOOP OVER k
+    }
 
     return P.shape0()*this->alpha - 4*this->alpha_squared*this->beta*E;
   }
