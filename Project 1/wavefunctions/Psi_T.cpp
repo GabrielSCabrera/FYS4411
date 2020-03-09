@@ -4,37 +4,16 @@
 #include "Psi_T.h"
 #include "../matpak/Mat.h"
 
-// CONSTRUCTOR
-
-Psi_T::Psi_T(double alpha, double beta, double a, double omega, double omega_z) {
-  this->alpha = alpha;
-  this->beta = beta;
-  this->a = a;
-  this->omega = omega;
-  this->omega_z = omega_z;
-  this->mass = mass;
-}
-
-// DESTRUCTOR
-
-Psi_T::~Psi_T() {
-
-}
-
 // CALLING
 
-double Psi::operator()(Mat P) {
+double Psi_T::operator()(Mat P) {
   int N = P.shape0();
-  if (N == 1) {
-    return Psi_ob(P, N);
-  } else {
-    return Psi_ob(P, N)*Psi_c(P, N);
-  }
+  return Psi_ob(P, N)*Psi_c(P, N);
 }
 
 // CALCULATIONS
 
-double* Psi::drift(double x, double y, double z) {
+double* Psi_T::drift(double x, double y, double z) {
   double* force = new double [3];
   force[0] = -4*this->alpha*x;
   force[1] = -4*this->alpha*y;
@@ -42,7 +21,7 @@ double* Psi::drift(double x, double y, double z) {
   return force;
 }
 
-double Psi::Psi_ob(Mat P, int N) {
+double Psi_T::Psi_ob(Mat P, int N) {
   /*
     P – Array of type 'Mat' of shape (N,3)
     N – Number of particles
@@ -59,7 +38,7 @@ double Psi::Psi_ob(Mat P, int N) {
   return exponent;
 }
 
-double Psi::Psi_c(Mat P, int N) {
+double Psi_T::Psi_c(Mat P, int N) {
   /*
     P – Array of type 'Mat' of shape (N,3)
     N – Number of particles
@@ -88,7 +67,7 @@ double Psi::Psi_c(Mat P, int N) {
   return product;
 }
 
-double Psi::energy(Mat P) {
+double Psi_T::energy(Mat P) {
 
   int N = P.shape0();
 
@@ -180,7 +159,7 @@ double Psi::energy(Mat P) {
 
 }
 
-double Psi::grad_alpha(Mat P) {
+double Psi_T::grad_alpha(Mat P) {
 
   double beta_sq = this->beta*this->beta;
 
@@ -218,7 +197,7 @@ double Psi::grad_alpha(Mat P) {
   return 8*this->alpha*term_1 - 2*term_2 - 4*N - 2*this->beta*N;
 }
 
-double Psi::grad_beta(Mat P) {
+double Psi_T::grad_beta(Mat P) {
 
   double x_k; double y_k; double z_k;
   double x_j; double y_j; double z_j;
@@ -254,7 +233,7 @@ double Psi::grad_beta(Mat P) {
   return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*(term_2 + N);
 }
 
-double Psi::grad_alpha_alpha(Mat P) {
+double Psi_T::grad_alpha_alpha(Mat P) {
 
   double beta_sq = this->beta*this->beta;
 
@@ -274,7 +253,7 @@ double Psi::grad_alpha_alpha(Mat P) {
   return 8*term_1;
 }
 
-double Psi::grad_beta_beta(Mat P) {
+double Psi_T::grad_beta_beta(Mat P) {
 
   double z_k;
 

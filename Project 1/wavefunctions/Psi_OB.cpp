@@ -4,26 +4,10 @@
 #include "Psi_OB.h"
 #include "../matpak/Mat.h"
 
-// CONSTRUCTOR
-
-Psi_OB::Psi_OB(double alpha, double beta, double a, double omega, double omega_z) {
-  update_alpha(double alpha);
-  update_beta(double beta);
-  update_a(double a);
-  update_omega(double omega);
-  update_omega_z(double omega_z);
-  update_mass(double mass);
-}
-
-// DESTRUCTOR
-
-Psi_OB::~Psi_OB() {
-
-}
-
 // CALLING
 
 double Psi_OB::operator()(Mat P) {
+  int N = P.shape0();
   return Psi_ob(P, N);
 }
 
@@ -217,7 +201,7 @@ double Psi_OB::grad_beta(Mat P) {
       term_2 += z_k*dz_kj*u_prime(r_kj)/r_kj;
     }
   }
-  return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*(term_2 + N);
+  return 8*this->beta*this->alpha_squared*term_1 - 2*this->alpha*(term_2 + N);
 }
 
 double Psi_OB::grad_alpha_alpha(Mat P) {
@@ -255,5 +239,5 @@ double Psi_OB::grad_beta_beta(Mat P) {
     term_1 += z_k*z_k;
 
   }
-  return 8*this->alpha*this->alpha*term_1;
+  return 8*this->alpha_squared*term_1;
 }

@@ -37,19 +37,19 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
     // Initialize Random Particle Array
     Mat P = random_particles(N, -x_max, x_max);
     // Old Probability
-    Psi_old = PDF(P);
+    Psi_old = PDF->operator()(P);
     // Equilibriation
     for (int j = 0; j < equi_steps; j++) {
       // Generate New Movement
       idx = rand() % N;
       P_new = random_walk(PDF, P, step_size, idx, G_K);
       // Get New Probability
-      Psi_new = PDF(P_new);
+      Psi_new = PDF->operator()(P_new);
       // Calculate Ratio of Probabilities
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF.greens_ratio(P.get(idx, 0), P.get(idx, 1),
+      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1),
                                  P.get(idx, 2), P_new.get(idx, 0),
                                  P_new.get(idx, 1), P_new.get(idx, 2), G_K);
       W *= G_ratio;
@@ -65,12 +65,12 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
       idx = rand() % N;
       P_new = random_walk(PDF, P, step_size, idx, G_K);
       // Get New Probability
-      Psi_new = PDF(P_new);
+      Psi_new = PDF->operator()(P_new);
       // Calculate Ratio of Probabilities
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF.greens_ratio(P.get(idx, 0), P.get(idx, 1),
+      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1),
                                  P.get(idx, 2), P_new.get(idx, 0),
                                  P_new.get(idx, 1), P_new.get(idx, 2), G_K);
       W *= G_ratio;
@@ -83,7 +83,7 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
     } // End Sampling
 
     // Set New Energy
-    E_cycle[i] = PDF.energy(P_new);
+    E_cycle[i] = PDF->energy(P_new);
     // Save Total Energy
     output[0] += E_cycle[i];
     accum_cycles += 1;
@@ -113,8 +113,8 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
 
   output[2] = Psi_old;
   output[3] /= cycles*steps;
-  output[4] = PDF.grad_alpha(P);
-  output[5] = PDF.grad_beta(P);
+  output[4] = PDF->grad_alpha(P);
+  output[5] = PDF->grad_beta(P);
 
   // Cleanup
   delete [] E_cycle;
