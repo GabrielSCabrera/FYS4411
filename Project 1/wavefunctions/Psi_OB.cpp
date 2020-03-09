@@ -54,25 +54,18 @@ double Psi_OB::energy(Mat P) {
 }
 
 double Psi_OB::grad_alpha(Mat P) {
-
-  // Kinetic Energy
   double E = 0;
-
   double x_k; double y_k; double z_k;
 
   for (int k = 0; k < P.shape0(); k++) {
     x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
     E += x_k*x_k + y_k*y_k + this->beta_squared*z_k*z_k;
   }
-
-  return P.shape0()*(P.shape1() - 1 + this->beta) - 4*this->alpha*E;
+  return -this->alpha*E;
 }
 
 double Psi_OB::grad_beta(Mat P) {
-
-    // Kinetic Energy
     double E = 0;
-
     double z_k;
 
     for (int k = 0; k < P.shape0(); k++) {
@@ -80,7 +73,7 @@ double Psi_OB::grad_beta(Mat P) {
       E += z_k*z_k;
     }
 
-    return P.shape0()*this->alpha - 4*this->alpha_squared*this->beta*E;
+    return -2*this->alpha*this->beta*E;
   }
 
 double Psi_OB::grad_alpha_alpha(Mat P) {

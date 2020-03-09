@@ -16,21 +16,21 @@ double* adagrad(Psi* PDF) {
   double x_max = 1;           // Maximum Initial Distance From Origin
   double dt = 1E-3;           // Time Step
   double D = 0.5;             // Diffusion Constant
-  double eta = 1E-3;          // Learning Rate
+  double eta = 8E-2;          // Learning Rate
+  int dim = 3;
   // double eps = 1E-8;          // Small Number Correction
   // double gamma = 0.9;         // Momentum Term
 
   // Wavefunction and Potential Constants
   double a = 0.0043;          // Atomic Radius
   double gamma = 1;           // Potential Elongation Factor
-  double mass = 1;
 
   // Gradient Descent Parameters
   int N_steps = 1E3;          // Number of AdaGrad steps
-  double alpha_0 = 1;         // Second value of alpha
-  double alpha_1 = 0.9;       // First  value of alpha
-  double beta_0 = 1;          // Second value of beta
-  double beta_1 = 1;          // First  value of beta
+  double alpha_0 = 0.6;         // Second value of alpha
+  double alpha_1 = 1;       // First  value of alpha
+  double beta_0 = 0.8;          // Second value of beta
+  double beta_1 = 0.3;          // First  value of beta 
 
   // Arrays
   double* energies = new double[N_steps];
@@ -48,18 +48,13 @@ double* adagrad(Psi* PDF) {
   PDF->update_beta(beta_0);
   PDF->update_a(a);
   PDF->update_gamma(gamma);
-  PDF->update_mass(mass);
-
-  // Allocation of Temporary Variables for the Learning Rate
-  // in Both the Directions of Alpha and Beta
-  double* learn_rates = new double[2];
 
   // Allocation of Temporary Variables for the Derivatives of
   // <E> with Respect to Both Alpha and Beta
-  double* derivatives = new double[2];
+  double d_alpha, d_beta;
 
   // Setting Initial Values
-  double* output = monte_carlo(PDF, cycles, N, x_max, equi_steps, dt, D);
+  double* output = monte_carlo(PDF, N, dim, x_max, cycles, equi_steps);
   // learn_rates[0] = (1-gamma)*output[4]*output[4];
   // learn_rates[1] = (1-gamma)*output[5]*output[5];
 
@@ -70,18 +65,18 @@ double* adagrad(Psi* PDF) {
 
     // Updating Wavefunctions
     PDF->update_alpha(alphas[i+1]);
-    // PDF->update_beta(betas[i+1]);
+    PDF->update_beta(betas[i+1]);
 
     // Running Monte-Carlo
-    double* output = monte_carlo(PDF, cycles, N, x_max, equi_steps, dt, D);
+    output = monte_carlo(PDF, N, dim, x_max, cycles, equi_steps);
 
     // Displaying Stats
     std::cout << "MC-Cycle – alpha = " << alphas[i+1] << ", beta = " << betas[i]
-              << ", E = " << output[0] << ", var = " << output[1] << std::endl;
+              << ", E = " << output[0]/(N*3) << ", var = " << output[1] << std::endl;
 
     // Updating Derivatives
-    derivatives[0] = output[4];
-    derivatives[1] = output[5];
+    d_alpha = output[4];
+    d_beta = output[5];
 
     // Updating Learning Rates
     // learn_rates[0] = gamma*learn_rates[0] + (1-gamma)*output[4]*output[4];
@@ -90,9 +85,8 @@ double* adagrad(Psi* PDF) {
     // Updating Parameters
     // alphas[i+2] = alphas[i+1] - eta*derivatives[0]/std::sqrt(learn_rates[0] + eps);
     // betas[i+2]  = betas[i+1]  - eta*derivatives[1]/std::sqrt(learn_rates[1] + eps);
-    alphas[i+2] = alphas[i+1] - eta*derivatives[0];
-    // betas[i+2]  = betas[i+1]  - eta*derivatives[1];
-    betas[i+2]  = betas[i+1];
+    alphas[i+2] = alphas[i+1] - eta*d_alpha;
+    betas[i+2]  = betas[i+1]  - eta*d_beta;
 
     // Clearing Allocated Memory
     delete [] output;
@@ -102,7 +96,5 @@ double* adagrad(Psi* PDF) {
   delete [] energies;
   delete [] alphas;
   delete [] betas;
-  delete [] learn_rates;
-  delete [] derivatives;
   return 0;
 }
