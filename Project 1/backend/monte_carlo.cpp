@@ -7,8 +7,8 @@
 #include "random.h"
 #include "monte_carlo.h"
 
-double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
-                    int equi_steps, double dt, double D) {
+double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
+                    double dt, double D) {
   // Step Size
   double step_size = std::sqrt(dt);
   // Initialize Secondary Random Particle Array
@@ -27,52 +27,46 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
   double* output = new double[6] {0,0,0,0,0,0};
   // Initialize Random Particle Array
   Mat P = random_particles(N, -x_max, x_max);
-  // Random Vector Selector
-  long idx;
   // Green's Function Ratio, constant
   double G_ratio; double G_K = D*dt;
-  // Monte-Carlo Cycles
-  #pragma omp parallel for
-  for (int i = 0; i < cycles; i++) {
-    // Initialize Random Particle Array
-    Mat P = random_particles(N, -x_max, x_max);
-    // Old Probability
-    Psi_old = PDF->operator()(P);
+  // Old Probability
+  Psi_old = PDF->operator()(P);
+
+  for (int i = 0; i < equi_steps; i++) {
     // Equilibriation
-    for (int j = 0; j < equi_steps; j++) {
-      // Generate New Movement
-      idx = rand() % N;
-      P_new = random_walk(PDF, P, step_size, idx, G_K);
+    for (int j = 0; j < N; j++) {
+      P_new = random_walk(PDF, P, step_size, j, G_K);
       // Get New Probability
       Psi_new = PDF->operator()(P_new);
       // Calculate Ratio of Probabilities
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1),
-                                  P.get(idx, 2), P_new.get(idx, 0),
-                                  P_new.get(idx, 1), P_new.get(idx, 2), G_K);
+      G_ratio = PDF->greens_ratio(P.get(j, 0), P.get(j, 1),
+                                  P.get(j, 2), P_new.get(j, 0),
+                                  P_new.get(j, 1), P_new.get(j, 2), G_K);
       W *= G_ratio;
       // Determine whether or not to accept movement
       if (W > rand_double(0, 1)) {
         P = P_new;
       }
     } // End Equilibriation
-
+  }
+  // #pragma omp parallel for
+  // Monte-Carlo Cycles
+  for (int i = 0; i < cycles; i++) {
     // Samples per Cycle
-    for (int j = 0; j < steps; j++) {
-      // Generate New Movement
-      idx = rand() % N;
-      P_new = random_walk(PDF, P, step_size, idx, G_K);
+    for (int j = 0; j < N; j++) {
+      P_new = random_walk(PDF, P, step_size, j, G_K);
       // Get New Probability
       Psi_new = PDF->operator()(P_new);
       // Calculate Ratio of Probabilities
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF->greens_ratio(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2),
-                                  P_new.get(idx, 0), P_new.get(idx, 1),
-                                  P_new.get(idx, 2), G_K);
+      G_ratio = PDF->greens_ratio(P.get(j, 0), P.get(j, 1), P.get(j, 2),
+                                  P_new.get(j, 0), P_new.get(j, 1),
+                                  P_new.get(j, 2), G_K);
       W *= G_ratio;
       // Determine whether or not to accept movement
       if (W > rand_double(0, 1)) {
@@ -112,7 +106,7 @@ double* monte_carlo(Psi* PDF, int steps, int cycles, int N, double x_max,
   }
 
   output[2] = Psi_old;
-  output[3] /= cycles*steps;
+  output[3] /= cycles*N;
   output[4] = PDF->grad_alpha(P);
   output[5] = PDF->grad_beta(P);
 

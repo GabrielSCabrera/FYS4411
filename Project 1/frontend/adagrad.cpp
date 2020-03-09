@@ -10,24 +10,23 @@
 
 double* adagrad(Psi* PDF) {
   // Monte Carlo Parameters
-  int steps = 1E4;            // Number of Monte-Carle steps per cycle
-  int cycles = 2E2;           // Number of Monte-Carlo cycles
+  int cycles = 1E4;           // Number of Monte-Carlo cycles
   int N = 1;                  // Number of Particles
-  int x_max = 1;              // Maximum Initial Distance From Origin
   int equi_steps = 1E3;       // Number of Steps Dedicated to Equilibriation
-  double dt = 1E-2;           // Time Step
+  double x_max = 1;           // Maximum Initial Distance From Origin
+  double dt = 1E-3;           // Time Step
   double D = 0.5;             // Diffusion Constant
-  double eta = 1E-4;          // Learning Rate
+  double eta = 1E-3;          // Learning Rate
   // double eps = 1E-8;          // Small Number Correction
   // double gamma = 0.9;         // Momentum Term
 
   // Wavefunction and Potential Constants
-  double a = 1E-10;           // Atomic Radius
+  double a = 0.0043;          // Atomic Radius
   double gamma = 1;           // Potential Elongation Factor
   double mass = 1;
 
   // Gradient Descent Parameters
-  int N_steps = 1E2;          // Number of AdaGrad steps
+  int N_steps = 1E3;          // Number of AdaGrad steps
   double alpha_0 = 1;         // Second value of alpha
   double alpha_1 = 0.9;       // First  value of alpha
   double beta_0 = 1;          // Second value of beta
@@ -60,7 +59,7 @@ double* adagrad(Psi* PDF) {
   double* derivatives = new double[2];
 
   // Setting Initial Values
-  double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);
+  double* output = monte_carlo(PDF, cycles, N, x_max, equi_steps, dt, D);
   // learn_rates[0] = (1-gamma)*output[4]*output[4];
   // learn_rates[1] = (1-gamma)*output[5]*output[5];
 
@@ -74,11 +73,11 @@ double* adagrad(Psi* PDF) {
     // PDF->update_beta(betas[i+1]);
 
     // Running Monte-Carlo
-    double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);
+    double* output = monte_carlo(PDF, cycles, N, x_max, equi_steps, dt, D);
 
     // Displaying Stats
     std::cout << "MC-Cycle – alpha = " << alphas[i+1] << ", beta = " << betas[i]
-              << ", E = " << output[0] << std::endl;
+              << ", E = " << output[0] << ", var = " << output[1] << std::endl;
 
     // Updating Derivatives
     derivatives[0] = output[4];
