@@ -16,11 +16,8 @@ class Psi {
     double a;
     double a_squared;
 
-    double omega;
-    double omega_squared;
-
-    double omega_z;
-    double omega_z_squared;
+    double gamma;
+    double gamma_squared;
 
     double mass = 1;
     double hbar = 1;
@@ -30,7 +27,7 @@ class Psi {
 
     // CONSTRUCTORS
 
-    Psi(double alpha, double beta, double a, double omega, double omega_z);
+    Psi(double alpha, double beta, double a, double gamma, double mass);
 
     // DESTRUCTOR
 
@@ -44,9 +41,7 @@ class Psi {
 
     void update_a(double a);
 
-    void update_omega(double omega);
-
-    void update_omega_z(double omega_z);
+    void update_gamma(double gamma);
 
     void update_mass(double mass);
 
@@ -58,9 +53,7 @@ class Psi {
 
     double get_a();
 
-    double get_omega();
-
-    double get_omega_z();
+    double get_gamma();
 
     double get_mass();
 

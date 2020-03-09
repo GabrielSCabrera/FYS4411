@@ -23,8 +23,8 @@ double* adagrad(Psi* PDF) {
 
   // Wavefunction and Potential Constants
   double a = 1E-10;           // Atomic Radius
-  double omega = 1;           // Harmonic Oscillator Frequency
-  double omega_z = 1;         // Harmonic Oscillator Z-Frequency
+  double gamma = 1;           // Potential Elongation Factor
+  double mass = 1;
 
   // Gradient Descent Parameters
   int N_steps = 1E2;          // Number of AdaGrad steps
@@ -48,8 +48,8 @@ double* adagrad(Psi* PDF) {
   PDF->update_alpha(alpha_0);
   PDF->update_beta(beta_0);
   PDF->update_a(a);
-  PDF->update_omega(omega);
-  PDF->update_omega_z(omega_z);
+  PDF->update_gamma(gamma);
+  PDF->update_mass(mass);
 
   // if (onebody) {
   //   Psi_OB PDF(alpha_0, beta_0, a, omega, omega_z);

@@ -11,7 +11,6 @@
 //   tests_Psi();
 // }
 
-
 void run_all_parts() {
   bool one_body = false;  // true: interacting mode, false: one-body mode
   if (one_body) {

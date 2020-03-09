@@ -5,12 +5,11 @@
 
 // CONSTRUCTOR
 
-Psi::Psi(double alpha, double beta, double a, double omega, double omega_z) {
+Psi::Psi(double alpha, double beta, double a, double gamma, double mass) {
   update_alpha(alpha);
   update_beta(beta);
   update_a(a);
-  update_omega(omega);
-  update_omega_z(omega_z);
+  update_gamma(gamma);
   update_mass(mass);
 }
 
@@ -37,14 +36,9 @@ void Psi::update_a(double a) {
   this->a_squared = a*a;
 }
 
-void Psi::update_omega(double omega) {
-  this->omega = omega;
-  this->omega_squared = omega*omega;
-}
-
-void Psi::update_omega_z(double omega_z) {
-  this->omega_z = omega_z;
-  this->omega_z_squared = omega_z*omega_z;
+void Psi::update_gamma(double gamma) {
+  this->gamma = gamma;
+  this->gamma_squared = gamma*gamma;
 }
 
 void Psi::update_mass(double mass) {
@@ -65,12 +59,8 @@ double Psi::get_a() {
   return this->a;
 }
 
-double Psi::get_omega() {
-  return this->omega;
-}
-
-double Psi::get_omega_z() {
-  return this->omega_z;
+double Psi::get_gamma() {
+  return this->gamma;
 }
 
 double Psi::get_mass() {
@@ -80,8 +70,7 @@ double Psi::get_mass() {
 // CALCULATIONS
 
 double Psi::V_ext(double x, double y, double z) {
-  return 0.5*(this->omega*this->omega*(x*x + y*y)
-                      + this->omega_z*this->omega_z*z*z);
+  return 0.5*(x*x + y*y + this->gamma_squared*z*z);
 }
 
 double Psi::greens_ratio(double x0, double y0, double z0,
