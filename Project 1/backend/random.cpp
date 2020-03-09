@@ -2,6 +2,9 @@
 
 #include "../matpak/Mat.h"
 #include "Psi.h"
+#include "../wavefunctions/Psi.h"
+#include "../wavefunctions/Psi_T.h"
+#include "../wavefunctions/Psi_OB.h"
 
 double rand_double(double min, double max) {
   /*

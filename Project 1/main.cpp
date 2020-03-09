@@ -10,7 +10,8 @@ void run_all_tests() {
 
 
 void run_all_parts() {
-  adagrad();
+  bool one_body = false;  // true: interacting mode, false: one-body mode
+  adagrad(one_body);
 }
 
 int main() {

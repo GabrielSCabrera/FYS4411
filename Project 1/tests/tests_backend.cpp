@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "../backend/Psi.h"
+#include "../wavefunctions/Psi.h"
 
 void tests_Psi() {
 

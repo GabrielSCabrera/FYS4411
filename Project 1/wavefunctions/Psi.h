@@ -8,10 +8,20 @@ class Psi {
   protected:
 
     double alpha;
+    double alpha_squared;
+
     double beta;
+    double beta_squared;
+
     double a;
+    double a_squared;
+
     double omega;
+    double omega_squared;
+
     double omega_z;
+    double omega_z_squared;
+
     double mass = 1;
     double hbar = 1;
     double c = 1;
@@ -56,23 +66,19 @@ class Psi {
 
     // CALLING
 
-    double operator()(Mat P);
+    virtual double operator()(Mat P) = 0;
 
     // CALCULATIONS
 
     double V_ext(double x, double y, double z);
 
-    double* drift(double x, double y, double z);
+    virtual double* drift(double x, double y, double z) = 0;
 
     double greens_ratio(double x0, double y0, double z0,
                         double x1, double y1, double z1,
                         double Ddt);
 
-    double Psi_ob(Mat P, int N);
-
-    double Psi_c(Mat P, int N);
-
-    double energy(Mat P);
+    virtual double energy(Mat P) = 0;
 
     double phi(double x, double y, double z);
 
@@ -84,13 +90,13 @@ class Psi {
 
     double u_double_prime(double r_jk);
 
-    double grad_alpha(Mat P);
+    virtual double grad_alpha(Mat P) = 0;
 
-    double grad_beta(Mat P);
+    virtual double grad_beta(Mat P) = 0;
 
-    double grad_alpha_alpha(Mat P);
+    virtual double grad_alpha_alpha(Mat P) = 0;
 
-    double grad_beta_beta(Mat P);
+    virtual double grad_beta_beta(Mat P) = 0;
 
 };
 

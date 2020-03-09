@@ -1,13 +1,14 @@
 #include <cmath>
 
 #include "../backend/monte_carlo.h"
-#include "../backend/Psi.h"
+#include "../wavefunctions/Psi.h"
+#include "../wavefunctions/Psi_OB.h"
+#include "../wavefunctions/Psi_T.h"
 #include "../matpak/Mat.h"
 #include "adagrad.h"
 
 
-double* adagrad() {
-
+double* adagrad(bool onebody = false) {
   // Monte Carlo Parameters
   int steps = 1E4;            // Number of Monte-Carle steps per cycle
   int cycles = 1E2;           // Number of Monte-Carlo cycles
@@ -17,8 +18,8 @@ double* adagrad() {
   double dt = 1E-3;           // Time Step
   double D = 0.5;             // Diffusion Constant
   double eta = 1E-2;          // Learning Rate
-  double eps = 1E-8;          // Small Number Correction
-  double gamma = 0.9;         // Momentum Term
+  // double eps = 1E-8;          // Small Number Correction
+  // double gamma = 0.9;         // Momentum Term
 
   // Wavefunction and Potential Constants
   double a = 1E-10;           // Atomic Radius
@@ -44,7 +45,11 @@ double* adagrad() {
   betas[1] = beta_1;
 
   // Initialize Wavefunctions
-  Psi PDF(alpha_0, beta_0, a, omega, omega_z);
+  if (onebody) {
+    Psi_OB PDF(alpha_0, beta_0, a, omega, omega_z);
+  } else {
+    Psi_T PDF(alpha_0, beta_0, a, omega, omega_z);
+  }
 
   // Allocation of Temporary Variables for the Learning Rate
   // in Both the Directions of Alpha and Beta
@@ -56,8 +61,8 @@ double* adagrad() {
 
   // Setting Initial Values
   double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);
-  learn_rates[0] = (1-gamma)*output[4]*output[4];
-  learn_rates[1] = (1-gamma)*output[5]*output[5];
+  // learn_rates[0] = (1-gamma)*output[4]*output[4];
+  // learn_rates[1] = (1-gamma)*output[5]*output[5];
 
   // Clearing Allocated Memory
   delete [] output;
@@ -66,7 +71,7 @@ double* adagrad() {
 
     // Updating Wavefunctions
     PDF.update_alpha(alphas[i+1]);
-    PDF.update_beta(betas[i+1]);
+    // PDF.update_beta(betas[i+1]);
 
     // Running Monte-Carlo
     double* output = monte_carlo(PDF, steps, cycles, N, x_max, equi_steps, dt, D);
@@ -80,12 +85,15 @@ double* adagrad() {
     derivatives[1] = output[5];
 
     // Updating Learning Rates
-    learn_rates[0] = gamma*learn_rates[0] + (1-gamma)*output[4]*output[4];
-    learn_rates[1] = gamma*learn_rates[1] + (1-gamma)*output[5]*output[5];
+    // learn_rates[0] = gamma*learn_rates[0] + (1-gamma)*output[4]*output[4];
+    // learn_rates[1] = gamma*learn_rates[1] + (1-gamma)*output[5]*output[5];
 
     // Updating Parameters
-    alphas[i+2] = alphas[i+1] - eta*derivatives[0]/std::sqrt(learn_rates[0] + eps);
-    betas[i+2]  = betas[i+1]  - eta*derivatives[1]/std::sqrt(learn_rates[1] + eps);
+    // alphas[i+2] = alphas[i+1] - eta*derivatives[0]/std::sqrt(learn_rates[0] + eps);
+    // betas[i+2]  = betas[i+1]  - eta*derivatives[1]/std::sqrt(learn_rates[1] + eps);
+    alphas[i+2] = alphas[i+1] - eta*derivatives[0];
+    // betas[i+2]  = betas[i+1]  - eta*derivatives[1];
+    betas[i+2]  = betas[i+1];
 
     // Clearing Allocated Memory
     delete [] output;
