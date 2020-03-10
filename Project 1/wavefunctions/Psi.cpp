@@ -10,7 +10,7 @@ Psi::Psi(double alpha, double beta, double a, double gamma, double mass) {
   update_beta(beta);
   update_a(a);
   update_gamma(gamma);
-  update_mass(mass);
+  update_mass(mass);    // not needed
 }
 
 // DESTRUCTOR
