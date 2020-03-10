@@ -17,9 +17,8 @@ protected:
 	double grad_alpha, grad_beta;
 	double accepted_moves_ratio;
 	double variance;
-	Psi* PDF;
-
 public:
+	Psi* PDF;
 	Monte_Carlo::Monte_Carlo;
 	void set_to_zero();
 	double rand_double(double min, double max);
