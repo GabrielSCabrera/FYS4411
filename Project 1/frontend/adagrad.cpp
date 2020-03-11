@@ -30,7 +30,7 @@ double* adagrad(Psi* PDF) {
   double alpha_0 = 0.6;         // Second value of alpha
   double alpha_1 = 1;       // First  value of alpha
   double beta_0 = 0.8;          // Second value of beta
-  double beta_1 = 0.3;          // First  value of beta 
+  double beta_1 = 0.3;          // First  value of beta
 
   // Arrays
   double* energies = new double[N_steps];

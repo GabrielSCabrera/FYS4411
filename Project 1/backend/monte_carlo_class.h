@@ -1,5 +1,5 @@
 #include "../matpak/Mat.h"
-#include "Psi.h"
+#include "../wavefunctions/Psi.h"
 
 #ifndef MONTE_CARLO_CLASS_H
 #define MONTE_CARLO_CLASS_H
@@ -18,8 +18,8 @@ protected:
 	double accepted_moves_ratio;
 	double variance;
 public:
+	Monte_Carlo(int, int, int, Psi*);
 	Psi* PDF;
-	Monte_Carlo::Monte_Carlo;
 	void set_to_zero();
 	double rand_double(double min, double max);
 	virtual Mat random_walk(Mat R) = 0;

@@ -3,8 +3,7 @@
 #include "../wavefunctions/Psi.h"
 #include "../wavefunctions/Psi_T.h"
 #include "../wavefunctions/Psi_OB.h"
-
-
+#include "monte_carlo_class.h"
 
 Monte_Carlo::Monte_Carlo(int N_particles, int dimensions, int x_limit, Psi* PDF_) {
 	N = N_particles;
@@ -38,7 +37,7 @@ Mat Monte_Carlo::get_initial_R() {
 	Mat R(N, dim);
 	for (int i = 0; i < N; i++) {
 			for (int j = 0; j < dim; j++) {
-				R.set_raw(rand_double(-x_max, x_max), i, j);
+				R.set(rand_double(-x_max, x_max), i, j);
 			}
 	}
 	return R;
@@ -68,7 +67,7 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 
 
 /*
-I think I would rather store the expectation values as variables in the 
+I think I would rather store the expectation values as variables in the
 class, and then return the latest set of coordiantes, R
 
 */
@@ -111,14 +110,14 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   /* Calculating Variance Iteratively
 
   !!!!!! GABRIEL
-  I think the variance is just 
-  	E*E - EE 
+  I think the variance is just
+  	E*E - EE
   or the other way around
   */
-  for (int i = 0; i < cycles; i++) {
-    variance += (E_cycle[i]*E_cycle[i] - output[0]*output[0]) *
-                 (E_cycle[i] - output[0]) * (E_cycle[i] - output[0]);
-  }
+  // for (int i = 0; i < cycles; i++) {
+  //   variance += (E_cycle[i]*E_cycle[i] - output[0]*output[0]) *
+  //               (E_cycle[i] - output[0]) * (E_cycle[i] - output[0]);
+  // }
   // Cleanup
   delete [] E_cycle;
   return R;
@@ -158,7 +157,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 
     temp = PDF->grad_alpha(R);
     psi_alpha += temp;
-    E_Psi_alpha += temp*E_cycle;
+    E_psi_alpha += temp*E_cycle;
 
     temp = PDF->grad_beta(R);
     psi_beta += temp;
@@ -175,7 +174,3 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   grad_beta = 2*(E_psi_beta  - psi_beta*E);
   return R;
 }
-
-
-
-
