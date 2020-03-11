@@ -1,13 +1,13 @@
 #include "../matpak/Mat.h"
 #include "Psi.h"
 
-#ifndef MONTE_CARLO_H
-#define MONTE_CARLO_H
+#ifndef MONTE_CARLO_CLASS_H
+#define MONTE_CARLO_CLASS_H
 
 class Monte_Carlo {
 protected:
 	/*
-	We would need getters for the expectation values 
+	We would need getters for the expectation values
 	and setters for step length and max value of x
 	if we have a default
 	*/

@@ -52,7 +52,7 @@ double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
       G_ratio = PDF->greens_ratio(P.get(j, 0), P.get(j, 1),
                                   P.get(j, 2), P_new.get(j, 0),
                                   P_new.get(j, 1), P_new.get(j, 2), G_K);
-      
+
       W *= G_ratio;
       // Determine whether or not to accept movement
       if (W > rand_double(0, 1)) {
@@ -100,7 +100,7 @@ double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
     Psi_beta += temp;
     E_Psi_beta += temp*E_cycle[i];
     // Set New Energy
-   
+
     // Save Total Energy
     output[0] += E_cycle[i];
     accum_cycles += 1;
