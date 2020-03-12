@@ -15,21 +15,27 @@ Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensio
 }
 
 // GETTERS
+
 double Monte_Carlo::get_energy() {
   return E;
 }
+
 double Monte_Carlo::get_energy_mean() {
   return E/(N*dim);
 }
+
 double Monte_Carlo::get_grad_alpha() {
   return grad_alpha;
 }
+
 double Monte_Carlo::get_grad_beta() {
   return grad_beta;
 }
+
 double Monte_Carlo::get_variance() {
   return variance;
 }
+
 double Monte_Carlo::get_accepted_moves_ratio() {
   return accepted_moves_ratio;
 }
@@ -53,37 +59,36 @@ void Monte_Carlo::set_to_zero() {
 	variance = 0.0;
 }
 
-
 Mat Monte_Carlo::get_initial_R() {
 	/*
 	Returns a <Mat> instance of shape (N, dim) full of randomly generated values
 	in the range [-x_max, x_max].
 	*/
 	Mat R(N, dim);
-	for (int i = 0; i < N; i++) {
-      for (int j = 0; j < dim; j++) {
-        R.set(rand_double(-x_max, x_max), i, j);
-      }
+	for (int i = 0; i < N*dim; i++) {
+      R.set_raw(rand_double(-x_max, x_max), i);
 	}
 	return R;
 }
 
-
 Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	Mat R_new(N, dim);
-	double Psi = PDF->operator()(R);
-	double Psi_new;
+	double psi = PDF->operator()(R);
+	double psi_new;
 	double A; 			// acceptance ratio
 	for (int i = 0; i < cycles; i++) {
 		for (int j = 0; j < N; j++) {
+
 			R_new = random_walk(R, j);
+
 			// Get New Probability
-			Psi_new = PDF->operator()(R_new);
+			psi_new = PDF->operator()(R_new);
+
 			// Determine whether or not to accept movement
-			A = acceptance_ratio(Psi_new, Psi, R_new, R, j);
+			A = acceptance_ratio(psi_new, psi, R_new, R, j);
 			if (A > rand_double(0, 1)) {
 				R = R_new;
-				Psi = Psi_new;
+				psi = psi_new;
 			}
 		}
 	}
@@ -94,27 +99,30 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   set_to_zero();
   // Initialize Secondary particle Array
   Mat R_new(N, dim);
-  double Psi_new, Psi;
+  double psi_new, psi;
   double* E_cycle = new double[cycles];         // Cycle-Wise Energy
-  int accepted_moves = 0;
+  double accepted_moves = 0;
   double A; 			// acceptance ratio
 
   // #pragma omp parallel for
   // Monte-Carlo Cycles
-  Psi = PDF->operator()(R);
+  psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
-  		  R_new = random_walk(R, j);
-        // Get New Probability
-        Psi_new = PDF->operator()(R_new);
-        // Determine whether or not to accept movement
-        // printf("old :%lf new: %lf\n", Psi, Psi_new);
-        A = acceptance_ratio(Psi_new, Psi, R_new, R, j);
+
+				R_new = random_walk(R, j);
+
+				// Get New Probability
+        psi_new = PDF->operator()(R_new);
+
+				// Determine whether or not to accept movement
+        printf("old :%lf new: %lf\n", psi, psi_new);
+        A = acceptance_ratio(psi_new, psi, R_new, R, j);
         if (A > rand_double(0, 1)) {
-          //printf("A: %lf\n", A);
-          //printf("old :%lf new: %lf\n", Psi, Psi_new);
+          // printf("A: %lf\n", A);
+          // printf("old :%lf new: %lf\n", psi, psi_new);
           R = R_new;
-          Psi = Psi_new;
+          psi = psi_new;
           accepted_moves++;
         }
     } // End cycle
@@ -126,7 +134,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   } // End Monte Carlo
   E /= cycles;
   EE /= cycles;
-  accepted_moves_ratio = (double) accepted_moves/(cycles*N);
+  accepted_moves_ratio = accepted_moves/(cycles*N);
   variance = E*E - EE;
   delete [] E_cycle;
   return R;
@@ -135,28 +143,31 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new(N, dim);
-  double Psi_new, Psi;
+  double psi_new, psi;
   double A; 			// acceptance ratio
 
-  double psi_alpha = 0.0;		// derivative of Psi with respect to alpha
+  double psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
   double E_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
-  double psi_beta = 0.0;		// derivative of Psi with respect to beta
+  double psi_beta = 0.0;			//  derivative of Psi with respect to beta
   double E_psi_beta = 0.0;		// (derivative of Psi with respect to beta)*E
   double temp, E_cycle;
 
-  int accepted_moves = 0;
+  double accepted_moves = 0;
   // Monte-Carlo Cycles
-  Psi = PDF->operator()(R);
+  psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
-		    R_new = random_walk(R, j);
-        // Get New Probability
-        Psi_new = PDF->operator()(R_new);
-        // Determine whether or not to accept movement
-        A = acceptance_ratio(Psi_new, Psi, R_new, R, j);
+
+				R_new = random_walk(R, j);
+
+				// Get New Probability
+        psi_new = PDF->operator()(R_new);
+
+				// Determine whether or not to accept movement
+        A = acceptance_ratio(psi_new, psi, R_new, R, j);
         if (A > rand_double(0, 1)) {
           R = R_new;
-          Psi = Psi_new;
+          psi = psi_new;
           accepted_moves++;
         }
     } // End cycle
@@ -179,7 +190,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   E_psi_alpha /= cycles;
   E_psi_beta /= cycles;
 
-  accepted_moves_ratio = (double) accepted_moves/(cycles*N);
+  accepted_moves_ratio = accepted_moves/(cycles*N);
 
   grad_alpha = 2*(E_psi_alpha - psi_alpha*E);
   grad_beta = 2*(E_psi_beta  - psi_beta*E);

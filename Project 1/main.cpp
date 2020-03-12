@@ -8,8 +8,8 @@
 #include "./wavefunctions/Psi_OB.h"
 #include "./frontend/adagrad.h"
 #include "./backend/monte_carlo_class.h"
-#include "./backend/Metropolis.h"
-#include "./backend/gradient_decent.h"
+#include "./backend/metropolis.h"
+#include "./backend/gradient_descent.h"
 
 // void run_all_tests() {
 //   tests_Psi();
@@ -31,36 +31,51 @@ void run_Metropolis(bool correlated) {
   double gamma = 1.0;         // Potential Elongation Factor
   double alpha = 0.5;
   double beta = 1.0;
+  double learning_rate = 5E-3;
   int N = 10;
   int dim = 3;
+
   if (correlated) {
+
     Psi_T boson_system(alpha, beta, a, gamma);
     Metropolis MC(&boson_system, N, dim);
+
     Mat R = MC.get_initial_R();
-    R = MC.equilibriation(R, N*N*1E4);
-    R = MC.sample_energy(R, N*N*1E3);
+    // R = MC.equilibriation(R, N*N*1E4);
+    // R = MC.sample_energy(R, N*N*1E3);
+    R = MC.equilibriation(R, 1E4);
+    R = MC.sample_energy(R, 1E3);
+
     MC.print_info();
+
     boson_system.update_alpha(0.3);
     boson_system.update_beta(0.7);
-    double learning_rate = 8E-3;
-    gradient_decent(&MC, learning_rate);
+
+    gradient_descent(&MC, learning_rate);
+
   } else {
+
     Psi_OB boson_system(alpha, beta, a, gamma);
     Metropolis MC(&boson_system, N, dim);
+
     Mat R = MC.get_initial_R();
-    R = MC.equilibriation(R, N*N*1E4);
-    R = MC.sample_energy(R, N*N*1E3);
+    // R = MC.equilibriation(R, N*N*1E4);
+    // R = MC.sample_energy(R, N*N*1E3);
+    R = MC.equilibriation(R, 1E4);
+    R = MC.sample_energy(R, 1E3);
+
     MC.print_info();
+
     boson_system.update_alpha(0.3);
     boson_system.update_beta(0.7);
-    double learning_rate = 8E-3;
-    gradient_decent(&MC, learning_rate);
+
+    gradient_descent(&MC, learning_rate);
   }
 }
 
 int main() {
   srand(1337);
   // run_all_tests();
-  //run_all_parts();
+  // run_all_parts();
   run_Metropolis(true);
 }

@@ -1,11 +1,10 @@
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
 #include "monte_carlo_class.h"
-#include "gradient_decent.h"
+#include "gradient_descent.h"
 #include <iostream>
 
-
-void gradient_decent(Monte_Carlo* MC, double eta) {
+void gradient_descent(Monte_Carlo* MC, double eta) {
   double alpha, beta;
   double alpha_prev = MC->PDF->get_alpha();
   double beta_prev = MC->PDF->get_beta();
@@ -13,15 +12,15 @@ void gradient_decent(Monte_Carlo* MC, double eta) {
   int counter = 0;
 
   // these should be parameters...
-  int initial_equi_cycles = 1E4;
-  int equi_cycles = 5E3;
-  int sample_cycles = 1E4;
+  int initial_equi_cycles = 2E3;
+  int equi_cycles = 2E3;
+  int sample_cycles = 2E3;
   int max_steps = 550;
-  double tol = 1e-16;
+  double tol = 1e-15;
 
   // first iteration
   Mat R = MC->get_initial_R();
-  int N =  R.shape0();
+  int N = R.shape0();
   R = MC->equilibriation(R, N*initial_equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
@@ -57,7 +56,10 @@ void gradient_decent(Monte_Carlo* MC, double eta) {
 	  change = change_alpha*change_alpha + change_beta*change_beta;
     counter++;
   }
-  if (change < tol) {
-    printf("stopped because done\n");
-  } printf("change: %.12lf %.12lf %.12lf\n", change, change_alpha, change_beta);
+
+  if (change <= tol) {
+    printf("stopped because tolerance reached\n");
+  }
+
+  printf("change: %.12lf %.12lf %.12lf\n", change, change_alpha, change_beta);
 }

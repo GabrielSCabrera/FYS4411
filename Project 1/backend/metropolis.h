@@ -9,7 +9,7 @@
 class Metropolis : public Monte_Carlo {
 public:
 	using Monte_Carlo::Monte_Carlo;
-	double acceptance_ratio(double Psi_new, double Psi_old, Mat R_new, Mat R_old, int index);
+	double acceptance_ratio(double psi_new, double psi_old, Mat R_new, Mat R_old, int index);
 	Mat random_walk(Mat R, int index);
 };
 
