@@ -102,9 +102,8 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   double psi_new, psi;
   double* E_cycle = new double[cycles];         // Cycle-Wise Energy
   double accepted_moves = 0;
-  double A; 			// acceptance ratio
+  double A; 																		// Acceptance Ratio
 
-  // #pragma omp parallel for
   // Monte-Carlo Cycles
   psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
@@ -144,7 +143,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new(N, dim);
   double psi_new, psi;
-  double A; 			// acceptance ratio
+  double A; 									// Acceptance Ratio
 
   double psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
   double E_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
@@ -153,7 +152,8 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   double temp, E_cycle;
 
   double accepted_moves = 0;
-  // Monte-Carlo Cycles
+
+	// Monte-Carlo Cycles
   psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {

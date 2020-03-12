@@ -12,9 +12,9 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   int counter = 0;
 
   // these should be parameters...
-  int initial_equi_cycles = 2E3;
-  int equi_cycles = 2E3;
-  int sample_cycles = 2E3;
+  int initial_equi_cycles = 5E2;
+  int equi_cycles = 1E3;
+  int sample_cycles = 1E3;
   int max_steps = 550;
   double tol = 1e-15;
 
