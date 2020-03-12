@@ -35,3 +35,7 @@ push: clean main clean
 	@ git add .
 	@ git commit -m "Autobackup"
 	@ git push origin master
+
+pull: clean
+	@ echo "pulling from github"
+	@ git pull
