@@ -11,8 +11,7 @@ Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensio
 	PDF = trial_wave_function;
   double hard_radius = trial_wave_function->get_a();
 	step_length = 100*hard_radius;
-	// x_max = 100*N*dim*hard_radius;
-  x_max = 1;
+	x_max = 100*N*dim*hard_radius;
 }
 
 // GETTERS
