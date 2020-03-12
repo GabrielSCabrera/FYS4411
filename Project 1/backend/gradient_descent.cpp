@@ -17,12 +17,12 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   int equi_cycles = 1E3;
   int sample_cycles = 1E3;
   int max_steps = 550;
-  double tol = 1e-15;
+  double tol = -1e-15;
 
   // first iteration
   Mat R = MC->get_initial_R();
   int N = R.shape0();
-  R = MC->equilibriation(R, N*initial_equi_cycles);
+  R = MC->equilibriation(R, N*N*initial_equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
   alpha = alpha_prev - eta*MC->get_grad_alpha();
@@ -60,7 +60,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
     counter++;
   }
 
-  if (change <= tol) {
+  if (change < tol) {
     printf("stopped because tolerance reached\n");
   }
 

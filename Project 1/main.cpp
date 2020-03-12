@@ -2,20 +2,20 @@
 #include <chrono>
 
 // #include "./tests/tests_backend.h"
-#include "./frontend/adagrad.h"
 #include "./wavefunctions/Psi.h"
 #include "./wavefunctions/Psi_T.h"
 #include "./wavefunctions/Psi_OB.h"
-#include "./frontend/adagrad.h"
+//#include "./frontend/adagrad.h"
 #include "./backend/monte_carlo_class.h"
 #include "./backend/metropolis.h"
+#include "./backend/Importance_Sampling.h"
 #include "./backend/gradient_descent.h"
 
 // void run_all_tests() {
 //   tests_Psi();
 // }
 
-void run_all_parts() {
+/*void run_all_parts() {
   bool one_body = true;  // true: interacting mode, false: one-body mode
   if (one_body) {
     Psi_OB PDF(0, 0, 0, 0);
@@ -24,7 +24,7 @@ void run_all_parts() {
     Psi_T PDF(0, 0, 0, 0);
     adagrad(&PDF);
   }
-}
+}*/
 
 void run_Metropolis(bool correlated) {
   double a = 0.0043;          // Atomic Radius
@@ -38,7 +38,7 @@ void run_Metropolis(bool correlated) {
   if (correlated) {
 
     Psi_T boson_system(alpha, beta, a, gamma);
-    Metropolis MC(&boson_system, N, dim);
+    Importance_Sampling MC(&boson_system, N, dim);
 
     Mat R = MC.get_initial_R();
     // R = MC.equilibriation(R, N*N*1E4);
@@ -56,7 +56,8 @@ void run_Metropolis(bool correlated) {
   } else {
 
     Psi_OB boson_system(alpha, beta, a, gamma);
-    Metropolis MC(&boson_system, N, dim);
+    Importance_Sampling MC(&boson_system, N, dim);
+    //Metropolis MC(&boson_system, N, dim);
 
     Mat R = MC.get_initial_R();
     // R = MC.equilibriation(R, N*N*1E4);
@@ -77,5 +78,5 @@ int main() {
   srand(1337);
   // run_all_tests();
   // run_all_parts();
-  run_Metropolis(true);
+  run_Metropolis(false);
 }

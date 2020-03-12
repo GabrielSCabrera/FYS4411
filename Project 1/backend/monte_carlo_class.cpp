@@ -115,7 +115,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
         psi_new = PDF->operator()(R_new);
 
 				// Determine whether or not to accept movement
-        printf("old :%lf new: %lf\n", psi, psi_new);
+        //printf("old :%lf new: %lf\n", psi, psi_new);
         A = acceptance_ratio(psi_new, psi, R_new, R, j);
         if (A > rand_double(0, 1)) {
           // printf("A: %lf\n", A);
