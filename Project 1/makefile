@@ -29,3 +29,9 @@ clean:
 
 test: main
 	./main
+
+push: main clean
+	@ echo "pushing to github"
+	@ git add .
+	@ git commit -m "Autobackup"
+	@ git push origin master
