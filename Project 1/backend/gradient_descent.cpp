@@ -9,6 +9,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   double alpha_prev = MC->PDF->get_alpha();
   double beta_prev = MC->PDF->get_beta();
   double change, change_alpha, change_beta;
+  double eta_var;
   int counter = 0;
 
   // these should be parameters...
@@ -37,8 +38,10 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
 
   printf("change: %.12lf %.12lf\n", change_alpha, change_beta);
   while (change > tol && counter < max_steps) {
-  	alpha_prev = alpha;
+
+    alpha_prev = alpha;
   	beta_prev = beta;
+
     // Running Monte-Carlo
     R = MC->equilibriation(R, N*equi_cycles);
     R = MC->sample_variational_derivatives(R, N*sample_cycles);

@@ -32,7 +32,7 @@ void run_Metropolis(bool correlated) {
   double alpha = 0.5;
   double beta = 1.0;
   double learning_rate = 5E-3;
-  int N = 50;
+  int N = 10;
   int dim = 3;
 
   if (correlated) {
