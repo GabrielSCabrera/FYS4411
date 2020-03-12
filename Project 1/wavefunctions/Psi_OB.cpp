@@ -6,88 +6,82 @@
 
 // CALLING
 
-double Psi_OB::operator()(Mat P) {
-  /*
-    P – Array of type 'Mat' of shape (N,3)
-    N – Number of particles
-  */
-  double exponent = 0;
-  double x; double y; double z;
-  for (int i = 0; i < P.shape0(); i++) {
-    x = P.get(i,0);
-    y = P.get(i,1);
-    z = P.get(i,2);
-    exponent += x*x + y*y + this->beta*z*z;
+double Psi_OB::operator()(Mat R) {
+  double exponent = 0.0;
+  double x;
+  int last_index = R.shape1()-1;
+  for (int i = 0; i < R.shape0(); i++) {
+    for (int j = 0; j < last_index; j++) {
+      x = R.get(i, j);
+      exponent += x*x;
+    }
+    x = R.get(i, last_index);
+    exponent += beta*x*x;
   }
-  exponent = std::exp(-this->alpha*exponent);
-  return exponent;
+  return std::exp(-alpha*exponent);
 }
 
 // CALCULATIONS
 
-double* Psi_OB::drift(double x, double y, double z) {
-  double* force = new double [3];
-  force[0] = -4*this->alpha*x;
-  force[1] = -4*this->alpha*y;
-  force[2] = -4*this->alpha*this->beta*z;
+double* Psi_OB::drift_force(Mat R, int index) {
+  int last_index = R.shape1()-1;
+  double* force = new double [R.shape1()];
+  for (int i = 0; i < last_index; i++) {
+    force[i] = -4*alpha*R.get(index, i);
+  }
+  force[last_index] = -4*alpha*beta*R.get(index, last_index);
   return force;
 }
 
-double Psi_OB::energy(Mat P) {
 
-  // Kinetic Energy
-  double E = 0;
-
-  // Potential
-  double V = 0;
-
-  double x_k; double y_k; double z_k;
-
-  for (int k = 0; k < P.shape0(); k++) {
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
-    V += V_ext(x_k, y_k, z_k);
-    E += x_k*x_k + y_k*y_k + this->beta_squared*z_k*z_k;
+double Psi_OB::energy(Mat R) {
+  double E = 0.0;   // Kinetic Energy
+  double V = 0.0;   // Potential
+  double x, xx;
+  int last_index = R.shape1()-1;
+  for (int k = 0; k < R.shape0(); k++) {
+    for (int j = 0; j < last_index; j++) {
+      x = R.get(k, j);
+      xx = x*x;
+      E += xx;
+      V += xx;
+    }
+    x = R.get(k, last_index);
+    xx = x*x;
+    V += gamma_squared*xx;
+    E += beta_squared*xx;
 
   } // END LOOP OVER k
-
-  return P.shape0()*this->alpha*(P.shape1() - 1 + this->beta) + V - 2*this->alpha_squared*E;
+  return R.shape0()*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
 }
 
-double Psi_OB::grad_alpha(Mat P) {
-  double E = 0;
-  double x_k; double y_k; double z_k;
 
-  for (int k = 0; k < P.shape0(); k++) {
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
-    E += x_k*x_k + y_k*y_k + this->beta_squared*z_k*z_k;
-  }
-  return -this->alpha*E;
-}
+double Psi_OB::grad_alpha(Mat R) {
+  double grad_alpha_phi = 0.0;
+  double x_i;
+  int last_index = R.shape1()-1;
 
-double Psi_OB::grad_beta(Mat P) {
-    double E = 0;
-    double z_k;
-
-    for (int k = 0; k < P.shape0(); k++) {
-      z_k = P.get(k,2);
-      E += z_k*z_k;
+  for (int i = 0; i < R.shape0(); i++) {
+    for (int j = 0; j < last_index; j++) {
+      x_i = R.get(i, j);
+      grad_alpha_phi += x_i*x_i;
     }
-
-    return -2*this->alpha*this->beta*E;
+    x_i = R.get(i, last_index);
+    grad_alpha_phi += beta*x_i*x_i;
   }
-
-double Psi_OB::grad_alpha_alpha(Mat P) {
-
-    // Kinetic Energy
-    double E = 0;
-
-    for (int k = 0; k < P.shape0(); k++) {
-      E += V_ext(P.get(k,0), P.get(k,1), P.get(k,2));
-    } // END LOOP OVER k
-
-    return -8*E;
+  return -grad_alpha_phi;
 }
 
-double Psi_OB::grad_beta_beta(Mat P) {
-  return 0;
+
+double Psi_OB::grad_beta(Mat R) {
+  double grad_beta_phi = 0.0;
+  double z_k;
+  int last_index = R.shape1()-1;
+
+  for (int k = 0; k < R.shape0(); k++) {
+    z_k = R.get(k, last_index);
+    grad_beta_phi += z_k*z_k;
+  }
+  return -alpha*grad_beta_phi;
 }
+

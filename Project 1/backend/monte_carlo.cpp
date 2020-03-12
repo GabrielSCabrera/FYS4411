@@ -74,7 +74,7 @@ double* monte_carlo(Psi* PDF, int N, int dim, double x_max, int cycles, int equi
         }
     } // End cycle
 
-    E_cycle[i] = PDF->energy(P_new);
+    E_cycle[i] = PDF->energy(P);
     temp = PDF->grad_alpha(P);
     Psi_alpha += temp;
     E_Psi_alpha += temp*E_cycle[i];
@@ -95,7 +95,6 @@ double* monte_carlo(Psi* PDF, int N, int dim, double x_max, int cycles, int equi
     output[1] += (E_cycle[i]*E_cycle[i] - output[0]*output[0]) *
                  (E_cycle[i] - output[0]) * (E_cycle[i] - output[0]);
   }
-
   E_Psi_alpha /= cycles;
   Psi_alpha /= cycles;
   E_Psi_beta /= cycles;
@@ -105,7 +104,6 @@ double* monte_carlo(Psi* PDF, int N, int dim, double x_max, int cycles, int equi
   output[3] /= cycles*N;
   output[4] = 2*(E_Psi_alpha - Psi_alpha*output[0]);
   output[5] = 2*(E_Psi_beta  - Psi_beta*output[0]);
-
   // Cleanup
   delete [] E_cycle;
 

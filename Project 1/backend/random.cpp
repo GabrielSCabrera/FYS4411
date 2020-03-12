@@ -50,7 +50,7 @@ Mat random_walk(Psi* PDF, Mat P, double step_size, long idx, double Ddt) {
   */
   Mat P_new(P);
 
-  double* force = PDF->drift(P.get(idx, 0), P.get(idx, 1), P.get(idx, 2));
+  double* force = PDF->drift_force(P, idx);
 
   double x = rand_double(-1, 1)*step_size;
   double y = rand_double(-1, 1)*step_size;

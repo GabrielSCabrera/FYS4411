@@ -5,38 +5,52 @@
 #include "../matpak/Mat.h"
 
 // CALLING
+double Psi_T::operator()(Mat R) {
+  double exponent_OB = 0.0;
+  double product_C = 0.0;
+  double x, dx, r_ij;
+  int N = R.shape0();
+  int M = R.shape1();
+  int last_index = M - 1;
+  double* r_i = new double [M];
 
-double Psi_T::operator()(Mat P) {
-  int N = P.shape0();
-  return Psi_ob(P, N)*Psi_c(P, N);
+  for (int i = 0; i < N; i++) {
+    // Psi_OB
+    for (int j = 0; j < last_index; j++) {
+      x = R.get(i, j);
+      exponent_OB += x*x;
+      r_i[j] = x;
+    }
+    x = R.get(i, last_index);
+    exponent_OB += beta*x*x;
+    r_i[last_index] = x;
+    // Psi_C
+    for (int j = i+1; j < N; j++) {
+      r_ij = 0.0;
+      for (int k = 0; k < M; k++) {
+        dx = r_i[k] - R.get(j, k);
+        r_ij += dx*dx;
+      }
+      r_ij = std::sqrt(r_ij);
+      if (r_ij > a) {
+        product_C *= 1 - a/r_ij;
+      } else {
+        delete[] r_i;
+        return 0;
+      }
+    }
+  }
+  delete[] r_i;
+  return std::exp(-alpha*exponent_OB)*product_C;
 }
 
 // CALCULATIONS
-
-double* Psi_T::drift(double x, double y, double z) {
-  double* force = new double [3];
-  force[0] = -4*this->alpha*x;
-  force[1] = -4*this->alpha*y;
-  force[2] = -4*this->alpha*z;
+double* Psi_T::drift_force(Mat R, int index) {
+  int M = R.shape1();
+  double* force = new double [M];
   return force;
 }
 
-double Psi_T::Psi_ob(Mat P, int N) {
-  /*
-    P – Array of type 'Mat' of shape (N,3)
-    N – Number of particles
-  */
-  double exponent = 0;
-  double x; double y; double z;
-  for (int i = 0; i < N; i++) {
-    x = P.get(i,0);
-    y = P.get(i,1);
-    z = P.get(i,2);
-    exponent += x*x + y*y + this->beta*z*z;
-  }
-  exponent = std::exp(-this->alpha*exponent);
-  return exponent;
-}
 
 double Psi_T::Psi_c(Mat P, int N) {
   /*
@@ -67,206 +81,131 @@ double Psi_T::Psi_c(Mat P, int N) {
   return product;
 }
 
-double Psi_T::energy(Mat P) {
-
-  int N = P.shape0();
-
-  // Kinetic Energy
-  double E = 0;
-
-  // Potential Energy (External)
-  double V = 0;
-
-  double x_k; double y_k; double z_k;
-  double x_j; double y_j; double z_j;
-  double x_i; double y_i; double z_i;
-
-  double r_kj; double r_ki;
-
-  // u-prime
-  double up_kj; double up_ki;
-
-  double dx_kj; double dy_kj; double dz_kj;
-  double dx_ki; double dy_ki; double dz_ki;
-
-  double* term_2 = new double [3] {0, 0, 0};
-
+double Psi_T::energy(Mat R) {
+  int N = R.shape0();
+  int M = R.shape1();
+  int last_index = M - 1;
+  double K;                 // Kinetic Energy
+  double V = 0.0;           // Potential Energy (External)
+  double laplace_phi = 0.0;
+  double laplace_Psi_C = 0.0;
+  double grad_phi_grad_Psi_C = 0.0;
+  double* grad_phi = new double [M];
+  double* grad_Psi_C = new double [M];
+  double x, xx, dx; 
+  double* r_k = new double [M];
+  double r_kj, r_ki, r_kj_ki;
+  double* dr_kj = new double [M];
+  double up_kj, up_ki;        // u-prime
   for (int k = 0; k < N; k++) {
+    for (int l = 0; l < last_index; l++) {
+      x = R.get(k, l);
+      xx = x*x;
 
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
+      r_k[l] = x;
+      grad_phi[l] = -2*alpha*x;
+      grad_Psi_C[l] = 0.0;
 
-    // START Term 1
-    E += laplace_phi(x_k, y_k, z_k);
-    // END Term 1
+      laplace_phi += xx;
+      V += xx;
+    }
+    x = R.get(k, last_index);
+    xx = x*x;
 
-    term_2[0] = 0; term_2[1] = 0; term_2[2] = 0;
+    r_k[last_index] = x;
+    grad_phi[last_index] = -2*alpha*beta*x;
+    grad_Psi_C[last_index] = 0.0;
+
+    laplace_phi += beta_squared*xx;
+    V += gamma_squared*xx;
 
     for (int j = 0; j < N; j++) {
-
       if (j == k) {
         continue;
       }
-
-      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-      dx_kj = x_k - x_j; dy_kj = y_k - y_j; dz_kj = z_k - z_j;
-      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
+      r_kj = 0.0;
+      for (int l = 0; l < M; l++) {
+        dx = r_k[l] - R.get(j, l);
+        r_kj += dx*dx;
+        dr_kj[l] = dx;
+      }
+      r_kj = std::sqrt(r_kj);
+      if (r_kj < a) {
+          printf("cry\n");
+        }
       up_kj = u_prime(r_kj);
-
-      // START Term 2
-      term_2[0] += dx_kj*up_kj/r_kj;
-      term_2[1] += dy_kj*up_kj/r_kj;
-      term_2[2] += dz_kj*up_kj/r_kj;
-      // END Term 2
-
-      // START Term 5
-      E += (u_double_prime(r_kj) + 2/r_kj)*up_kj;
-      // END Term 5
-
-      // START Term 3
+      for (int l = 0; l < M; l++) {
+        grad_Psi_C[l] += dr_kj[l]/r_kj*up_kj;
+      }
+      laplace_Psi_C += up_kj*(last_index/r_kj - (1.0/(r_kj - a) + 1.0/r_kj));
       for (int i = 0; i < N; i++) {
-
         if (i == k) {
           continue;
         }
-
-        x_i = P.get(i,0); y_i = P.get(i,1); z_i = P.get(i,2);
-        dx_ki = x_k - x_i; dy_ki = y_k - y_i; dz_ki = z_k - z_i;
-        r_ki = std::sqrt(dx_ki*dx_ki + dy_ki*dy_ki + dz_ki*dz_ki);
+        r_ki = 0.0;
+        r_kj_ki = 0.0;
+        for (int l = 0; l < M; l++) {
+          dx = r_k[l] - R.get(i, l);
+          r_ki += dx*dx;
+          r_kj_ki += dr_kj[l]*dx;
+        }
+        r_ki = std::sqrt(r_ki);
         up_ki = u_prime(r_ki);
-
-        // START Term 4
-        E += (dx_kj*dx_ki + dy_kj*dy_ki + dz_kj*dz_ki)*up_ki*up_kj/(r_kj*r_ki);
-        // END Term 4
-
-      } // END LOOP OVER i
+        if (r_ki < a) {
+          printf("cry\n");
+        }
+        laplace_Psi_C += r_kj_ki/(r_kj*r_ki)*up_ki*up_kj;
+      }// END LOOP OVER i
     } // END LOOP OVER j
-
-    // START Term 2
-    double* gp = grad_phi(x_k, y_k, z_k);
-    E += 2*(term_2[0]*gp[0] + term_2[1]*gp[1] + term_2[2]*gp[2]);
-    // END Term 2
-
-    // START V_ext
-    V += V_ext(x_k, y_k, z_k);
-    // END V_ext
-
-    delete[] gp;
-  } // END LOOP OVER k
-
-  delete[] term_2;
-
-  return -0.5*E + V;
-
-}
-
-double Psi_T::grad_alpha(Mat P) {
-
-  double beta_sq = this->beta*this->beta;
-
-  double x_k; double y_k; double z_k;
-  double x_j; double y_j; double z_j;
-
-  double r_kj;
-
-  double dx_kj; double dy_kj; double dz_kj;
-
-  int N = P.shape0();
-
-  double term_1 = 0;
-  double term_2 = 0;
-
-  for (int k = 0; k < N; k++) {
-
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
-
-    term_1 += x_k*x_k + y_k*y_k + beta_sq*z_k*z_k;
-
-    for (int j = 0; j < N; j++) {
-
-      if (j == k) {
-        continue;
-      }
-
-      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-      dx_kj = x_j - x_k; dy_kj = y_j - y_k; dz_kj = z_j - z_k;
-      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
-
-      term_2 += (x_k*dx_kj + y_k*dy_kj + this->beta*z_k*dz_kj)*u_prime(r_kj)/r_kj;
+    for (int l = 0; l < M; l++) {
+      grad_phi_grad_Psi_C += grad_phi[l]*grad_Psi_C[l];
     }
-  }
-  return 8*this->alpha*term_1 - 2*term_2 - 4*N - 2*this->beta*N;
+  }  // END LOOP OVER k
+  delete[] grad_phi;
+  delete[] grad_Psi_C;
+  delete[] r_k;
+  delete[] dr_kj;
+  laplace_phi = 4*alpha_squared*laplace_phi - 2*N*alpha*(last_index + beta);
+  K = laplace_phi + laplace_Psi_C + 2*grad_phi_grad_Psi_C;
+  return 0.5*(-K + V);
+
 }
 
-double Psi_T::grad_beta(Mat P) {
+double Psi_T::grad_alpha(Mat R) {
+  double grad_alpha_phi = 0.0;
+  double x_i;
+  int last_index = R.shape1()-1;
 
-  double x_k; double y_k; double z_k;
-  double x_j; double y_j; double z_j;
-
-  double r_kj;
-
-  double dx_kj; double dy_kj; double dz_kj;
-
-  int N = P.shape0();
-
-  double term_1 = 0;
-  double term_2 = 0;
-
-  for (int k = 0; k < N; k++) {
-
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
-
-    term_1 += z_k*z_k;
-
-    for (int j = 0; j < N; j++) {
-
-      if (j == k) {
-        continue;
-      }
-
-      x_j = P.get(j,0); y_j = P.get(j,1); z_j = P.get(j,2);
-      dx_kj = x_j - x_k; dy_kj = y_j - y_k; dz_kj = z_j - z_k;
-      r_kj = std::sqrt(dx_kj*dx_kj + dy_kj*dy_kj + dz_kj*dz_kj);
-
-      term_2 += z_k*dz_kj*u_prime(r_kj)/r_kj;
+  for (int i = 0; i < R.shape0(); i++) {
+    for (int j = 0; j < last_index; j++) {
+      x_i = R.get(i, j);
+      grad_alpha_phi += x_i*x_i;
     }
+    x_i = R.get(i, last_index);
+    grad_alpha_phi += beta*x_i*x_i;
   }
-  return 8*this->beta*this->alpha*this->alpha*term_1 - 2*this->alpha*(term_2 + N);
+  return -grad_alpha_phi;
 }
 
-double Psi_T::grad_alpha_alpha(Mat P) {
-
-  double beta_sq = this->beta*this->beta;
-
-  double x_k; double y_k; double z_k;
-
-  int N = P.shape0();
-
-  double term_1 = 0;
-
-  for (int k = 0; k < N; k++) {
-
-    x_k = P.get(k,0); y_k = P.get(k,1); z_k = P.get(k,2);
-
-    term_1 += x_k*x_k + y_k*y_k + beta_sq*z_k*z_k;
-
-  }
-  return 8*term_1;
-}
-
-double Psi_T::grad_beta_beta(Mat P) {
-
+double Psi_T::grad_beta(Mat R) {
+  double grad_beta_phi = 0.0;
   double z_k;
+  int last_index = R.shape1()-1;
 
-  int N = P.shape0();
-
-  double term_1 = 0;
-
-  for (int k = 0; k < N; k++) {
-
-    z_k = P.get(k,2);
-
-    term_1 += z_k*z_k;
-
+  for (int k = 0; k < R.shape0(); k++) {
+    z_k = R.get(k, last_index);
+    grad_beta_phi += z_k*z_k;
   }
-  return 8*this->alpha*this->alpha*term_1;
+  return -alpha*grad_beta_phi;
 }
+
+double Psi_T::u_prime(double r_kj) {
+    return a/(r_kj*(r_kj - a));
+}
+
+double Psi_T::u_double_prime(double r_kj) {
+    return -(1.0/(r_kj - a) + 1.0/r_kj)*u_prime(r_kj);
+}
+
+
+

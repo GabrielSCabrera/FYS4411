@@ -14,8 +14,6 @@ double* adagrad(Psi* PDF) {
   int N = 1;                  // Number of Particles
   int equi_steps = 1E3;       // Number of Steps Dedicated to Equilibriation
   double x_max = 1;           // Maximum Initial Distance From Origin
-  double dt = 1E-3;           // Time Step
-  double D = 0.5;             // Diffusion Constant
   double eta = 8E-2;          // Learning Rate
   int dim = 3;
   // double eps = 1E-8;          // Small Number Correction
@@ -26,10 +24,10 @@ double* adagrad(Psi* PDF) {
   double gamma = 1;           // Potential Elongation Factor
 
   // Gradient Descent Parameters
-  int N_steps = 1E3;          // Number of AdaGrad steps
-  double alpha_0 = 0.6;         // Second value of alpha
-  double alpha_1 = 1;       // First  value of alpha
-  double beta_0 = 0.8;          // Second value of beta
+  int N_steps = 550;          // Number of AdaGrad steps
+  double alpha_0 = 0.5;         // Second value of alpha
+  double alpha_1 = 0.7;       // First  value of alpha
+  double beta_0 = 1;          // Second value of beta
   double beta_1 = 0.3;          // First  value of beta
 
   // Arrays
@@ -71,7 +69,7 @@ double* adagrad(Psi* PDF) {
     output = monte_carlo(PDF, N, dim, x_max, cycles, equi_steps);
 
     // Displaying Stats
-    std::cout << "MC-Cycle – alpha = " << alphas[i+1] << ", beta = " << betas[i]
+    std::cout << "MC-Cycle – alpha = " << alphas[i+1] << ", beta = " << betas[i+1]
               << ", E = " << output[0]/(N*3) << ", var = " << output[1] << std::endl;
 
     // Updating Derivatives

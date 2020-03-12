@@ -5,12 +5,12 @@
 #include "../wavefunctions/Psi_OB.h"
 #include "monte_carlo_class.h"
 
-Monte_Carlo::Monte_Carlo(int N_particles, int dimensions, int x_limit, Psi* PDF_) {
+Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
 	N = N_particles;
 	dim = dimensions;
-	x_max = x_limit;
-	PDF = PDF_;
+	PDF = trial_wave_function;
 	step_length = 0.1;
+  x_max = 1.0;
 }
 
 double Monte_Carlo::rand_double(double min, double max) {

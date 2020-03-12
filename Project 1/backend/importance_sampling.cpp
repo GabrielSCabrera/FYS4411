@@ -14,7 +14,7 @@ NOT DONE
 #include "random.h"
 #include "monte_carlo.h"
 
-double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
+double* importance_sampling(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
                     double dt, double D) {
   // Step Size
   double step_size = std::sqrt(dt);
@@ -49,9 +49,7 @@ double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
       W = Psi_new/Psi_old;
       W *= W;
       // Include Drift Force
-      G_ratio = PDF->greens_ratio(P.get(j, 0), P.get(j, 1),
-                                  P.get(j, 2), P_new.get(j, 0),
-                                  P_new.get(j, 1), P_new.get(j, 2), G_K);
+      G_ratio = PDF->greens_ratio(P, P_new, dt, j);
 
       W *= G_ratio;
       // Determine whether or not to accept movement
@@ -80,9 +78,7 @@ double* monte_carlo(Psi* PDF, int cycles, int N, double x_max, int equi_steps,
         W = Psi_new/Psi_old;
         W *= W;
         // Include Drift Force
-        G_ratio = PDF->greens_ratio(P.get(j, 0), P.get(j, 1), P.get(j, 2),
-                                    P_new.get(j, 0), P_new.get(j, 1),
-                                    P_new.get(j, 2), G_K);
+        G_ratio = PDF->greens_ratio(P, P_new, dt, j);
         W *= G_ratio;
         // Determine whether or not to accept movement
         if (W > rand_double(0, 1)) {
