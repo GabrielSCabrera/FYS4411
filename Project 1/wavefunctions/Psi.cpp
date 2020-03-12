@@ -99,3 +99,33 @@ double Psi::laplace_phi(double x, double y, double z) {
   return 2*this->alpha*(2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z) - 2 - this->beta);
 }
 
+
+double Psi::grad_alpha(Mat R) {
+  double grad_alpha_phi = 0.0;
+  double x_i;
+  int last_index = R.shape1()-1;
+
+  for (int i = 0; i < R.shape0(); i++) {
+    for (int j = 0; j < last_index; j++) {
+      x_i = R.get(i, j);
+      grad_alpha_phi += x_i*x_i;
+    }
+    x_i = R.get(i, last_index);
+    grad_alpha_phi += beta*x_i*x_i;
+  }
+  return -grad_alpha_phi;
+}
+
+
+double Psi::grad_beta(Mat R) {
+  double grad_beta_phi = 0.0;
+  double z_k;
+  int last_index = R.shape1()-1;
+
+  for (int k = 0; k < R.shape0(); k++) {
+    z_k = R.get(k, last_index);
+    grad_beta_phi += z_k*z_k;
+  }
+  return -alpha*grad_beta_phi;
+}
+

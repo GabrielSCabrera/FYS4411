@@ -1,32 +1,32 @@
+#include "../matpak/Mat.h"
+#include "../wavefunctions/Psi.h"
+#include "monte_carlo_class.h"
+#include "gradient_decent.h"
+#include <iostream>
 
-/*
-Should we have to separate eta for beta and alpha?
-*/
-void gradient_decent(Monte_Carlo MC, double eta) {
+
+void gradient_decent(Monte_Carlo* MC, double eta) {
   double alpha, beta;
-  double alpha_prev = 0.8;
-  double beta_prev = 0.5;
+  double alpha_prev = MC->PDF->get_alpha();
+  double beta_prev = MC->PDF->get_beta();
   double change, change_alpha, change_beta;
   int counter = 0;
 
-  // should be the other way around when we are done debugging
-  MC->PDF->update_alpha(alpha_prev);
-  MC->PDF->update_beta(beta_prev);
-
   // these should be parameters...
   int initial_equi_cycles = 1E4;
-  int equi_cycles = 1E2;
-  int sample_cycles = 104;
-  int max_steps = 100;
-  double tol = 1e-6;
+  int equi_cycles = 5E3;
+  int sample_cycles = 1E4;
+  int max_steps = 550;
+  double tol = 1e-16;
 
   // first iteration
-  Mat R = MC.get_initial_R();
-  R = MC.equilibriation(R, initial_equi_cycles);
-  R = MC.sample_variational_derivatives(R, sample_cycles);
+  Mat R = MC->get_initial_R();
+  int N =  R.shape0();
+  R = MC->equilibriation(R, N*initial_equi_cycles);
+  R = MC->sample_variational_derivatives(R, sample_cycles);
 
-  alpha = alpha_prev - eta*MC.get_grad_alpha();
-  beta  = beta_prev - eta*MC.get_grad_alpha();
+  alpha = alpha_prev - eta*MC->get_grad_alpha();
+  beta  = beta_prev - eta*MC->get_grad_beta();
 
   MC->PDF->update_alpha(alpha);
   MC->PDF->update_beta(beta);
@@ -36,31 +36,28 @@ void gradient_decent(Monte_Carlo MC, double eta) {
   change_beta = beta - beta_prev;
   change = change_alpha*change_alpha + change_beta*change_beta;
 
-  while (change < tol && counter < max_steps) {
+  printf("change: %.12lf %.12lf\n", change_alpha, change_beta);
+  while (change > tol && counter < max_steps) {
   	alpha_prev = alpha;
   	beta_prev = beta;
     // Running Monte-Carlo
-    R = MC.equilibriation(R, equi_cycles);
-    R = MC.sample_variational_derivatives(R, sample_cycles);
+    R = MC->equilibriation(R, N*equi_cycles);
+    R = MC->sample_variational_derivatives(R, N*sample_cycles);
 
-    /* Displaying Stats
-        THESE GETTERS DO NOT EXIST YET
-    */
-    std::cout << "MC-Cycle – alpha = " << alpha 
-    		<< ", beta = " << beta
-            << ", E = " << MC.get_E()/(N*3) << 
-            ", var = " << MC.get_variance() << std::endl;
+    printf("alpha: %.6lf, beta: %.6lf  E: %.6lf  moves: %.6lf %%\n", alpha, beta, MC->get_energy_mean(), MC->get_accepted_moves_ratio());
 
-    /*
-    THESE GETTERS DO NOT EXIST YET
-    */
-    alpha = alpha_prev - eta*MC.get_grad_alpha();
-    beta  = beta_prev - eta*MC.get_grad_alpha();
+    alpha = alpha_prev - eta*MC->get_grad_alpha();
+    beta  = beta_prev - eta*MC->get_grad_beta();
 
     MC->PDF->update_alpha(alpha);
   	MC->PDF->update_beta(beta);
 
   	change_alpha = alpha - alpha_prev;
-	change_beta = beta - beta_prev;
-	change = change_alpha*change_alpha + change_beta*change_beta;
+	  change_beta = beta - beta_prev;
+	  change = change_alpha*change_alpha + change_beta*change_beta;
+    counter++;
+  }
+  if (change < tol) {
+    printf("stopped because done\n");
+  } printf("change: %.12lf %.12lf %.12lf\n", change, change_alpha, change_beta);
 }

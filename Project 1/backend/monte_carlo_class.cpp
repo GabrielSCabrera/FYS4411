@@ -9,8 +9,33 @@ Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensio
 	N = N_particles;
 	dim = dimensions;
 	PDF = trial_wave_function;
-	step_length = 0.1;
-  x_max = 1.0;
+  double hard_radius = trial_wave_function->get_a();
+	step_length = 100*hard_radius;
+  x_max = 100*N*dim*hard_radius;
+}
+
+// GETTERS
+double Monte_Carlo::get_energy() {
+  return E;
+}
+double Monte_Carlo::get_energy_mean() {
+  return E/(N*dim);
+}
+double Monte_Carlo::get_grad_alpha() {
+  return grad_alpha;
+}
+double Monte_Carlo::get_grad_beta() {
+  return grad_beta;
+}
+double Monte_Carlo::get_variance() {
+  return variance;
+}
+double Monte_Carlo::get_accepted_moves_ratio() {
+  return accepted_moves_ratio;
+}
+
+void Monte_Carlo::print_info() {
+  printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), variance, accepted_moves_ratio);
 }
 
 double Monte_Carlo::rand_double(double min, double max) {
@@ -36,9 +61,9 @@ Mat Monte_Carlo::get_initial_R() {
 	*/
 	Mat R(N, dim);
 	for (int i = 0; i < N; i++) {
-			for (int j = 0; j < dim; j++) {
-				R.set(rand_double(-x_max, x_max), i, j);
-			}
+      for (int j = 0; j < dim; j++) {
+        R.set(rand_double(-x_max, x_max), i, j);
+      }
 	}
 	return R;
 }
@@ -51,7 +76,7 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	double A; 			// acceptance ratio
 	for (int i = 0; i < cycles; i++) {
 		for (int j = 0; j < N; j++) {
-			R_new = random_walk(R);
+			R_new = random_walk(R, j);
 			// Get New Probability
 			Psi_new = PDF->operator()(R_new);
 			// Determine whether or not to accept movement
@@ -64,13 +89,6 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	}
 	return R;
 }
-
-
-/*
-I think I would rather store the expectation values as variables in the
-class, and then return the latest set of coordiantes, R
-
-*/
 
 Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   set_to_zero();
@@ -86,12 +104,15 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   Psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
-  		R_new = random_walk(R);
+  		  R_new = random_walk(R, j);
         // Get New Probability
         Psi_new = PDF->operator()(R_new);
         // Determine whether or not to accept movement
+        // printf("old :%lf new: %lf\n", Psi, Psi_new);
         A = acceptance_ratio(Psi_new, Psi, R_new, R, j);
         if (A > rand_double(0, 1)) {
+          //printf("A: %lf\n", A);
+          //printf("old :%lf new: %lf\n", Psi, Psi_new);
           R = R_new;
           Psi = Psi_new;
           accepted_moves++;
@@ -106,23 +127,10 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   E /= cycles;
   EE /= cycles;
   accepted_moves_ratio = (double) accepted_moves/(cycles*N);
-
-  /* Calculating Variance Iteratively
-
-  !!!!!! GABRIEL
-  I think the variance is just
-  	E*E - EE
-  or the other way around
-  */
-  // for (int i = 0; i < cycles; i++) {
-  //   variance += (E_cycle[i]*E_cycle[i] - output[0]*output[0]) *
-  //               (E_cycle[i] - output[0]) * (E_cycle[i] - output[0]);
-  // }
-  // Cleanup
+  variance = E*E - EE;
   delete [] E_cycle;
   return R;
 }
-
 
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
@@ -136,12 +144,12 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   double E_psi_beta = 0.0;		// (derivative of Psi with respect to beta)*E
   double temp, E_cycle;
 
-  // #pragma omp parallel for
+  int accepted_moves = 0;
   // Monte-Carlo Cycles
   Psi = PDF->operator()(R);
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
-		R_new = random_walk(R);
+		    R_new = random_walk(R, j);
         // Get New Probability
         Psi_new = PDF->operator()(R_new);
         // Determine whether or not to accept movement
@@ -149,6 +157,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
         if (A > rand_double(0, 1)) {
           R = R_new;
           Psi = Psi_new;
+          accepted_moves++;
         }
     } // End cycle
 
@@ -169,6 +178,8 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   psi_beta /= cycles;
   E_psi_alpha /= cycles;
   E_psi_beta /= cycles;
+
+  accepted_moves_ratio = (double) accepted_moves/(cycles*N);
 
   grad_alpha = 2*(E_psi_alpha - psi_alpha*E);
   grad_beta = 2*(E_psi_beta  - psi_beta*E);

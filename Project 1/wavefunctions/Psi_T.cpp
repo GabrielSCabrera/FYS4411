@@ -7,7 +7,7 @@
 // CALLING
 double Psi_T::operator()(Mat R) {
   double exponent_OB = 0.0;
-  double product_C = 0.0;
+  double product_C = 1.0;
   double x, dx, r_ij;
   int N = R.shape0();
   int M = R.shape1();
@@ -169,34 +169,6 @@ double Psi_T::energy(Mat R) {
   K = laplace_phi + laplace_Psi_C + 2*grad_phi_grad_Psi_C;
   return 0.5*(-K + V);
 
-}
-
-double Psi_T::grad_alpha(Mat R) {
-  double grad_alpha_phi = 0.0;
-  double x_i;
-  int last_index = R.shape1()-1;
-
-  for (int i = 0; i < R.shape0(); i++) {
-    for (int j = 0; j < last_index; j++) {
-      x_i = R.get(i, j);
-      grad_alpha_phi += x_i*x_i;
-    }
-    x_i = R.get(i, last_index);
-    grad_alpha_phi += beta*x_i*x_i;
-  }
-  return -grad_alpha_phi;
-}
-
-double Psi_T::grad_beta(Mat R) {
-  double grad_beta_phi = 0.0;
-  double z_k;
-  int last_index = R.shape1()-1;
-
-  for (int k = 0; k < R.shape0(); k++) {
-    z_k = R.get(k, last_index);
-    grad_beta_phi += z_k*z_k;
-  }
-  return -alpha*grad_beta_phi;
 }
 
 double Psi_T::u_prime(double r_kj) {

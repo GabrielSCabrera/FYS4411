@@ -17,8 +17,6 @@ class Psi_T : public Psi {
     double Psi_c(Mat R, int N);
 
     double energy(Mat R);
-    double grad_alpha(Mat R);
-    double grad_beta(Mat R);
     double u_prime(double r_kj);
     double u_double_prime(double r_kj);
 };

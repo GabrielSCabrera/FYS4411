@@ -12,8 +12,6 @@ class Psi_OB : public Psi  {
     // CALCULATIONS
     double* drift_force(Mat R, int index);
     double energy(Mat R);
-    double grad_alpha(Mat R);
-    double grad_beta(Mat R);
 };
 
 #endif

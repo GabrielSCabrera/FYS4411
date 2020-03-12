@@ -50,38 +50,7 @@ double Psi_OB::energy(Mat R) {
     xx = x*x;
     V += gamma_squared*xx;
     E += beta_squared*xx;
-
   } // END LOOP OVER k
   return R.shape0()*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
-}
-
-
-double Psi_OB::grad_alpha(Mat R) {
-  double grad_alpha_phi = 0.0;
-  double x_i;
-  int last_index = R.shape1()-1;
-
-  for (int i = 0; i < R.shape0(); i++) {
-    for (int j = 0; j < last_index; j++) {
-      x_i = R.get(i, j);
-      grad_alpha_phi += x_i*x_i;
-    }
-    x_i = R.get(i, last_index);
-    grad_alpha_phi += beta*x_i*x_i;
-  }
-  return -grad_alpha_phi;
-}
-
-
-double Psi_OB::grad_beta(Mat R) {
-  double grad_beta_phi = 0.0;
-  double z_k;
-  int last_index = R.shape1()-1;
-
-  for (int k = 0; k < R.shape0(); k++) {
-    z_k = R.get(k, last_index);
-    grad_beta_phi += z_k*z_k;
-  }
-  return -alpha*grad_beta_phi;
 }
 

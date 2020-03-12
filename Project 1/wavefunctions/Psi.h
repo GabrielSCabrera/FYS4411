@@ -36,8 +36,8 @@ class Psi {
     double* grad_phi(double x, double y, double z);
     double laplace_phi(double x, double y, double z);
 
-    virtual double grad_alpha(Mat R) = 0;
-    virtual double grad_beta(Mat R) = 0;
+    double grad_alpha(Mat R);
+    double grad_beta(Mat R);
 };
 
 #endif
