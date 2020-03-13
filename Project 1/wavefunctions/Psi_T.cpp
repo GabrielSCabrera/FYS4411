@@ -45,9 +45,39 @@ double Psi_T::operator()(Mat R) {
 }
 
 // CALCULATIONS
-double* Psi_T::drift_force(Mat R, int index) {
+double* Psi_T::drift_force(Mat R, int k) {
   int M = R.shape1();
+  int last_index = M - 1;
   double* force = new double [M];
+  double* r_k = new double [M];
+  double* diff_r_ki = new double [M];
+  double x, dx, r_ki, up_ki;
+  // grad phi
+  for (int l = 0; l < last_index; l++) {
+    x = R.get(k, l);
+    force[l] = -4*alpha*x;
+    r_k[l] = x;
+  }
+  x = R.get(k, last_index);
+  force[last_index] = -4*alpha*beta*x;
+  r_k[last_index] = x;
+  // grad Psi_T
+  for (int i = 0; i < R.shape0(); i++) {
+    if (i == k) {continue;}
+    r_ki = 0.0;
+    for (int l = 0; l < M; l++) {
+      dx = r_k[l] - R.get(i, l);
+      r_ki += dx*dx;
+      diff_r_ki[l] = dx;
+    }
+    r_ki = std::sqrt(r_ki);
+    up_ki = u_prime(r_ki);
+    for (int l = 0; l < M; l++) {
+      force[l] += diff_r_ki[l]/r_ki*up_ki;
+    }
+  }
+  delete[] r_k;
+  delete[] diff_r_ki;
   return force;
 }
 
@@ -94,8 +124,8 @@ double Psi_T::energy(Mat R) {
   double* grad_Psi_C = new double [M];
   double x, xx, dx; 
   double* r_k = new double [M];
-  double r_kj, r_ki, r_kj_ki;
-  double* dr_kj = new double [M];
+  double r_kj, r_ki, diff_r_kj_r_ki;
+  double* diff_r_kj = new double [M];
   double up_kj, up_ki;        // u-prime
   for (int k = 0; k < N; k++) {
     for (int l = 0; l < last_index; l++) {
@@ -120,41 +150,33 @@ double Psi_T::energy(Mat R) {
     V += gamma_squared*xx;
 
     for (int j = 0; j < N; j++) {
-      if (j == k) {
-        continue;
-      }
+      if (j == k) {continue;}
       r_kj = 0.0;
       for (int l = 0; l < M; l++) {
         dx = r_k[l] - R.get(j, l);
         r_kj += dx*dx;
-        dr_kj[l] = dx;
+        diff_r_kj[l] = dx;
       }
       r_kj = std::sqrt(r_kj);
-      if (r_kj < a) {
-          printf("cry\n");
-        }
+      //if (r_kj < a) {printf("cry\n");}
       up_kj = u_prime(r_kj);
       for (int l = 0; l < M; l++) {
-        grad_Psi_C[l] += dr_kj[l]/r_kj*up_kj;
+        grad_Psi_C[l] += diff_r_kj[l]/r_kj*up_kj;
       }
       laplace_Psi_C += up_kj*(last_index/r_kj - (1.0/(r_kj - a) + 1.0/r_kj));
       for (int i = 0; i < N; i++) {
-        if (i == k) {
-          continue;
-        }
+        if (i == k) {continue;}
         r_ki = 0.0;
-        r_kj_ki = 0.0;
+        diff_r_kj_r_ki = 0.0;
         for (int l = 0; l < M; l++) {
           dx = r_k[l] - R.get(i, l);
           r_ki += dx*dx;
-          r_kj_ki += dr_kj[l]*dx;
+          diff_r_kj_r_ki += diff_r_kj[l]*dx;
         }
         r_ki = std::sqrt(r_ki);
         up_ki = u_prime(r_ki);
-        if (r_ki < a) {
-          printf("cry\n");
-        }
-        laplace_Psi_C += r_kj_ki/(r_kj*r_ki)*up_ki*up_kj;
+        //if (r_ki < a) { printf("cry\n");}
+        laplace_Psi_C += diff_r_kj_r_ki/(r_kj*r_ki)*up_ki*up_kj;
       }// END LOOP OVER i
     } // END LOOP OVER j
     for (int l = 0; l < M; l++) {
@@ -164,7 +186,7 @@ double Psi_T::energy(Mat R) {
   delete[] grad_phi;
   delete[] grad_Psi_C;
   delete[] r_k;
-  delete[] dr_kj;
+  delete[] diff_r_kj;
   laplace_phi = 4*alpha_squared*laplace_phi - 2*N*alpha*(last_index + beta);
   K = laplace_phi + laplace_Psi_C + 2*grad_phi_grad_Psi_C;
   return 0.5*(-K + V);

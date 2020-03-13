@@ -38,12 +38,11 @@ void run_Metropolis(bool correlated) {
   if (correlated) {
 
     Psi_T boson_system(alpha, beta, a, gamma);
-    Importance_Sampling MC(&boson_system, N, dim);
+    //Importance_Sampling MC(&boson_system, N, dim);
+    Metropolis MC(&boson_system, N, dim);
 
     Mat R = MC.get_initial_R();
-    // R = MC.equilibriation(R, N*N*1E4);
-    // R = MC.sample_energy(R, N*N*1E3);
-    R = MC.equilibriation(R, 1E4);
+    R = MC.equilibriation(R, 100);
     R = MC.sample_energy(R, 1E3);
 
     MC.print_info();
@@ -60,9 +59,7 @@ void run_Metropolis(bool correlated) {
     //Metropolis MC(&boson_system, N, dim);
 
     Mat R = MC.get_initial_R();
-    // R = MC.equilibriation(R, N*N*1E4);
-    // R = MC.sample_energy(R, N*N*1E3);
-    R = MC.equilibriation(R, 1E4);
+    R = MC.equilibriation(R, 100);
     R = MC.sample_energy(R, 1E3);
 
     MC.print_info();

@@ -13,8 +13,8 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   int counter = 0;
 
   // these should be parameters...
-  int initial_equi_cycles = 5E2;
-  int equi_cycles = 1E3;
+  int initial_equi_cycles = 100;
+  int equi_cycles = 10;
   int sample_cycles = 1E3;
   int max_steps = 550;
   double tol = -1e-15;
@@ -22,7 +22,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   // first iteration
   Mat R = MC->get_initial_R();
   int N = R.shape0();
-  R = MC->equilibriation(R, N*N*initial_equi_cycles);
+  R = MC->equilibriation(R, initial_equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
   alpha = alpha_prev - eta*MC->get_grad_alpha();
@@ -43,8 +43,8 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   	beta_prev = beta;
 
     // Running Monte-Carlo
-    R = MC->equilibriation(R, N*equi_cycles);
-    R = MC->sample_variational_derivatives(R, N*sample_cycles);
+    R = MC->equilibriation(R, equi_cycles);
+    R = MC->sample_variational_derivatives(R, sample_cycles);
 
     printf("alpha: %.6lf, beta: %.6lf  E: %.6lf  moves: %.6lf %%\n", alpha, beta, MC->get_energy_mean(), MC->get_accepted_moves_ratio());
 
