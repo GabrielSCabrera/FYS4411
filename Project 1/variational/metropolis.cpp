@@ -1,9 +1,7 @@
 #include <cmath>
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
-#include "../wavefunctions/Psi_T.h"
-#include "../wavefunctions/Psi_OB.h"
-#include "monte_carlo_class.h"
+#include "monte_carlo.h"
 #include "metropolis.h"
 
 
@@ -17,6 +15,6 @@ Mat Metropolis::random_walk(Mat R, int index) {
 }
 
 double Metropolis::acceptance_ratio(double psi_new, double psi_old, Mat R_new, Mat R_old, int index) {
-	double ratio = psi_new/psi_old;
+  double ratio = psi_new/psi_old;
   return ratio*ratio;
 }

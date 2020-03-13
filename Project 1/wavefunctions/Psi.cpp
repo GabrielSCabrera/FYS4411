@@ -4,17 +4,15 @@
 #include "../matpak/Mat.h"
 
 // CONSTRUCTOR
-Psi::Psi(double alpha, double beta, double a, double gamma) {
-  update_alpha(alpha);
-  update_beta(beta);
-  update_a(a);
-  update_gamma(gamma);
+Psi::Psi() {
+  update_alpha(0.5);
+  update_beta(1.0);
+  update_a(0.0043);
+  update_gamma(1.0);
 }
 
 // DESTRUCTOR
-Psi::~Psi() {
-
-}
+Psi::~Psi() {}
 
 // UPDATERS
 void Psi::update_alpha(double alpha) {

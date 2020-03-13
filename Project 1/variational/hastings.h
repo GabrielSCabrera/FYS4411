@@ -1,15 +1,16 @@
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
-#include "monte_carlo_class.h"
+#include "monte_carlo.h"
+#include <cmath>
 
 
-#ifndef IMPORTANCE_SAMPLING_CLASS_H
-#define IMPORTANCE_SAMPLING_CLASS_H
+#ifndef HASTINGS_H
+#define HASTINGS_H
 
-class Importance_Sampling : public Monte_Carlo {
+class Hastings : public Monte_Carlo {
 protected:
 	double dt = 0.01;
-	double dt_sqrt = 0.1;
+	double dt_sqrt = std::sqrt(dt);
 	double D = 0.5;
 public:
 	using Monte_Carlo::Monte_Carlo;

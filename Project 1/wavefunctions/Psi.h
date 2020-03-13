@@ -12,7 +12,7 @@ class Psi {
     double D = 0.5;                 // diffusion constant
   public:
     // CONSTRUCTORS
-    Psi(double alpha, double beta, double a, double gamma);
+    Psi();
     // DESTRUCTOR
     ~Psi();
     // UPDATERS

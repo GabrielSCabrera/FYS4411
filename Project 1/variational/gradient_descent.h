@@ -1,4 +1,4 @@
-#include "monte_carlo_class.h"
+#include "monte_carlo.h"
 
 #ifndef GRADIENT_DESCENT_H
 #define GRADIENT_DESCENT_H

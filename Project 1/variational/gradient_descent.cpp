@@ -1,6 +1,6 @@
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
-#include "monte_carlo_class.h"
+#include "monte_carlo.h"
 #include "gradient_descent.h"
 #include <iostream>
 
@@ -9,7 +9,6 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   double alpha_prev = MC->PDF->get_alpha();
   double beta_prev = MC->PDF->get_beta();
   double change, change_alpha, change_beta;
-  double eta_var;
   int counter = 0;
 
   // these should be parameters...
@@ -21,7 +20,6 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
 
   // first iteration
   Mat R = MC->get_initial_R();
-  int N = R.shape0();
   R = MC->equilibriation(R, initial_equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
@@ -36,7 +34,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   change_beta = beta - beta_prev;
   change = change_alpha*change_alpha + change_beta*change_beta;
 
-  printf("change: %.12lf %.12lf\n", change_alpha, change_beta);
+  //printf("change: %.12lf %.12lf\n", change_alpha, change_beta);
   while (change > tol && counter < max_steps) {
 
     alpha_prev = alpha;
@@ -46,7 +44,8 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
     R = MC->equilibriation(R, equi_cycles);
     R = MC->sample_variational_derivatives(R, sample_cycles);
 
-    printf("alpha: %.6lf, beta: %.6lf  E: %.6lf  moves: %.6lf %%\n", alpha, beta, MC->get_energy_mean(), MC->get_accepted_moves_ratio());
+    //printf("alpha: %.6lf, beta: %.6lf  E: %.6lf  moves: %.6lf %%\n", 
+    //        alpha, beta, MC->get_energy_mean(), MC->get_accepted_moves_ratio());
 
     alpha = alpha_prev - eta*MC->get_grad_alpha();
     beta  = beta_prev - eta*MC->get_grad_beta();
@@ -60,9 +59,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
     counter++;
   }
 
-  if (change < tol) {
-    printf("stopped because tolerance reached\n");
-  }
+  if (change < tol) {printf("stopped because tolerance reached\n");}
 
   printf("change: %.12lf %.12lf %.12lf\n", change, change_alpha, change_beta);
 }

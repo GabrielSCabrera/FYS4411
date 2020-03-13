@@ -5,69 +5,92 @@
 #include "./wavefunctions/Psi.h"
 #include "./wavefunctions/Psi_T.h"
 #include "./wavefunctions/Psi_OB.h"
-//#include "./frontend/adagrad.h"
-#include "./backend/monte_carlo_class.h"
-#include "./backend/metropolis.h"
-#include "./backend/importance_sampling.h"
-#include "./backend/gradient_descent.h"
+#include "./variational/monte_carlo.h"
+#include "./variational/metropolis.h"
+#include "./variational/hastings.h"
+#include "./variational/gradient_descent.h"
 
-// void run_all_tests() {
-//   tests_Psi();
-// }
 
-/*void run_all_parts() {
-  bool one_body = true;  // true: interacting mode, false: one-body mode
-  if (one_body) {
-    Psi_OB PDF(0, 0, 0, 0);
-    adagrad(&PDF);
-  } else {
-    Psi_T PDF(0, 0, 0, 0);
-    adagrad(&PDF);
+/*write single array (double) to a txt-file
+void doubleArrayToFile(double *v , int n, std::string filename, bool zeroPadding = false) {
+  std::ofstream myfile(filename + ".txt");
+  if (myfile.is_open()) {
+    if (zeroPadding) {
+      myfile << n+2 << "\n";
+      myfile << 0.0 << "\n";
+    } else {
+      myfile << n << "\n";
+    }
+    for (int i = 0; i < n; i++) {
+      myfile << v[i] << "\n";
+    }
+    if (zeroPadding) {
+      myfile << 0.0 << "\n";
+    }
   }
 }*/
 
-void run_Metropolis(bool correlated) {
-  double a = 0.0043;          // Atomic Radius
-  double gamma = 1.0;         // Potential Elongation Factor
-  double alpha = 0.5;
-  double beta = 1.0;
-  double learning_rate = 5E-4;
-  int N = 100;
-  int dim = 3;
 
+
+void run_Metropolis(bool correlated, int N, int dim) {
+  //double learning_rate = 5E-4;
+  int cycles = 1;
   if (correlated) {
+   //Psi_OB boson_system;
+    Psi_T boson_system;
+    Metropolis MC(&boson_system, N, dim);
 
-    Psi_T boson_system(alpha, beta, a, gamma);
-    Importance_Sampling MC(&boson_system, N, dim);
-    //Metropolis MC(&boson_system, N, dim);
+    Mat R = MC.get_initial_R_no_overlap();
 
-    Mat R = MC.get_initial_R();
-    R = MC.equilibriation(R, 100);
-    R = MC.sample_energy(R, 1E3);
+    //R = MC.equilibriation(R, 100);
+    //gradient_descent(&MC, learning_rate);
 
+
+    R = MC.sample_energy(R, cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 10*cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 100*cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 1000*cycles);
     MC.print_info();
 
-    gradient_descent(&MC, learning_rate);
 
   } else {
 
-    Psi_OB boson_system(alpha, beta, a, gamma);
-    //Importance_Sampling MC(&boson_system, N, dim);
-    Metropolis MC(&boson_system, N, dim);
+    //Psi_OB boson_system;
+    Psi_T boson_system;
+    Hastings MC(&boson_system, N, dim);
 
-    Mat R = MC.get_initial_R();
-    R = MC.equilibriation(R, 100);
-    R = MC.sample_energy(R, 1E3);
+    Mat R = MC.get_initial_R_no_overlap();
 
+    //R = MC.equilibriation(R, 100);
+    //gradient_descent(&MC, learning_rate);
+
+    R = MC.sample_energy(R, cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 10*cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 100*cycles);
+    MC.print_info();
+    R = MC.sample_energy(R, 1000*cycles);
     MC.print_info();
 
-    gradient_descent(&MC, learning_rate);
+    //gradient_descent(&MC, learning_rate);
   }
+  printf("\n");
 }
 
 int main() {
+  int N = 25;
   srand(1337);
-  // run_all_tests();
-  // run_all_parts();
-  run_Metropolis(true);
+  printf("\nHastings\n");
+  run_Metropolis(false, N, 3);
+  run_Metropolis(false, N, 2);
+  run_Metropolis(false, N, 1);
+  srand(1337);
+  printf("\nMetropolis\n");
+  run_Metropolis(true, N, 3);
+  run_Metropolis(true, N, 2);
+  run_Metropolis(true, N, 1);
 }

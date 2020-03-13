@@ -1,6 +1,6 @@
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
-#include "monte_carlo_class.h"
+#include "monte_carlo.h"
 
 
 #ifndef METROPOLIS_CLASS_H
