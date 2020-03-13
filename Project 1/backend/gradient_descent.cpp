@@ -17,7 +17,7 @@ void gradient_descent(Monte_Carlo* MC, double eta) {
   int equi_cycles = 10;
   int sample_cycles = 1E3;
   int max_steps = 550;
-  double tol = -1e-15;
+  double tol = 1e-15;
 
   // first iteration
   Mat R = MC->get_initial_R();

@@ -11,8 +11,8 @@ Mat Importance_Sampling::random_walk(Mat R, int index) {
 	double r;
 	double* F = PDF->drift_force(R, index);
 	for (int k = 0; k < dim; k++) {
-      r = dt_sqrt*rand_double(-1, 1);
-      R.set(D*dt*F[k]*R.get(index, k) + r, index, k);
+      r = dt_sqrt*rand_double(-step_length, step_length);
+      R.set(R.get(index, k) + D*dt*F[k] + r, index, k);
     }
     delete[] F;
     return R;

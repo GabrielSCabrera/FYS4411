@@ -31,30 +31,13 @@ void run_Metropolis(bool correlated) {
   double gamma = 1.0;         // Potential Elongation Factor
   double alpha = 0.5;
   double beta = 1.0;
-  double learning_rate = 5E-3;
+  double learning_rate = 5E-4;
   int N = 10;
   int dim = 3;
 
   if (correlated) {
 
     Psi_T boson_system(alpha, beta, a, gamma);
-    //Importance_Sampling MC(&boson_system, N, dim);
-    Metropolis MC(&boson_system, N, dim);
-
-    Mat R = MC.get_initial_R();
-    R = MC.equilibriation(R, 100);
-    R = MC.sample_energy(R, 1E3);
-
-    MC.print_info();
-
-    boson_system.update_alpha(0.3);
-    boson_system.update_beta(0.7);
-
-    gradient_descent(&MC, learning_rate);
-
-  } else {
-
-    Psi_OB boson_system(alpha, beta, a, gamma);
     Importance_Sampling MC(&boson_system, N, dim);
     //Metropolis MC(&boson_system, N, dim);
 
@@ -64,8 +47,19 @@ void run_Metropolis(bool correlated) {
 
     MC.print_info();
 
-    boson_system.update_alpha(0.3);
-    boson_system.update_beta(0.7);
+    gradient_descent(&MC, learning_rate);
+
+  } else {
+
+    Psi_OB boson_system(alpha, beta, a, gamma);
+    //Importance_Sampling MC(&boson_system, N, dim);
+    Metropolis MC(&boson_system, N, dim);
+
+    Mat R = MC.get_initial_R();
+    R = MC.equilibriation(R, 100);
+    R = MC.sample_energy(R, 1E3);
+
+    MC.print_info();
 
     gradient_descent(&MC, learning_rate);
   }
@@ -75,5 +69,5 @@ int main() {
   srand(1337);
   // run_all_tests();
   // run_all_parts();
-  run_Metropolis(false);
+  run_Metropolis(true);
 }
