@@ -8,7 +8,7 @@
 //#include "./frontend/adagrad.h"
 #include "./backend/monte_carlo_class.h"
 #include "./backend/metropolis.h"
-#include "./backend/Importance_Sampling.h"
+#include "./backend/importance_sampling.h"
 #include "./backend/gradient_descent.h"
 
 // void run_all_tests() {
@@ -32,7 +32,7 @@ void run_Metropolis(bool correlated) {
   double alpha = 0.5;
   double beta = 1.0;
   double learning_rate = 5E-4;
-  int N = 10;
+  int N = 100;
   int dim = 3;
 
   if (correlated) {

@@ -4,7 +4,7 @@
 #include "../wavefunctions/Psi_T.h"
 #include "../wavefunctions/Psi_OB.h"
 #include "monte_carlo_class.h"
-#include "Importance_Sampling.h"
+#include "importance_sampling.h"
 
 
 Mat Importance_Sampling::random_walk(Mat R, int index) {
