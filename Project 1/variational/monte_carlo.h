@@ -7,7 +7,7 @@
 class Monte_Carlo {
 protected:
 	int N, dim;
-	double step_length, x_max;
+	double L;
 	double E, EE;
 	double grad_alpha, grad_beta;
 	double accepted_moves_ratio;
@@ -26,7 +26,7 @@ public:
 	double get_accepted_moves_ratio();
 	void print_info();
 	double rand_double(double min, double max);
-	virtual double acceptance_ratio(double Psi_new, double Psi_old, Mat R_new, Mat R_old, int index) = 0;
+	virtual double acceptance_ratio(Mat R_new, Mat R_old, int index) = 0;
 	virtual Mat random_walk(Mat R, int index) = 0;
 	Mat get_initial_R();
 	Mat get_initial_R_no_overlap();

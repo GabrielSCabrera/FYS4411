@@ -1,8 +1,15 @@
 #include <cmath>
-
 #include "Psi.h"
 #include "Psi_T.h"
 #include "../matpak/Mat.h"
+
+// CONSTRUCTOR
+Psi_T::Psi_T() {
+  update_alpha(0.5);
+  update_beta(2.82843);
+  update_a(0.0043);
+  update_gamma(2.82843);
+}
 
 // CALLING
 double Psi_T::operator()(Mat R) {
@@ -44,6 +51,83 @@ double Psi_T::operator()(Mat R) {
   return std::exp(-alpha*exponent_OB)*product_C;
 }
 
+
+double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
+  double jastrow = 1.0;
+  double phi = 0.0;
+  double x, dx, r_ki_old, r_ki_new;
+  int N = R_new.shape0();
+  int M = R_new.shape1();
+  int last_index = M - 1;
+  double* r_old = new double [M];
+  double* r_new = new double [M];
+
+  // calculate:  phi(r^new_k) - phi(r^old_k) 
+  for (int l = 0; l < last_index; l++) {
+    x = R_new.get(k, l);
+    phi += x*x;
+    r_new[l] = x;
+
+    x = R_old.get(k, l);
+    phi -= x*x;
+    r_old[l] = x;
+  }
+  x = R_new.get(k, last_index);
+  phi += beta*x*x;
+  r_new[last_index] = x;
+
+  x = R_old.get(k, last_index);
+  phi -= beta*x*x;
+  r_old[last_index] = x;
+
+  phi = std::exp(-alpha*phi);
+
+  // calculate ratio of jastrow factor
+  for (int i = 0; i < N; i++) {
+    if (i == k) {continue;}
+    r_ki_old = 0.0; 
+    r_ki_new = 0.0;
+    for (int l = 0; l < M; l++) {
+      x = R_old.get(i, l);
+
+      dx = r_new[l] - x;
+      r_ki_new += dx*dx;
+
+      dx = r_old[l] - x;
+      r_ki_old += dx*dx;
+    }
+    r_ki_old = std::sqrt(r_ki_old);
+    r_ki_new = std::sqrt(r_ki_new);
+
+    if (r_ki_new <= a) {
+      delete[] r_new;
+      delete[] r_old;
+      return 0.0;
+    } 
+    if (r_ki_old <= a) {
+      delete[] r_new;
+      delete[] r_old;
+      printf("THIS SHOULD NEVER HAPPEN\n");
+      return 1.1;
+    } 
+    //if (r_ki_old <= L) {
+    //  jastrow *= r_ki_old*(r_ki_new - a)/((r_ki_old - a)*r_ki_new);
+    //}
+    if (r_ki_new <= L) {
+      jastrow *= 1 - a/r_ki_new;
+    } 
+    if (r_ki_old <= L) {
+      jastrow /= 1 - a/r_ki_old;
+    } 
+
+  }
+  delete[] r_new;
+  delete[] r_old;
+  phi *= phi;
+  jastrow *= jastrow;
+  return phi*jastrow;
+}
+
 // CALCULATIONS
 double* Psi_T::drift_force(Mat R, int k) {
   int M = R.shape1();
@@ -71,9 +155,10 @@ double* Psi_T::drift_force(Mat R, int k) {
       diff_r_ki[l] = dx;
     }
     r_ki = std::sqrt(r_ki);
+    //if (r_ki > L) {continue;}
     up_ki = u_prime(r_ki);
     for (int l = 0; l < M; l++) {
-      force[l] += diff_r_ki[l]/r_ki*up_ki;
+      force[l] += 2*diff_r_ki[l]/r_ki*up_ki;
     }
   }
   delete[] r_k;
@@ -158,6 +243,7 @@ double Psi_T::energy(Mat R) {
         diff_r_kj[l] = dx;
       }
       r_kj = std::sqrt(r_kj);
+      //if (r_kj > L) {continue;}
       //if (r_kj < a) {printf("cry\n");}
       up_kj = u_prime(r_kj);
       for (int l = 0; l < M; l++) {
@@ -174,6 +260,7 @@ double Psi_T::energy(Mat R) {
           diff_r_kj_r_ki += diff_r_kj[l]*dx;
         }
         r_ki = std::sqrt(r_ki);
+        //if (r_ki > L) {continue;}
         up_ki = u_prime(r_ki);
         //if (r_ki < a) { printf("cry\n");}
         laplace_Psi_C += diff_r_kj_r_ki/(r_kj*r_ki)*up_ki*up_kj;

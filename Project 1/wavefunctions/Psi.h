@@ -16,6 +16,7 @@ class Psi {
     // DESTRUCTOR
     ~Psi();
     // UPDATERS
+    double L = 10.0;
     void update_alpha(double alpha);
     void update_beta(double beta);
     void update_a(double a);
@@ -30,6 +31,7 @@ class Psi {
     virtual double energy(Mat R) = 0;
     // CALCULATIONS
     virtual double* drift_force(Mat R, int index) = 0;
+    virtual double probability_density_ratio(Mat R_new, Mat R_old, int k) = 0; 
     double greens_ratio(Mat R_old, Mat R_new, double dt, int index);
 
     double phi(double x, double y, double z);

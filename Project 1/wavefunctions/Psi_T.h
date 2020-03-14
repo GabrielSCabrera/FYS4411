@@ -5,8 +5,8 @@
 #define PSI_T_H
 
 class Psi_T : public Psi {
-  public:
-    using Psi::Psi;
+    public:
+    Psi_T();
     // CALLING
     double operator()(Mat R);
     // CALCULATIONS
@@ -19,6 +19,7 @@ class Psi_T : public Psi {
     double energy(Mat R);
     double u_prime(double r_kj);
     double u_double_prime(double r_kj);
+    double probability_density_ratio(Mat R_new, Mat R_old, int k);
 };
 
 #endif
