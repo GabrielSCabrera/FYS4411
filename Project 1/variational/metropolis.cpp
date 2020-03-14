@@ -28,7 +28,9 @@ double Metropolis::acceptance_ratio(Mat R_new, Mat R_old, int index) {
 
 
 std::string Metropolis::filename_E() {
-  std::string path = "results/metropolis/dim";
+  std::string path = "results/";
+  path.append(PDF->name());
+  path.append("/metropolis/dim");
   path.append(std::to_string(dim));
   path.append("/E_");
   path.append(std::to_string(N));
@@ -37,7 +39,9 @@ std::string Metropolis::filename_E() {
 }
 
 std::string Metropolis::filename_val() {
-  std::string path = "results/metropolis/dim";
+  std::string path = "results/";
+  path.append(PDF->name());
+  path.append("/metropolis/dim");
   path.append(std::to_string(dim));
   path.append("/val_");
   path.append(std::to_string(N));

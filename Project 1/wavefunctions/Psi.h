@@ -40,6 +40,8 @@ class Psi {
 
     double grad_alpha(Mat R);
     double grad_beta(Mat R);
+
+    virtual std::string name() = 0;
 };
 
 #endif

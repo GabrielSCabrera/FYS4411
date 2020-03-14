@@ -2,6 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <string>
+#include <mpi.h>
 using namespace std;
 
 // #include "./tests/tests_backend.h"
@@ -41,43 +42,20 @@ void run(Monte_Carlo* MC) {
   outfile.open(filename);
   MC->write_val_to_file(outfile);
   outfile.close();
-
-
-/*
-  gradient_descent(MC, 1E-5, R);
-  printf("alpha: %.6lf, beta: %.6lf\n", MC->PDF->get_alpha(), MC->PDF->get_beta());
-
-  cycles = 1E3;
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();
-
-  MC->PDF->update_alpha(0.5);
-  R = MC->equilibriation(R, equi_cycles);
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();
-
-
-  int N = R.shape0();
-  ofstream myfile;
-  string filename = "results/";
-  filename.append("test1.dat");
-  myfile.open (filename);
-  myfile << "Writing this to a file.\n";
-  myfile.close();*/
 }
 
 
 
-void run_Metropolis(bool correlated, int N, int dim) {
-  //double learning_rate = 5E-4;
+// bool correlated is a lying bastard
+void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) {
   if (correlated) {
-   //Psi_OB boson_system;
-    Psi_T boson_system;
+    Psi_OB boson_system;
+    //Psi_T boson_system;
     Metropolis MC(&boson_system, N, dim);
     run(&MC);
   } else {
-    //Psi_OB boson_system;
-    Psi_T boson_system;
+    Psi_OB boson_system;
+    //Psi_T boson_system;
     Hastings MC(&boson_system, N, dim);
     run(&MC);
   }

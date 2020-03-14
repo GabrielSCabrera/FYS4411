@@ -289,4 +289,10 @@ double Psi_T::u_double_prime(double r_kj) {
 }
 
 
+std::string Psi_T::name() {
+  std::string name = "repulsive";
+  return name;
+}
+
+
 

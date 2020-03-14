@@ -86,3 +86,9 @@ double Psi_OB::energy(Mat R) {
   return R.shape0()*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
 }
 
+
+std::string Psi_OB::name() {
+  std::string name = "delightful";
+  return name;
+}
+
