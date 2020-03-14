@@ -2,6 +2,7 @@
 #include "../matpak/Mat.h"
 #include "../wavefunctions/Psi.h"
 #include "monte_carlo.h"
+#include <fstream>
 
 Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
 	N = N_particles;
@@ -131,6 +132,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   // Initialize Secondary particle Array
   Mat R_new(N, dim);
   E_cycles = new double[cycles];         // Cycle-Wise Energy
+  MC_cycles = cycles;
   double accepted_moves = 0;
   double A; 																		// Acceptance Ratio
 
@@ -209,3 +211,25 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   grad_beta = 2*(E_psi_beta  - psi_beta*E);
   return R;
 }
+
+
+
+void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
+  outfile << E_cycles[0];
+  for (int i = 1; i < MC_cycles; i++) {
+    outfile << "\n" << E_cycles[i];
+  }
+}
+
+void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
+  outfile << "alpha:  " << PDF->get_alpha() << "\n";
+  outfile << "beta:   " << PDF->get_beta() << "\n";
+  outfile << "<E>:    " << E << "\n";
+  outfile << "accept: " << accepted_moves_ratio;
+}
+
+
+
+
+
+

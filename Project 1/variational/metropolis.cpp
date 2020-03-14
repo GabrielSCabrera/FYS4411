@@ -25,3 +25,24 @@ Mat Metropolis::random_walk(Mat R, int index) {
 double Metropolis::acceptance_ratio(Mat R_new, Mat R_old, int index) {
   return PDF->probability_density_ratio(R_new, R_old, index);
 }
+
+
+std::string Metropolis::filename_E() {
+  std::string path = "results/metropolis/dim";
+  path.append(std::to_string(dim));
+  path.append("/E_");
+  path.append(std::to_string(N));
+  path.append(".dat");
+  return path;
+}
+
+std::string Metropolis::filename_val() {
+  std::string path = "results/metropolis/dim";
+  path.append(std::to_string(dim));
+  path.append("/val_");
+  path.append(std::to_string(N));
+  path.append(".dat");
+  return path;
+}
+
+

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <string>
 using namespace std;
 
 // #include "./tests/tests_backend.h"
@@ -28,6 +29,20 @@ void run(Monte_Carlo* MC) {
   //R = MC->equilibriation(R, equi_cycles);
   R = MC->sample_energy(R, cycles);
   MC->print_info();
+
+
+  ofstream outfile;
+  string filename = MC->filename_E();
+  outfile.open(filename);
+  MC->write_E_to_file(outfile);
+  outfile.close();
+
+  filename = MC->filename_val();
+  outfile.open(filename);
+  MC->write_val_to_file(outfile);
+  outfile.close();
+
+
 /*
   gradient_descent(MC, 1E-5, R);
   printf("alpha: %.6lf, beta: %.6lf\n", MC->PDF->get_alpha(), MC->PDF->get_beta());
@@ -68,6 +83,7 @@ void run_Metropolis(bool correlated, int N, int dim) {
   }
   printf("\n");
 }
+
 
 int main() {
   int N = 3;

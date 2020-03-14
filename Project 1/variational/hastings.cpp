@@ -30,3 +30,21 @@ double Hastings::acceptance_ratio(Mat R_new, Mat R_old, int index) {
 	double G_ratio = PDF->greens_ratio(R_old, R_new, dt, index);
   return G_ratio*P_ratio;
 }
+
+std::string Hastings::filename_E() {
+  std::string path = "results/hastings/dim";
+  path.append(std::to_string(dim));
+  path.append("/E_");
+  path.append(std::to_string(N));
+  path.append(".dat");
+  return path;
+}
+
+std::string Hastings::filename_val() {
+  std::string path = "results/hastings/dim";
+  path.append(std::to_string(dim));
+  path.append("/val_");
+  path.append(std::to_string(N));
+  path.append(".dat");
+  return path;
+}
