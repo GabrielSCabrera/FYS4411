@@ -79,8 +79,8 @@ int main() {
   run_Metropolis(false, N, 2);
   run_Metropolis(false, N, 1);
   */
-  printf("\nMetropolis\n");
-  run_Metropolis(true, N, 2);
+  //printf("\nMetropolis\n");
+  run_Metropolis(false, N, 1);
   //run_Metropolis(true, N, 2);
   //run_Metropolis(true, N, 1);
 }

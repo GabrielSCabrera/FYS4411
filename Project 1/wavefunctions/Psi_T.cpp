@@ -248,7 +248,7 @@ double Psi_T::energy(Mat R) {
       for (int l = 0; l < M; l++) {
         grad_Psi_C[l] += diff_r_kj[l]/r_kj*up_kj;
       }
-      laplace_Psi_C += up_kj*(last_index/r_kj - (1.0/(r_kj - a) + 1.0/r_kj));
+      laplace_Psi_C += u_double_prime(r_kj, up_kj) + up_kj*(2.0/r_kj);
       for (int i = 0; i < N; i++) {
         if (i == k) {continue;}
         r_ki = 0.0;
@@ -283,8 +283,8 @@ double Psi_T::u_prime(double r_kj) {
     return a/(r_kj*(r_kj - a));
 }
 
-double Psi_T::u_double_prime(double r_kj) {
-    return -(1.0/(r_kj - a) + 1.0/r_kj)*u_prime(r_kj);
+double Psi_T::u_double_prime(double r_kj, double u_prime_kj) {
+    return -u_prime_kj*(1.0/(r_kj - a) + 1.0/r_kj);
 }
 
 
