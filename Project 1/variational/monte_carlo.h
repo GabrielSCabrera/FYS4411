@@ -10,7 +10,7 @@ protected:
 	int N, dim;
 	double L;
 	double E, EE;
-	double grad_alpha, grad_beta;
+	double grad_alpha;
 	double accepted_moves_ratio;
 	double variance;
 	double *E_cycles;

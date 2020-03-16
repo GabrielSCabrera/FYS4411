@@ -7,8 +7,9 @@
 
 std::random_device rd;
 std::mt19937_64 gen(rd());
-std::uniform_real_distribution<double> UniformNumberGenerator(0.0,1.0);
-std::normal_distribution<double> Normaldistribution(0.0,1.0);
+std::uniform_real_distribution<double> UniformNumberGenerator(0.0, 1.0);
+std::normal_distribution<double> Normaldistribution(0.0, 1.0);
+
 
 Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
 	N = N_particles;
@@ -41,10 +42,6 @@ double Monte_Carlo::get_grad_alpha() {
   return grad_alpha;
 }
 
-double Monte_Carlo::get_grad_beta() {
-  return grad_beta;
-}
-
 double Monte_Carlo::get_variance() {
   return variance;
 }
@@ -65,7 +62,6 @@ void Monte_Carlo::set_to_zero() {
 	E = 0.0;
 	EE = 0.0;
 	grad_alpha = 0.0;
-	grad_beta = 0.0;
 	variance = 0.0;
 }
 
@@ -134,6 +130,8 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   double A;															// Acceptance Ratio
   double r, E_L;
 
+  double psi_R;
+
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
@@ -142,18 +140,19 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 				// Determine whether or not to accept movement
         A = acceptance_ratio(R_new, R, j);
         r = UniformNumberGenerator(gen);
-        printf("(%5.2lf,%5.2lf)", A, r);
-        if (A > r) {
+        //printf("(%5.2lf,%5.2lf)", A, r);
+        if (A > r) {  // !!!!! FOR DEBUGGING
           R = R_new;
           accepted_moves++;
-          printf("+ ");
+          //printf("+ ");
         } else {
-          printf("- ");
+          //printf("- ");
         }
     } // End cycle
     E_L = PDF->energy(R);
+    psi_R = PDF->operator()(R);
     // debugging:
-    printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), PDF->operator()(R));
+    //printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
     // Save Total Energy
     E += E_L;
     EE += E_L*E_L;
@@ -176,12 +175,12 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
-      for (int j = 0; j < N; j++) {
-				R_new = random_walk(R, j);
-				// Determine whether or not to accept movement
-        if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)) {
-          R = R_new;
-        }
+    for (int j = 0; j < N; j++) {
+    	R_new = random_walk(R, j);
+    	// Determine whether or not to accept movement
+      if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)){
+        R = R_new;
+      }
     } // End cycle
     E_L = PDF->energy(R);
     E += E_L;

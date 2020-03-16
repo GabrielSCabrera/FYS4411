@@ -40,10 +40,10 @@ double Psi_T::operator()(Mat R) {
       }
       r_ij = std::sqrt(r_ij);
       if (r_ij > a) {
-        product_C *= 1 - a/r_ij;
+        product_C *= 1.0 - a/r_ij;
       } else {
         delete[] r_i;
-        return 0;
+        return -0.0;
       }
     }
   }
@@ -65,22 +65,22 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
   // calculate:  phi(r^new_k) - phi(r^old_k) 
   for (int l = 0; l < last_index; l++) {
     x = R_new.get(k, l);
-    phi += x*x;
+    phi -= x*x;
     r_new[l] = x;
 
     x = R_old.get(k, l);
-    phi -= x*x;
+    phi += x*x;
     r_old[l] = x;
   }
   x = R_new.get(k, last_index);
-  phi += beta*x*x;
+  phi -= beta*x*x;
   r_new[last_index] = x;
 
   x = R_old.get(k, last_index);
-  phi -= beta*x*x;
+  phi += beta*x*x;
   r_old[last_index] = x;
 
-  phi = std::exp(-alpha*phi);
+  phi = std::exp(alpha*phi);
 
   // calculate ratio of jastrow factor
   for (int i = 0; i < N; i++) {
@@ -102,7 +102,7 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
     if (r_ki_new <= a) {
       delete[] r_new;
       delete[] r_old;
-      return 0.0;
+      return -0.0;
     } 
     if (r_ki_old <= a) {
       delete[] r_new;
@@ -114,10 +114,10 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
     //  jastrow *= r_ki_old*(r_ki_new - a)/((r_ki_old - a)*r_ki_new);
     //}
     if (r_ki_new < L) {
-      jastrow *= 1 - a/r_ki_new;
+      jastrow *= (1.0 - a/r_ki_new);
     } 
     if (r_ki_old < L) {
-      jastrow /= 1 - a/r_ki_old;
+      jastrow /= (1.0 - a/r_ki_old);
     } 
 
   }
@@ -243,7 +243,7 @@ double Psi_T::energy(Mat R) {
       }
       r_kj = std::sqrt(r_kj);
       if (r_kj > L) {continue;}
-      if (r_kj < a) {printf("cry\n");}
+      if (r_kj <= a) {printf("cry\n");}
       up_kj = u_prime(r_kj);
       for (int l = 0; l < M; l++) {
         grad_Psi_C[l] += diff_r_kj[l]/r_kj*up_kj;
@@ -261,7 +261,7 @@ double Psi_T::energy(Mat R) {
         r_ki = std::sqrt(r_ki);
         if (r_ki > L) {continue;}
         up_ki = u_prime(r_ki);
-        if (r_ki < a) { printf("cry\n");}
+        if (r_ki <= a) { printf("cry\n");}
         laplace_Psi_C += diff_r_kj_r_ki/(r_kj*r_ki)*up_ki*up_kj;
       }// END LOOP OVER i
     } // END LOOP OVER j

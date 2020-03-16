@@ -16,13 +16,13 @@ using namespace std;
 
 void run(Monte_Carlo* MC) {
   double eta = 1E-4;
-  int cycles = 20;
-  int equi_cycles = 1E5;
+  int cycles = 1E6;
+  int equi_cycles = 1E3;
   Mat R = MC->get_initial_R_no_overlap();
 
   for (int i = 0; i < R.shape0(); i++) {
     for (int j = 0; j < R.shape1(); j++) {
-      printf("%8.4lf ", R.get(i, j));
+      printf("%8.3lf", R.get(i, j));
     }
     printf("\n");
   }
@@ -34,8 +34,7 @@ void run(Monte_Carlo* MC) {
   MC->print_info();
 
   gradient_descent(MC, eta, R);
-
-  R = MC->equilibriation(R, equi_cycles);
+  R = MC->equilibriation(R, 100);
   R = MC->sample_energy(R, cycles);
   MC->print_info();
 
@@ -81,7 +80,7 @@ int main() {
   run_Metropolis(false, N, 1);
   */
   printf("\nMetropolis\n");
-  run_Metropolis(true, N, 1);
+  run_Metropolis(true, N, 2);
   //run_Metropolis(true, N, 2);
   //run_Metropolis(true, N, 1);
 }

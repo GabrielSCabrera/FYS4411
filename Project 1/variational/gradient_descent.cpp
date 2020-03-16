@@ -6,13 +6,12 @@
 
 Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
   // these should be parameters...
-  int equi_cycles = 100;
+  int equi_cycles = 1E2;
   int sample_cycles = 1E4;
   int max_steps = 50;
   double tol = 1e-10;
 
   // first iteration
-  R = MC->equilibriation(R, equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
   double grad_alpha = MC->get_grad_alpha();
