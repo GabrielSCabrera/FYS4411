@@ -63,7 +63,7 @@ def save_val(N_vals, outputs):
 
         outstr = (f'alpha {alpha:f}\n'
                   f'beta {beta:f}\n'
-                  f'E {E_avg:f}\n'
+                  f'<E> {E_avg:f}\n'
                   f'accept {accept:f}')
 
         with open(fname, 'w+') as outfile:

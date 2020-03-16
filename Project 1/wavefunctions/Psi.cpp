@@ -35,7 +35,6 @@ void Psi::update_gamma(double gamma) {
   this->gamma_squared = gamma*gamma;
 }
 
-
 // ATTRIBUTE EXTRACTION
 double Psi::get_alpha() {
   return this->alpha;
@@ -53,7 +52,6 @@ double Psi::get_gamma() {
   return this->gamma;
 }
 
-
 // CALCULATIONS
 double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int index) {
   // index : corresponds to particle
@@ -68,8 +66,8 @@ double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int index) {
       exponent -= term*term;
       term = R_new.get(index, i) - R_old.get(index, i) - K*F_old[i];
       exponent += term*term;
-
   }
+
   delete [] F_old;
   delete [] F_new;
   return std::exp(exponent/(4.0*K));

@@ -26,7 +26,6 @@ double Metropolis::acceptance_ratio(Mat R_new, Mat R_old, int index) {
   return PDF->probability_density_ratio(R_new, R_old, index);
 }
 
-
 std::string Metropolis::filename_E() {
   std::string path = "results/";
   path.append(PDF->name());

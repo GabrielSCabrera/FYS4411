@@ -11,7 +11,7 @@ Mat Hastings::random_walk(Mat R, int index) {
 	for (int k = 0; k < dim; k++) {
       r_new = R.get(index, k) + D*dt*F[k] + dt_sqrt*random_normal_distribution();
       if (r_new < 0.0) {
-        r_new += L; 
+        r_new += L;
       } else if (r_new > L) {
         r_new -= L;
       }
@@ -23,7 +23,6 @@ Mat Hastings::random_walk(Mat R, int index) {
     delete[] F;
     return R;
 }
-
 
 double Hastings::acceptance_ratio(Mat R_new, Mat R_old, int index) {
 	double P_ratio = PDF->probability_density_ratio(R_new, R_old, index);

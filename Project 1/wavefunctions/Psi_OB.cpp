@@ -14,7 +14,6 @@ Psi_OB::Psi_OB() {
 }
 
 // CALLING
-
 double Psi_OB::operator()(Mat R) {
   double exponent = 0.0;
   double x;
@@ -30,14 +29,13 @@ double Psi_OB::operator()(Mat R) {
   return std::exp(-alpha*exponent);
 }
 
-
 // CALLING
 double Psi_OB::probability_density_ratio(Mat R_new, Mat R_old, int k) {
   double phi = 0.0;
   double x;
   int last_index = R_new.shape1() - 1;
 
-  // calculate:  phi(r^new_k) - phi(r^old_k) 
+  // calculate:  phi(r^new_k) - phi(r^old_k)
   for (int l = 0; l < last_index; l++) {
     x = R_new.get(k, l);
     phi += x*x;
@@ -65,7 +63,6 @@ double* Psi_OB::drift_force(Mat R, int index) {
   return force;
 }
 
-
 double Psi_OB::energy(Mat R) {
   double E = 0.0;   // Kinetic Energy
   double V = 0.0;   // Potential
@@ -87,9 +84,7 @@ double Psi_OB::energy(Mat R) {
   return N*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
 }
 
-
 std::string Psi_OB::name() {
   std::string name = "delightful";
   return name;
 }
-

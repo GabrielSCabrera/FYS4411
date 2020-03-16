@@ -205,8 +205,9 @@ void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
 }
 
 void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
-  outfile << "alpha:  " << PDF->get_alpha() << "\n";
-  outfile << "beta:   " << PDF->get_beta() << "\n";
-  outfile << "<E>:    " << E << "\n";
-  outfile << "accept: " << accepted_moves_ratio;
+  outfile << "alpha " << PDF->get_alpha() << "\n";
+  outfile << "beta " << PDF->get_beta() << "\n";
+  outfile << "E " << E << "\n";
+	outfile << "accept " << accepted_moves_ratio << "\n";
+  outfile << "cycles " << MC_cycles;
 }
