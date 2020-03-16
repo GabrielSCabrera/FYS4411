@@ -5,61 +5,35 @@
 #include <iostream>
 
 Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
-  double alpha;
-  double alpha_prev = MC->PDF->get_alpha();
-  //double beta_prev = MC->PDF->get_beta();
-  double change, change_alpha;//, change_beta;
-  int counter = 0;
-
   // these should be parameters...
   int equi_cycles = 100;
-  int sample_cycles = 1E3;
+  int sample_cycles = 1E4;
   int max_steps = 50;
-  double tol = 1e-15;
+  double tol = 1e-10;
 
   // first iteration
-  //Mat R = MC->get_initial_R();
-  //R = MC->equilibriation(R, initial_equi_cycles);
+  R = MC->equilibriation(R, equi_cycles);
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
-  alpha = alpha_prev - eta*MC->get_grad_alpha();
-  //beta  = beta_prev - eta*MC->get_grad_beta();
-
+  double grad_alpha = MC->get_grad_alpha();
+  double alpha = MC->PDF->get_alpha() - eta*grad_alpha;
+  
   MC->PDF->update_alpha(alpha);
-  //MC->PDF->update_beta(beta);
-
-  // absolute change
-  change_alpha = alpha - alpha_prev;
-  //change_beta = beta - beta_prev;
-  change = change_alpha*change_alpha;// + change_beta*change_beta;
-
-  //printf("change: %.12lf %.12lf\n", change_alpha, change_beta);
-  while (change > tol && counter < max_steps) {
-
-    alpha_prev = alpha;
-  	//beta_prev = beta;
-
+  int counter = 0;
+  while (grad_alpha*grad_alpha > tol && counter < max_steps) {
     // Running Monte-Carlo
     R = MC->equilibriation(R, equi_cycles);
     R = MC->sample_variational_derivatives(R, sample_cycles);
 
-    //printf("alpha: %.6lf, beta: %.6lf  E: %.6lf  moves: %.6lf %%\n", 
-    //        alpha, beta, MC->get_energy_mean(), MC->get_accepted_moves_ratio());
-
-    alpha = alpha_prev - eta*MC->get_grad_alpha();
-    //beta  = beta_prev - eta*MC->get_grad_beta();
-
+    //printf("alpha: %.6lf,  E: %.6lf\n", alpha, MC->get_energy_mean());
+    grad_alpha = MC->get_grad_alpha();
+    alpha -= eta*grad_alpha;
     MC->PDF->update_alpha(alpha);
-  	//MC->PDF->update_beta(beta);
 
-  	change_alpha = alpha - alpha_prev;
-	  //change_beta = beta - beta_prev;
-	  change = change_alpha*change_alpha;// + change_beta*change_beta;
     counter++;
   }
+  if (grad_alpha*grad_alpha < tol) {printf("stopped because tolerance reached\n");}
 
-  if (change < tol) {printf("stopped because tolerance reached\n");}
-
-  //printf("change: %.12lf %.12lf %.12lf\n", change, change_alpha, change_beta);
+  printf("alpha: %.12lf  ->  change: %.3e\n", alpha, grad_alpha*grad_alpha);
   return R;
 }

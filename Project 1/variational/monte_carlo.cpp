@@ -113,14 +113,10 @@ Mat Monte_Carlo::get_initial_R_no_overlap() {
 
 Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	Mat R_new(N, dim);
-	double A; 			// acceptance ratio
 	for (int i = 0; i < cycles; i++) {
 		for (int j = 0; j < N; j++) {
 			R_new = random_walk(R, j);
-
-			// Determine whether or not to accept movement
-			A = acceptance_ratio(R_new, R, j);
-			if (A > UniformNumberGenerator(gen)) {
+			if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)) {
 				R = R_new;
 			}
 		}
@@ -130,15 +126,13 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 
 Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   set_to_zero();
-  delete[] E_cycles;
-  // Initialize Secondary particle Array
   Mat R_new(N, dim);
+  delete[] E_cycles;
   E_cycles = new double[cycles];         // Cycle-Wise Energy
   MC_cycles = cycles;
-  double accepted_moves = 0;
+  int accepted_moves = 0;
   double A;															// Acceptance Ratio
-
-  double r;
+  double r, E_L;
 
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
@@ -157,17 +151,18 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
           printf("- ");
         }
     } // End cycle
-    E_cycles[i] = PDF->energy(R);
-    printf("\t-> %8.3lf : %6.3e \n", E_cycles[i], PDF->operator()(R));
- 
+    E_L = PDF->energy(R);
+    // debugging:
+    printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), PDF->operator()(R));
     // Save Total Energy
-    E += E_cycles[i];
-    EE += (E_cycles[i]*E_cycles[i])/cycles;
+    E += E_L;
+    EE += E_L*E_L;
+    E_cycles[i] = E_L;
 
   } // End Monte Carlo
-  E /= cycles;
-  //EE /= cycles;
-  accepted_moves_ratio = accepted_moves/(cycles*N);
+  E /= cycles;  
+  EE /= cycles;
+  accepted_moves_ratio = (double) accepted_moves/(cycles*N);
   variance = EE - E*E;
   return R;
 }
@@ -175,50 +170,32 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new(N, dim);
-  double A; 									// Acceptance Ratio
-
-  double psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
-  double E_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
-  double psi_beta = 0.0;			//  derivative of Psi with respect to beta
-  double E_psi_beta = 0.0;		// (derivative of Psi with respect to beta)*E
-  double temp, E_cycle;
-
-  double accepted_moves = 0;
+  double grad_psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
+  double E_grad_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
+  double grad_psi_alpha_cycle, E_L;
 
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
 				R_new = random_walk(R, j);
 				// Determine whether or not to accept movement
-        A = acceptance_ratio(R_new, R, j);
-        if (A > UniformNumberGenerator(gen)) {
+        if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)) {
           R = R_new;
-          accepted_moves++;
         }
     } // End cycle
+    E_L = PDF->energy(R);
+    E += E_L;
 
-    E_cycle = PDF->energy(R);
-    E += E_cycle;
+    grad_psi_alpha_cycle = PDF->grad_alpha(R);
+    grad_psi_alpha += grad_psi_alpha_cycle;
 
-    temp = PDF->grad_alpha(R);
-    psi_alpha += temp;
-    E_psi_alpha += temp*E_cycle;
-
-    temp = PDF->grad_beta(R);
-    psi_beta += temp;
-    E_psi_beta += temp*E_cycle;
+    E_grad_psi_alpha += grad_psi_alpha_cycle*E_L;
   } // End Monte Carlo
-
   E /= cycles;
-  psi_alpha /= cycles;
-  psi_beta /= cycles;
-  E_psi_alpha /= cycles;
-  E_psi_beta /= cycles;
+  grad_psi_alpha /= cycles;
+  E_grad_psi_alpha /= cycles;
 
-  accepted_moves_ratio = accepted_moves/(cycles*N);
-
-  grad_alpha = 2*(E_psi_alpha - psi_alpha*E);
-  grad_beta = 2*(E_psi_beta  - psi_beta*E);
+  grad_alpha = E_grad_psi_alpha - grad_psi_alpha*E;
   return R;
 }
 
@@ -237,9 +214,5 @@ void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
   outfile << "<E>:    " << E << "\n";
   outfile << "accept: " << accepted_moves_ratio;
 }
-
-
-
-
 
 

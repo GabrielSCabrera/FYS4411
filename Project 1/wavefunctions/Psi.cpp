@@ -72,7 +72,7 @@ double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int index) {
   }
   delete [] F_old;
   delete [] F_new;
-  return std::exp(exponent/(4*K));
+  return std::exp(exponent/(4.0*K));
 }
 
 double Psi::phi(double x, double y, double z) {
