@@ -2,7 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <string>
-#include <mpi.h>
+// #include <mpi.h>
 using namespace std;
 
 // #include "./tests/tests_backend.h"

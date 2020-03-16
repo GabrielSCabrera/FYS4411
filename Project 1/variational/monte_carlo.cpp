@@ -10,7 +10,6 @@ std::mt19937_64 gen(rd());
 std::uniform_real_distribution<double> UniformNumberGenerator(0.0, 1.0);
 std::normal_distribution<double> Normaldistribution(0.0, 1.0);
 
-
 Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
 	N = N_particles;
 	dim = dimensions;
@@ -159,7 +158,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
     E_cycles[i] = E_L;
 
   } // End Monte Carlo
-  E /= cycles;  
+  E /= cycles;
   EE /= cycles;
   accepted_moves_ratio = (double) accepted_moves/(cycles*N);
   variance = EE - E*E;
@@ -198,8 +197,6 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   return R;
 }
 
-
-
 void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
   outfile << E_cycles[0];
   for (int i = 1; i < MC_cycles; i++) {
@@ -213,5 +210,3 @@ void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
   outfile << "<E>:    " << E << "\n";
   outfile << "accept: " << accepted_moves_ratio;
 }
-
-
