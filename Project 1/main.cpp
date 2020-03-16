@@ -15,19 +15,25 @@ using namespace std;
 #include "./variational/gradient_descent.h"
 
 void run(Monte_Carlo* MC) {
-  int cycles = 1E5;
-  //int equi_cycles = 1E2;
+  int cycles = 10;
+  int equi_cycles = 5E4;
   Mat R = MC->get_initial_R_no_overlap();
 
-  R = MC->sample_energy(R, 1);
-  MC->print_info();
-  //R = MC->equilibriation(R, equi_cycles);
+  for (int i = 0; i < R.shape0(); i++) {
+    for (int j = 0; j < R.shape1(); j++) {
+      printf("%8.4lf ", R.get(i, j));
+    }
+    printf("\n");
+  }
   R = MC->sample_energy(R, cycles);
   MC->print_info();
-  //R = MC->equilibriation(R, equi_cycles);
+  R = MC->equilibriation(R, equi_cycles);
   R = MC->sample_energy(R, cycles);
   MC->print_info();
-  //R = MC->equilibriation(R, equi_cycles);
+  R = MC->equilibriation(R, equi_cycles);
+  R = MC->sample_energy(R, cycles);
+  MC->print_info();
+  R = MC->equilibriation(R, equi_cycles);
   R = MC->sample_energy(R, cycles);
   MC->print_info();
 
@@ -49,13 +55,13 @@ void run(Monte_Carlo* MC) {
 // bool correlated is a lying bastard
 void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) {
   if (correlated) {
-    Psi_OB boson_system;
-    //Psi_T boson_system;
+    //Psi_OB boson_system;
+    Psi_T boson_system;
     Metropolis MC(&boson_system, N, dim);
     run(&MC);
   } else {
-    Psi_OB boson_system;
-    //Psi_T boson_system;
+    //Psi_OB boson_system;
+    Psi_T boson_system;
     Hastings MC(&boson_system, N, dim);
     run(&MC);
   }
@@ -64,16 +70,16 @@ void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) 
 
 
 int main() {
-  int N = 3;
+  int N = 5;
   //srand(1336);
-  
+  /*
   printf("\nHastings\n");
   run_Metropolis(false, N, 3);
   run_Metropolis(false, N, 2);
   run_Metropolis(false, N, 1);
-
+  */
   printf("\nMetropolis\n");
-  run_Metropolis(true, N, 3);
-  run_Metropolis(true, N, 2);
   run_Metropolis(true, N, 1);
+  //run_Metropolis(true, N, 2);
+  //run_Metropolis(true, N, 1);
 }

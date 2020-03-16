@@ -8,7 +8,7 @@ Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensio
 	N = N_particles;
 	dim = dimensions;
 	PDF = trial_wave_function;
-	L = 3*N;
+	L = 10;
   E_cycles = new double [1];
   PDF->L = 0.5*L;
   if (dim < 3) {
@@ -74,7 +74,7 @@ Mat Monte_Carlo::get_initial_R() {
 	*/
 	Mat R(N, dim);
 	for (int i = 0; i < N*dim; i++) {
-      R.set_raw(rand_double(0, L), i);
+      R.set_raw(rand_double(0.01*L, 0.99*L), i);
 	}
 
 	return R;
@@ -134,7 +134,9 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   E_cycles = new double[cycles];         // Cycle-Wise Energy
   MC_cycles = cycles;
   double accepted_moves = 0;
-  double A; 																		// Acceptance Ratio
+  double A;															// Acceptance Ratio
+
+  double r;
 
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
@@ -143,12 +145,18 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 
 				// Determine whether or not to accept movement
         A = acceptance_ratio(R_new, R, j);
-        if (A > rand_double(0.0, 1.0)) {
+        r = rand_double(0.0, 1.0);
+        printf("(%5.2lf,%5.2lf)", A, r);
+        if (A > r) {
           R = R_new;
           accepted_moves++;
+          printf("+ ");
+        } else {
+          printf("- ");
         }
     } // End cycle
     E_cycles[i] = PDF->energy(R);
+    printf("\t-> %8.3lf : %6.3e \n", E_cycles[i], PDF->operator()(R));
  
     // Save Total Energy
     E += E_cycles[i];

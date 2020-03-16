@@ -52,7 +52,7 @@ double Psi_OB::probability_density_ratio(Mat R_new, Mat R_old, int k) {
   phi -= beta*x*x;
 
   phi = std::exp(-alpha*phi);
-  return phi;
+  return phi*phi;
 }
 
 double* Psi_OB::drift_force(Mat R, int index) {
@@ -69,9 +69,10 @@ double* Psi_OB::drift_force(Mat R, int index) {
 double Psi_OB::energy(Mat R) {
   double E = 0.0;   // Kinetic Energy
   double V = 0.0;   // Potential
-  double x, xx;
+  int N = R.shape0();
   int last_index = R.shape1()-1;
-  for (int k = 0; k < R.shape0(); k++) {
+  double x, xx;
+  for (int k = 0; k < N; k++) {
     for (int j = 0; j < last_index; j++) {
       x = R.get(k, j);
       xx = x*x;
@@ -83,7 +84,7 @@ double Psi_OB::energy(Mat R) {
     V += gamma_squared*xx;
     E += beta_squared*xx;
   } // END LOOP OVER k
-  return R.shape0()*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
+  return N*alpha*(last_index + beta) + 0.5*V - 2*alpha_squared*E;
 }
 
 

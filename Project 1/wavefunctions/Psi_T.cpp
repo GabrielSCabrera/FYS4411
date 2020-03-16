@@ -123,9 +123,8 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
   }
   delete[] r_new;
   delete[] r_old;
-  phi *= phi;
-  jastrow *= jastrow;
-  return phi*jastrow;
+  double ratio = phi*jastrow;
+  return ratio*ratio;
 }
 
 // CALCULATIONS
@@ -155,7 +154,7 @@ double* Psi_T::drift_force(Mat R, int k) {
       diff_r_ki[l] = dx;
     }
     r_ki = std::sqrt(r_ki);
-    //if (r_ki > L) {continue;}
+    if (r_ki > L) {continue;}
     up_ki = u_prime(r_ki);
     for (int l = 0; l < M; l++) {
       force[l] += 2*diff_r_ki[l]/r_ki*up_ki;
@@ -243,7 +242,7 @@ double Psi_T::energy(Mat R) {
         diff_r_kj[l] = dx;
       }
       r_kj = std::sqrt(r_kj);
-      //if (r_kj > L) {continue;}
+      if (r_kj > L) {continue;}
       //if (r_kj < a) {printf("cry\n");}
       up_kj = u_prime(r_kj);
       for (int l = 0; l < M; l++) {
@@ -260,7 +259,7 @@ double Psi_T::energy(Mat R) {
           diff_r_kj_r_ki += diff_r_kj[l]*dx;
         }
         r_ki = std::sqrt(r_ki);
-        //if (r_ki > L) {continue;}
+        if (r_ki > L) {continue;}
         up_ki = u_prime(r_ki);
         //if (r_ki < a) { printf("cry\n");}
         laplace_Psi_C += diff_r_kj_r_ki/(r_kj*r_ki)*up_ki*up_kj;
