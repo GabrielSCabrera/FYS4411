@@ -113,10 +113,10 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
     //if (r_ki_old <= L) {
     //  jastrow *= r_ki_old*(r_ki_new - a)/((r_ki_old - a)*r_ki_new);
     //}
-    if (r_ki_new <= L) {
+    if (r_ki_new < L) {
       jastrow *= 1 - a/r_ki_new;
     } 
-    if (r_ki_old <= L) {
+    if (r_ki_old < L) {
       jastrow /= 1 - a/r_ki_old;
     } 
 
@@ -243,7 +243,7 @@ double Psi_T::energy(Mat R) {
       }
       r_kj = std::sqrt(r_kj);
       if (r_kj > L) {continue;}
-      //if (r_kj < a) {printf("cry\n");}
+      if (r_kj < a) {printf("cry\n");}
       up_kj = u_prime(r_kj);
       for (int l = 0; l < M; l++) {
         grad_Psi_C[l] += diff_r_kj[l]/r_kj*up_kj;
@@ -261,7 +261,7 @@ double Psi_T::energy(Mat R) {
         r_ki = std::sqrt(r_ki);
         if (r_ki > L) {continue;}
         up_ki = u_prime(r_ki);
-        //if (r_ki < a) { printf("cry\n");}
+        if (r_ki < a) { printf("cry\n");}
         laplace_Psi_C += diff_r_kj_r_ki/(r_kj*r_ki)*up_ki*up_kj;
       }// END LOOP OVER i
     } // END LOOP OVER j

@@ -71,7 +71,7 @@ void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) 
 
 int main() {
   int N = 5;
-  //srand(1336);
+   // Initialize the seed and call the Mersienne algo
   /*
   printf("\nHastings\n");
   run_Metropolis(false, N, 3);

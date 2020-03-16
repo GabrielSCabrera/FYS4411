@@ -27,7 +27,7 @@ public:
 	double get_variance();
 	double get_accepted_moves_ratio();
 	void print_info();
-	double rand_double(double min, double max);
+	double random_normal_distribution();
 	virtual double acceptance_ratio(Mat R_new, Mat R_old, int index) = 0;
 	virtual Mat random_walk(Mat R, int index) = 0;
 	Mat get_initial_R();

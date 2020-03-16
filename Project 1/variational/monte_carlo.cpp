@@ -3,6 +3,12 @@
 #include "../wavefunctions/Psi.h"
 #include "monte_carlo.h"
 #include <fstream>
+#include <random>
+
+std::random_device rd;
+std::mt19937_64 gen(rd());
+std::uniform_real_distribution<double> UniformNumberGenerator(0.0,1.0);
+std::normal_distribution<double> Normaldistribution(0.0,1.0);
 
 Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
 	N = N_particles;
@@ -23,7 +29,6 @@ Monte_Carlo::~Monte_Carlo() {
 }
 
 // GETTERS
-
 double Monte_Carlo::get_energy() {
   return E;
 }
@@ -52,11 +57,8 @@ void Monte_Carlo::print_info() {
   printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), variance, accepted_moves_ratio);
 }
 
-double Monte_Carlo::rand_double(double min, double max) {
-  /*
-    Returns a randomly generated <double> in range [-N_max, N_max]
-  */
-  return (max-min)*(static_cast<double>(rand()) / RAND_MAX) + min;
+double Monte_Carlo::random_normal_distribution() {
+  return Normaldistribution(gen);
 }
 
 void Monte_Carlo::set_to_zero() {
@@ -74,7 +76,7 @@ Mat Monte_Carlo::get_initial_R() {
 	*/
 	Mat R(N, dim);
 	for (int i = 0; i < N*dim; i++) {
-      R.set_raw(rand_double(0.01*L, 0.99*L), i);
+      R.set_raw(UniformNumberGenerator(gen)*0.99*L, i);
 	}
 
 	return R;
@@ -90,7 +92,7 @@ Mat Monte_Carlo::get_initial_R_no_overlap() {
     overlap = true;
     while (overlap) {
       for (int l = 0; l < dim; l++) {
-        R.set(rand_double(0.01*L, 0.99*L), i, l);
+        R.set(UniformNumberGenerator(gen)*0.99*L, i, l);
       }
       overlap = false;
       for (int j = 0; j < i; j++) {
@@ -118,7 +120,7 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 
 			// Determine whether or not to accept movement
 			A = acceptance_ratio(R_new, R, j);
-			if (A > rand_double(0.0, 1.0)) {
+			if (A > UniformNumberGenerator(gen)) {
 				R = R_new;
 			}
 		}
@@ -145,7 +147,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 
 				// Determine whether or not to accept movement
         A = acceptance_ratio(R_new, R, j);
-        r = rand_double(0.0, 1.0);
+        r = UniformNumberGenerator(gen);
         printf("(%5.2lf,%5.2lf)", A, r);
         if (A > r) {
           R = R_new;
@@ -189,7 +191,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 				R_new = random_walk(R, j);
 				// Determine whether or not to accept movement
         A = acceptance_ratio(R_new, R, j);
-        if (A > rand_double(0, 1)) {
+        if (A > UniformNumberGenerator(gen)) {
           R = R_new;
           accepted_moves++;
         }

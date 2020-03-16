@@ -8,7 +8,7 @@
 Mat Metropolis::random_walk(Mat R, int index) {
   double r_new;
 	for (int k = 0; k < dim; k++) {
-      r_new = R.get(index, k) + rand_double(-step_length, step_length);
+      r_new = R.get(index, k) + step_length*random_normal_distribution();
       if (r_new < 0.0) {
       	r_new += L; 
       } else if (r_new > L) {
