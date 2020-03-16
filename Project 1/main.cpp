@@ -38,7 +38,6 @@ void run(Monte_Carlo* MC) {
   R = MC->sample_energy(R, cycles);
   MC->print_info();
 
-
   ofstream outfile;
   string filename = MC->filename_E();
   outfile.open(filename);
@@ -50,8 +49,6 @@ void run(Monte_Carlo* MC) {
   MC->write_val_to_file(outfile);
   outfile.close();
 }
-
-
 
 // bool correlated is a lying bastard
 void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) {
@@ -68,7 +65,6 @@ void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) 
   }
   printf("\n");
 }
-
 
 int main() {
   int N = 5;
