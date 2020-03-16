@@ -1,4 +1,5 @@
 from file_io import read_energies, read_vals
+from matplotlib.ticker import MaxNLocator
 from analysis import dataAnalysisClass
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,23 +39,43 @@ def prep_plot_energies(path_prefix, N_vals):
 
         Where 'N' in 'N_vals' will replace '{:d}'
     '''
-    x = None
+    x_max = 0
     for N in N_vals:
         E = read_energies(path_prefix.format(int(N)))
-        if x is None:
-            x = np.arange(1, len(E)+1)
+        if len(E) > x_max:
+            x_max = len(E)
+
+    ax = plt.figure().gca()
+
+    x = np.arange(1, x_max+1)
+    for m,N in enumerate(N_vals):
+        E = read_energies(path_prefix.format(int(N)))
+        y = np.ones_like(x)*E[-1]
+        cutoff = len(E)
         if int(N) == 1:
             label = f'${int(N):<3d}$ Particle'
         else:
             label = f'${int(N):<3d}$ Particles'
-        plt.plot(x, E, label = label)
-        plt.xlabel('Monte-Carlo Cycle')
-        plt.ylabel('System Energy [$eV$]')
+        p = plt.plot(x[:cutoff], E, label = label)
+        color = p[0].get_color()
+        plt.plot(x[cutoff-1:], y[cutoff-1:], color = color, linestyle = 'dotted')
+        if m == len(N_vals)-1:
+            plt.plot(x[cutoff-1], y[cutoff-1], 'kx', label = 'Last MC Cycle')
+        else:
+            plt.plot(x[cutoff-1], y[cutoff-1], 'kx')
+
+    plt.xlabel('Monte-Carlo Cycle')
+    plt.ylabel('System Energy')
     plt.grid()
     plt.xlim(1, len(x))
     plt.legend()
 
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
 def fmt_exp_float(x):
+
+    if np.isnan(x):
+        return 'NAN'
 
     string = f'{x:.2E}'
 
@@ -181,7 +202,7 @@ def run_all(cmdline_args):
 
     prep_plot_energies(path_prefix_E, N_vals)
     fig_path = cmdline_args.set + 'plots/'
-    plt.savefig(fig_path + 'energies.png')
+    plt.savefig(fig_path + 'energies.pdf')
 
     path_prefix_val = data_dir + 'val_{:d}.dat'
     chart_path = cmdline_args.set + 'charts/'

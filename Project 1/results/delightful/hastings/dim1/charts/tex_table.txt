@@ -1,0 +1,8 @@
+\begin{table}[H]
+	\centering
+	\begin{tabular}{r | c c c}
+		 $N$ Bosons& $\left\langle E \right\rangle$ [eV]& $\left\langle \text{var}(E) \right\rangle$ & $\left\langle \text{std}(E) \right\rangle$ \\
+		\hline\\
+		$3$ & $1.50$ & $0.00$ & $0.00$\\
+	\end{tabular}
+\end{table}
