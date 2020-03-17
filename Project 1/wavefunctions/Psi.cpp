@@ -39,7 +39,7 @@ void Psi::update_gamma(double gamma) {
 void Psi::update_constants() {
   // used in grad phi
   minus_two_alpha = -2*alpha;
-  minus_two_alpha_beta = minus_four_alpha*beta;
+  minus_two_alpha_beta = minus_two_alpha*beta;
   // used in drag force
   minus_four_alpha = 2*minus_two_alpha;
   minus_four_alpha_beta = minus_four_alpha*beta;
@@ -63,17 +63,17 @@ double Psi::get_gamma() {
 }
 
 // CALCULATIONS
-double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int k) {
+double Psi::greens_ratio(Mat* R_new, Mat* R_old, double dt, int k) {
   double K = D*dt;
-  double* F_old = drift_force(R_old, k);
   double* F_new = drift_force(R_new, k);
+  double* F_old = drift_force(R_old, k);
 
   double term;
   double exponent = 0.0;
-  for (int i = 0; i < R_new.shape1(); i++) {
-    term = R_old.get(k, i) - R_new.get(k, i) - K*F_new[i];
+  for (int l = 0; l < R_new->shape1(); l++) {
+    term = R_old->get(k, l) - R_new->get(k, l) - K*F_new[l];
     exponent -= term*term;
-    term = R_new.get(k, i) - R_old.get(k, i) - K*F_old[i];
+    term = R_new->get(k, l) - R_old->get(k, l) - K*F_old[l];
     exponent += term*term;
   }
   delete [] F_old;
@@ -82,18 +82,18 @@ double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int k) {
 }
 
 
-double Psi::grad_alpha(Mat R) {
-  int M = R.shape1();
+double Psi::grad_alpha(Mat* R) {
+  int M = R->shape1();
   double grad_alpha_phi = 0.0;
   double x;
-  for (int i = 0; i < R.shape0(); i++) {
-    x = R.get(i, 0);
+  for (int i = 0; i < R->shape0(); i++) {
+    x = R->get(i, 0);
     grad_alpha_phi += x*x;
     if (M > 1) {
-      x = R.get(i, 1);
+      x = R->get(i, 1);
       grad_alpha_phi += x*x;
       if (M == 3) {
-        x = R.get(i, 2);
+        x = R->get(i, 2);
         grad_alpha_phi += beta*x*x;
       }
     }

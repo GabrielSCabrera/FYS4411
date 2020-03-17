@@ -12,25 +12,24 @@ Psi_T::Psi_T() {
 }
 
 // CALLING
-double Psi_T::operator()(Mat R) {
+double Psi_T::psi(Mat* R) {
   double exponent_OB = 0.0;
   double product_C = 1.0;
   double x, dx, r_ij;
-  int N = R.shape0();
-  int M = R.shape1();
+  int N = R->shape0();
+  int M = R->shape1();
   double* r_i = new double [M];
-
   for (int i = 0; i < N; i++) {
     // Psi_OB
-    x = R.get(i, 0);
+    x = R->get(i, 0);
     exponent_OB += x*x;
     r_i[0] = x;
     if (M > 1) {
-      x = R.get(i, 1);
+      x = R->get(i, 1);
       exponent_OB += x*x;
       r_i[1] = x;
       if (M == 3) {
-        x = R.get(i, 2);
+        x = R->get(i, 2);
         exponent_OB += beta*x*x;
         r_i[2] = x;
       }
@@ -38,8 +37,8 @@ double Psi_T::operator()(Mat R) {
     // Psi_C
     for (int j = i+1; j < N; j++) {
       r_ij = 0.0;
-      for (int k = 0; k < M; k++) {
-        dx = r_i[k] - R.get(j, k);
+      for (int l = 0; l < M; l++) {
+        dx = r_i[l] - R->get(j, l);
         r_ij += dx*dx;
       }
       r_ij = std::sqrt(r_ij);
@@ -56,45 +55,44 @@ double Psi_T::operator()(Mat R) {
 }
 
 
-double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
+double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   double jastrow = 1.0;
   double phi = 0.0;
   double x, dx, r_ki_old, r_ki_new;
-  int M = R_new.shape1();
+  int M = R_new->shape1();
   double* r_old = new double [M];
   double* r_new = new double [M];
-
   // calculate:  phi(r^new_k) - phi(r^old_k) 
-  x = R_new.get(k, 0);
+  x = R_new->get(k, 0);
   phi -= x*x;
   r_new[0] = x;
-  x = R_old.get(k, 0);
+  x = R_old->get(k, 0);
   phi += x*x;
   r_old[0] = x;
   if (M > 1) {        // y-axis
-    x = R_new.get(k, 1);
+    x = R_new->get(k, 1);
     phi -= x*x;
     r_new[1] = x;
-    x = R_old.get(k, 1);
+    x = R_old->get(k, 1);
     phi += x*x;
     r_old[1] = x;
     if (M == 3) {     // z-axis
-      x = R_new.get(k, 2);
+      x = R_new->get(k, 2);
       phi -= beta*x*x;
       r_new[2] = x;
-      x = R_old.get(k, 2);
+      x = R_old->get(k, 2);
       phi += beta*x*x;
       r_old[2] = x;
     }
   }
   phi = std::exp(alpha*phi);
   // calculate ratio of jastrow factor
-  for (int i = 0; i < R_new.shape0(); i++) {
+  for (int i = 0; i < R_new->shape0(); i++) {
     if (i == k) {continue;}
     r_ki_old = 0.0; 
     r_ki_new = 0.0;
     for (int l = 0; l < M; l++) {
-      x = R_old.get(i, l);
+      x = R_old->get(i, l);
       dx = r_new[l] - x;
       r_ki_new += dx*dx;
       dx = r_old[l] - x;
@@ -122,32 +120,32 @@ double Psi_T::probability_density_ratio(Mat R_new, Mat R_old, int k) {
 }
 
 // CALCULATIONS
-double* Psi_T::drift_force(Mat R, int k) {
-  int M = R.shape1();
+double* Psi_T::drift_force(Mat* R, int k) {
+  int M = R->shape1();
   double* force = new double [M];
   double* r_k = new double [M];
   double* diff_r_ki = new double [M];
   double x, dx, r_ki, up_ki;
   // grad phi
-  x = R.get(k, 0);
+  x = R->get(k, 0);
   force[0] = minus_four_alpha*x;
   r_k[0] = x;
   if (M > 1) {
-    x = R.get(k, 1);
+    x = R->get(k, 1);
     force[1] = minus_four_alpha*x;
     r_k[1] = x;
     if (M == 3) {
-      x = R.get(k, 2);
+      x = R->get(k, 2);
       force[2] = minus_four_alpha_beta*x;
       r_k[2] = x;
     }
   }
   // grad Psi_T
-  for (int i = 0; i < R.shape0(); i++) {
+  for (int i = 0; i < R->shape0(); i++) {
     if (i == k) {continue;}
     r_ki = 0.0;
     for (int l = 0; l < M; l++) {
-      dx = r_k[l] - R.get(i, l);
+      dx = r_k[l] - R->get(i, l);
       r_ki += dx*dx;
       diff_r_ki[l] = dx;
     }
@@ -162,9 +160,9 @@ double* Psi_T::drift_force(Mat R, int k) {
   return force;
 }
 
-double Psi_T::energy(Mat R) {
-  int N = R.shape0();
-  int M = R.shape1();
+double Psi_T::energy(Mat* R) {
+  int N = R->shape0();
+  int M = R->shape1();
 
   double K;                 // Kinetic Energy
   double V = 0.0;           // Potential Energy (External)
@@ -180,7 +178,7 @@ double Psi_T::energy(Mat R) {
   double up_kj, up_ki;        // u-prime
 
   for (int k = 0; k < N; k++) {
-    x = R.get(k, 0);
+    x = R->get(k, 0);
     xx = x*x;
     r_k[0] = x;
     grad_phi[0] = minus_two_alpha*x;
@@ -188,7 +186,7 @@ double Psi_T::energy(Mat R) {
     laplace_phi += xx;
     V += xx;
     if (M > 1) {// y-axis
-      x = R.get(k, 1);
+      x = R->get(k, 1);
       xx = x*x;
       r_k[1] = x;
       grad_phi[1] = minus_two_alpha*x;
@@ -196,7 +194,7 @@ double Psi_T::energy(Mat R) {
       laplace_phi += xx;
       V += xx;
       if (M == 3) {// z-axis
-        x = R.get(k, 2);
+        x = R->get(k, 2);
         xx = x*x;
         r_k[2] = x;
         grad_phi[2] = minus_two_alpha_beta*x;
@@ -209,7 +207,7 @@ double Psi_T::energy(Mat R) {
       if (j == k) {continue;}
       r_kj = 0.0;
       for (int l = 0; l < M; l++) {
-        dx = r_k[l] - R.get(j, l);
+        dx = r_k[l] - R->get(j, l);
         r_kj += dx*dx;
         diff_r_kj[l] = dx;
       }
@@ -225,7 +223,7 @@ double Psi_T::energy(Mat R) {
         r_ki = 0.0;
         diff_r_kj_r_ki = 0.0;
         for (int l = 0; l < M; l++) {
-          dx = r_k[l] - R.get(i, l);
+          dx = r_k[l] - R->get(i, l);
           r_ki += dx*dx;
           diff_r_kj_r_ki += diff_r_kj[l]*dx;
         }
@@ -266,5 +264,7 @@ std::string Psi_T::name() {
   return name;
 }
 
-
+bool Psi_T::interaction() {
+  return true;
+}
 

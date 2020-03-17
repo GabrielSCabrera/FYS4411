@@ -5,21 +5,21 @@
 #include "metropolis.h"
 
 
-void Metropolis::random_walk(Mat* R, int index) {
+void Metropolis::random_walk(Mat* R, int k) {
   double r_new;
-	for (int k = 0; k < dim; k++) {
-      r_new = R->get(index, k) + step_length*random_normal_distribution();
-      R->set(r_new, index, k);
+	for (int l = 0; l < dim; l++) {
+      r_new = R->get(k, l) + step_length*random_normal_distribution();
+      R->set(r_new, k, l);
   }
 }
 
-double Metropolis::acceptance_ratio(Mat R_new, Mat R_old, int index) {
-  return PDF->probability_density_ratio(R_new, R_old, index);
+double Metropolis::acceptance_ratio(Mat* R_new, Mat* R_old, int k) {
+  return bose->probability_density_ratio(R_new, R_old, k);
 }
 
 std::string Metropolis::filename_E() {
   std::string path = "results/";
-  path.append(PDF->name());
+  path.append(bose->name());
   path.append("/metropolis/dim");
   path.append(std::to_string(dim));
   path.append("/E_");
@@ -30,7 +30,7 @@ std::string Metropolis::filename_E() {
 
 std::string Metropolis::filename_val() {
   std::string path = "results/";
-  path.append(PDF->name());
+  path.append(bose->name());
   path.append("/metropolis/dim");
   path.append(std::to_string(dim));
   path.append("/val_");

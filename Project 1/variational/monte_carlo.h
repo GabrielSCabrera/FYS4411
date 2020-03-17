@@ -17,19 +17,18 @@ protected:
 	int MC_cycles = 1;
 	void set_to_zero();
 public:
-	Psi* PDF;
+	Psi* bose;
 	Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions);
 	~Monte_Carlo();
 	double get_energy();
 	double get_energy_mean();
 	double get_grad_alpha();
-	double get_grad_beta();
 	double get_variance();
 	double get_accepted_moves_ratio();
 	void print_info();
 	void copy_step(Mat* from, Mat* to, int index);
 	double random_normal_distribution();
-	virtual double acceptance_ratio(Mat R_new, Mat R_old, int index) = 0;
+	virtual double acceptance_ratio(Mat* R_new, Mat* R_old, int k) = 0;
 	virtual void random_walk(Mat* R, int index) = 0;
 	Mat get_initial_R();
 	Mat get_initial_R_no_overlap();

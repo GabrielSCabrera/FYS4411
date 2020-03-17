@@ -8,16 +8,16 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
   // these should be parameters...
   int equi_cycles = 1E2;
   int sample_cycles = 1E4;
-  int max_steps = 50;
+  int max_steps = 1E3;
   double tol = 1e-10;
 
   // first iteration
   R = MC->sample_variational_derivatives(R, sample_cycles);
 
   double grad_alpha = MC->get_grad_alpha();
-  double alpha = MC->PDF->get_alpha() - eta*grad_alpha;
+  double alpha = MC->bose->get_alpha() - eta*grad_alpha;
   
-  MC->PDF->update_alpha(alpha);
+  MC->bose->update_alpha(alpha);
   int counter = 0;
   while (grad_alpha*grad_alpha > tol && counter < max_steps) {
     // Running Monte-Carlo
@@ -27,7 +27,7 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
     //printf("alpha: %.6lf,  E: %.6lf\n", alpha, MC->get_energy_mean());
     grad_alpha = MC->get_grad_alpha();
     alpha -= eta*grad_alpha;
-    MC->PDF->update_alpha(alpha);
+    MC->bose->update_alpha(alpha);
 
     counter++;
   }

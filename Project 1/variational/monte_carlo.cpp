@@ -10,10 +10,10 @@ std::mt19937_64 gen(rd());
 std::uniform_real_distribution<double> UniformNumberGenerator(0.0, 1.0);
 std::normal_distribution<double> Normaldistribution(0.0, 1.0);
 
-Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions) {
+Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
 	N = N_particles;
 	dim = dimensions;
-	PDF = trial_wave_function;
+	bose = bosonic_system;
   E_cycles = new double [1];
   L = 10;
 }
@@ -60,22 +60,18 @@ void Monte_Carlo::set_to_zero() {
 }
 
 Mat Monte_Carlo::get_initial_R() {
-	/*
-	Returns a <Mat> instance of shape (N, dim) full of randomly generated values
-	in the range [-x_max, x_max].
-	*/
-	Mat R(N, dim);
+  Mat R(N, dim);
 	for (int i = 0; i < N*dim; i++) {
       R.set_raw(UniformNumberGenerator(gen)*0.99*L, i);
 	}
-	return R;
+  return R;
 }
 
 Mat Monte_Carlo::get_initial_R_no_overlap() {
   Mat R(N, dim);
   double r_ij, dx;
   bool overlap;
-  double hard_radius = PDF->get_a();
+  double hard_radius = bose->get_a();
   hard_radius *= hard_radius;
   for (int i = 0; i < N; i++) {
     overlap = true;
@@ -111,14 +107,14 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	for (int i = 0; i < cycles; i++) {
 		for (int j = 0; j < N; j++) {
 			random_walk(&R_new, j);
-			if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)) {
+			if (acceptance_ratio(&R_new, &R, j) > UniformNumberGenerator(gen)) {
 				copy_step(&R_new, &R, j);
       } else {
         copy_step(&R, &R_new, j);
 			}
 		}
 	}
-	return R;
+  return R;
 }
 
 
@@ -131,31 +127,29 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   int accepted_moves = 0;
   double A;															// Acceptance Ratio
   double r, E_L;
-
   double psi_R;
-
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
 				random_walk(&R_new, j);
 
 				// Determine whether or not to accept movement
-        A = acceptance_ratio(R_new, R, j);
+        A = acceptance_ratio(&R_new, &R, j);
         r = UniformNumberGenerator(gen);
-        printf("(%5.2lf,%5.2lf)", A, r);
+        //printf("(%5.2lf,%5.2lf)", A, r);
         if (A > r) {  // !!!!! FOR DEBUGGING
           copy_step(&R_new, &R, j);
           accepted_moves++;
-          printf("+ ");
+          //printf("+ ");
         } else {
           copy_step(&R, &R_new, j);
-          printf("- ");
+          //printf("- ");
         }
     } // End cycle
-    E_L = PDF->energy(R);
-    psi_R = PDF->operator()(R);
+    E_L = bose->energy(&R);
+    //psi_R = bose->psi(&R);
     // debugging:
-    printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
+    //printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
     // Save Total Energy
     E += E_L;
     EE += E_L*E_L;
@@ -171,7 +165,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
 
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
-  Mat R_new(N, dim);
+  Mat R_new = R;
   double grad_psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
   double E_grad_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
   double grad_psi_alpha_cycle, E_L;
@@ -179,20 +173,19 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     for (int j = 0; j < N; j++) {
-    	random_walk(&R, j);
+    	random_walk(&R_new, j);
     	// Determine whether or not to accept movement
-      if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)){
+      if (acceptance_ratio(&R_new, &R, j) > UniformNumberGenerator(gen)){
         copy_step(&R_new, &R, j);
       } else {
         copy_step(&R, &R_new, j);
       }
     } // End cycle
-    E_L = PDF->energy(R);
+    E_L = bose->energy(&R);
     E += E_L;
 
-    grad_psi_alpha_cycle = PDF->grad_alpha(R);
+    grad_psi_alpha_cycle = bose->grad_alpha(&R);
     grad_psi_alpha += grad_psi_alpha_cycle;
-
     E_grad_psi_alpha += grad_psi_alpha_cycle*E_L;
   } // End Monte Carlo
   E /= cycles;
@@ -211,8 +204,8 @@ void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
 }
 
 void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
-  outfile << "alpha " << PDF->get_alpha() << "\n";
-  outfile << "beta " << PDF->get_beta() << "\n";
+  outfile << "alpha " << bose->get_alpha() << "\n";
+  outfile << "beta " << bose->get_beta() << "\n";
   outfile << "E " << E << "\n";
 	outfile << "accept " << accepted_moves_ratio << "\n";
   outfile << "cycles " << MC_cycles;
