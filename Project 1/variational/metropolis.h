@@ -12,9 +12,8 @@ protected:
 public:
 	using Monte_Carlo::Monte_Carlo;
 	double acceptance_ratio(Mat R_new, Mat R_old, int index);
-	Mat random_walk(Mat R, int index);
+	void random_walk(Mat *R, int index);
 	std::string filename_E();
 	std::string filename_val();
 };
-
 #endif

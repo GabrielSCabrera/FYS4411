@@ -14,13 +14,8 @@ Monte_Carlo::Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensio
 	N = N_particles;
 	dim = dimensions;
 	PDF = trial_wave_function;
-	L = 10;
   E_cycles = new double [1];
-  PDF->L = 0.5*L;
-  if (dim < 3) {
-    PDF->update_beta(1.0);
-    PDF->update_gamma(1.0);
-  }
+  L = 10;
 }
 
 // DESTRUCTOR
@@ -73,7 +68,6 @@ Mat Monte_Carlo::get_initial_R() {
 	for (int i = 0; i < N*dim; i++) {
       R.set_raw(UniformNumberGenerator(gen)*0.99*L, i);
 	}
-
 	return R;
 }
 
@@ -106,22 +100,31 @@ Mat Monte_Carlo::get_initial_R_no_overlap() {
   return R;
 }
 
+void Monte_Carlo::copy_step(Mat* from, Mat* to, int index) {
+  for (int i = 0; i < dim; i++) {
+    to->set(from->get(index, i), index, i);
+  }
+}
+
 Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
-	Mat R_new(N, dim);
+	Mat R_new = R;
 	for (int i = 0; i < cycles; i++) {
 		for (int j = 0; j < N; j++) {
-			R_new = random_walk(R, j);
+			random_walk(&R_new, j);
 			if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)) {
-				R = R_new;
+				copy_step(&R_new, &R, j);
+      } else {
+        copy_step(&R, &R_new, j);
 			}
 		}
 	}
 	return R;
 }
 
+
 Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   set_to_zero();
-  Mat R_new(N, dim);
+  Mat R_new = R;
   delete[] E_cycles;
   E_cycles = new double[cycles];         // Cycle-Wise Energy
   MC_cycles = cycles;
@@ -134,24 +137,25 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
-				R_new = random_walk(R, j);
+				random_walk(&R_new, j);
 
 				// Determine whether or not to accept movement
         A = acceptance_ratio(R_new, R, j);
         r = UniformNumberGenerator(gen);
-        //printf("(%5.2lf,%5.2lf)", A, r);
+        printf("(%5.2lf,%5.2lf)", A, r);
         if (A > r) {  // !!!!! FOR DEBUGGING
-          R = R_new;
+          copy_step(&R_new, &R, j);
           accepted_moves++;
-          //printf("+ ");
+          printf("+ ");
         } else {
-          //printf("- ");
+          copy_step(&R, &R_new, j);
+          printf("- ");
         }
     } // End cycle
     E_L = PDF->energy(R);
     psi_R = PDF->operator()(R);
     // debugging:
-    //printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
+    printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
     // Save Total Energy
     E += E_L;
     EE += E_L*E_L;
@@ -175,10 +179,12 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     for (int j = 0; j < N; j++) {
-    	R_new = random_walk(R, j);
+    	random_walk(&R, j);
     	// Determine whether or not to accept movement
       if (acceptance_ratio(R_new, R, j) > UniformNumberGenerator(gen)){
-        R = R_new;
+        copy_step(&R_new, &R, j);
+      } else {
+        copy_step(&R, &R_new, j);
       }
     } // End cycle
     E_L = PDF->energy(R);

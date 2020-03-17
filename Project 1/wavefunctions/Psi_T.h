@@ -13,12 +13,12 @@ class Psi_T : public Psi {
     double* drift_force(Mat R, int index);
 
     double Psi_ob(Mat R, int N);
-
     double Psi_c(Mat R, int N);
 
     double energy(Mat R);
-    double u_prime(double r_kj);
-    double u_double_prime(double r_kj, double u_prime_kj);
+    double f(double r_ij);
+    double u_prime(double r_ij);
+    double u_double_prime(double r_ij, double u_prime_ij);
     double probability_density_ratio(Mat R_new, Mat R_old, int k);
     std::string name();
 };

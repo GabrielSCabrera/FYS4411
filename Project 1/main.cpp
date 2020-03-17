@@ -5,19 +5,19 @@
 // #include <mpi.h>
 using namespace std;
 
-// #include "./tests/tests_backend.h"
 #include "./wavefunctions/Psi.h"
 #include "./wavefunctions/Psi_T.h"
 #include "./wavefunctions/Psi_OB.h"
 #include "./variational/monte_carlo.h"
 #include "./variational/metropolis.h"
 #include "./variational/hastings.h"
+#include "./matpak/Mat.h"
 #include "./variational/gradient_descent.h"
 
 void run(Monte_Carlo* MC) {
   double eta = 1E-4;
-  int cycles = 1E6;
-  int equi_cycles = 1E3;
+  int cycles = 10;
+  int equi_cycles = 1E5;
   Mat R = MC->get_initial_R_no_overlap();
 
   for (int i = 0; i < R.shape0(); i++) {
@@ -26,6 +26,7 @@ void run(Monte_Carlo* MC) {
     }
     printf("\n");
   }
+  R = MC->equilibriation(R, 1E3);
   R = MC->sample_energy(R, 10);
   MC->print_info();
 
@@ -33,10 +34,10 @@ void run(Monte_Carlo* MC) {
   R = MC->sample_energy(R, cycles);
   MC->print_info();
 
-  gradient_descent(MC, eta, R);
+  /*gradient_descent(MC, eta, R);
   R = MC->equilibriation(R, 100);
   R = MC->sample_energy(R, cycles);
-  MC->print_info();
+  MC->print_info();*/
 
   ofstream outfile;
   string filename = MC->filename_E();
@@ -68,15 +69,14 @@ void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) 
 
 int main() {
   int N = 5;
-   // Initialize the seed and call the Mersienne algo
   /*
-  printf("\nHastings\n");
   run_Metropolis(false, N, 3);
   run_Metropolis(false, N, 2);
   run_Metropolis(false, N, 1);
   */
-  //printf("\nMetropolis\n");
+  printf("\nMetropolis\n");
+  run_Metropolis(true, N, 1);
+  printf("\nHastings\n");
   run_Metropolis(false, N, 1);
-  //run_Metropolis(true, N, 2);
   //run_Metropolis(true, N, 1);
 }

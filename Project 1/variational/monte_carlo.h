@@ -27,9 +27,10 @@ public:
 	double get_variance();
 	double get_accepted_moves_ratio();
 	void print_info();
+	void copy_step(Mat* from, Mat* to, int index);
 	double random_normal_distribution();
 	virtual double acceptance_ratio(Mat R_new, Mat R_old, int index) = 0;
-	virtual Mat random_walk(Mat R, int index) = 0;
+	virtual void random_walk(Mat* R, int index) = 0;
 	Mat get_initial_R();
 	Mat get_initial_R_no_overlap();
 	Mat equilibriation(Mat R, int cycles);

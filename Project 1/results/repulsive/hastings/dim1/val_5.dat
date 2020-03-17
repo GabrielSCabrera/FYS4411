@@ -1,4 +1,5 @@
-alpha 0.497009
-beta 1
-E 3.1483
-accept 0.975216
+alpha 0.5
+beta 2.82843
+E 2.5439
+accept 1
+cycles 10

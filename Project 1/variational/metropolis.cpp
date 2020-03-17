@@ -5,21 +5,12 @@
 #include "metropolis.h"
 
 
-Mat Metropolis::random_walk(Mat R, int index) {
+void Metropolis::random_walk(Mat* R, int index) {
   double r_new;
 	for (int k = 0; k < dim; k++) {
-      r_new = R.get(index, k) + step_length*random_normal_distribution();
-      if (r_new < 0.0) {
-      	r_new += L;
-      } else if (r_new > L) {
-      	r_new -= L;
-      }
-      if (r_new < 0.0 || r_new > L) {
-      	printf("Outside bounds...\n");
-      }
-      R.set(r_new, index, k);
+      r_new = R->get(index, k) + step_length*random_normal_distribution();
+      R->set(r_new, index, k);
   }
-  return R;
 }
 
 double Metropolis::acceptance_ratio(Mat R_new, Mat R_old, int index) {

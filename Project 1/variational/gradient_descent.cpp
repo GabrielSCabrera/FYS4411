@@ -32,7 +32,6 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
     counter++;
   }
   if (grad_alpha*grad_alpha < tol) {printf("stopped because tolerance reached\n");}
-
   printf("alpha: %.12lf  ->  change: %.3e\n", alpha, grad_alpha*grad_alpha);
   return R;
 }

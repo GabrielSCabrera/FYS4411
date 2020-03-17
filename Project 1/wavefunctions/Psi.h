@@ -5,18 +5,20 @@
 
 class Psi {
   protected:
+    double D = 0.5;                 // diffusion constant
     double a, a_squared;            // hard radius
     double gamma, gamma_squared;    // elongation factor
     double alpha, alpha_squared;    // variational parameter
     double beta, beta_squared;      // variational parameter
-    double D = 0.5;                 // diffusion constant
+    double minus_two_alpha, minus_two_alpha_beta, 
+            minus_four_alpha, minus_four_alpha_beta;
+    void update_constants();
   public:
     // CONSTRUCTORS
     Psi();
     // DESTRUCTOR
     ~Psi();
     // UPDATERS
-    double L = 10.0;
     void update_alpha(double alpha);
     void update_beta(double beta);
     void update_a(double a);
@@ -34,12 +36,7 @@ class Psi {
     virtual double probability_density_ratio(Mat R_new, Mat R_old, int k) = 0; 
     double greens_ratio(Mat R_old, Mat R_new, double dt, int index);
 
-    double phi(double x, double y, double z);
-    double* grad_phi(double x, double y, double z);
-    double laplace_phi(double x, double y, double z);
-
     double grad_alpha(Mat R);
-    double grad_beta(Mat R);
 
     virtual std::string name() = 0;
 };

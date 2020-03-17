@@ -1,5 +1,4 @@
 #include <cmath>
-
 #include "Psi.h"
 #include "../matpak/Mat.h"
 
@@ -18,11 +17,13 @@ Psi::~Psi() {}
 void Psi::update_alpha(double alpha) {
   this->alpha = alpha;
   this->alpha_squared = alpha*alpha;
+  update_constants();
 }
 
 void Psi::update_beta(double beta) {
   this->beta = beta;
   this->beta_squared = beta*beta;
+  update_constants();
 }
 
 void Psi::update_a(double a) {
@@ -33,6 +34,15 @@ void Psi::update_a(double a) {
 void Psi::update_gamma(double gamma) {
   this->gamma = gamma;
   this->gamma_squared = gamma*gamma;
+}
+
+void Psi::update_constants() {
+  // used in grad phi
+  minus_two_alpha = -2*alpha;
+  minus_two_alpha_beta = minus_four_alpha*beta;
+  // used in drag force
+  minus_four_alpha = 2*minus_two_alpha;
+  minus_four_alpha_beta = minus_four_alpha*beta;
 }
 
 // ATTRIBUTE EXTRACTION
@@ -53,72 +63,40 @@ double Psi::get_gamma() {
 }
 
 // CALCULATIONS
-double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int index) {
-  // index : corresponds to particle
+double Psi::greens_ratio(Mat R_old, Mat R_new, double dt, int k) {
   double K = D*dt;
-  double* F_old = drift_force(R_old, index);
-  double* F_new = drift_force(R_new, index);
+  double* F_old = drift_force(R_old, k);
+  double* F_new = drift_force(R_new, k);
 
   double term;
   double exponent = 0.0;
   for (int i = 0; i < R_new.shape1(); i++) {
-      term = R_old.get(index, i) - R_new.get(index, i) - K*F_new[i];
-      exponent -= term*term;
-      term = R_new.get(index, i) - R_old.get(index, i) - K*F_old[i];
-      exponent += term*term;
+    term = R_old.get(k, i) - R_new.get(k, i) - K*F_new[i];
+    exponent -= term*term;
+    term = R_new.get(k, i) - R_old.get(k, i) - K*F_old[i];
+    exponent += term*term;
   }
-
   delete [] F_old;
   delete [] F_new;
   return std::exp(exponent/(4.0*K));
 }
 
-double Psi::phi(double x, double y, double z) {
-  return std::exp(-this->alpha*(x*x + y*y + this->beta*z*z));
-}
-
-double* Psi::grad_phi(double x, double y, double z) {
-  /*
-    !! Must be multiplied with phi(x, y, z) !!
-  */
-  double* grad = new double [3];
-  grad[0] = -2*this->alpha*x;
-  grad[1] = -2*this->alpha*y;
-  grad[2] = -2*this->alpha*z*this->beta;
-  return grad;
-}
-
-double Psi::laplace_phi(double x, double y, double z) {
-  /*
-    !! Must be multiplied with phi(x, y, z) !!
-  */
-  return 2*this->alpha*(2*this->alpha*(x*x+y*y+this->beta*this->beta*z*z) - 2 - this->beta);
-}
 
 double Psi::grad_alpha(Mat R) {
+  int M = R.shape1();
   double grad_alpha_phi = 0.0;
-  double x_i;
-  int last_index = R.shape1()-1;
-
+  double x;
   for (int i = 0; i < R.shape0(); i++) {
-    for (int j = 0; j < last_index; j++) {
-      x_i = R.get(i, j);
-      grad_alpha_phi += x_i*x_i;
+    x = R.get(i, 0);
+    grad_alpha_phi += x*x;
+    if (M > 1) {
+      x = R.get(i, 1);
+      grad_alpha_phi += x*x;
+      if (M == 3) {
+        x = R.get(i, 2);
+        grad_alpha_phi += beta*x*x;
+      }
     }
-    x_i = R.get(i, last_index);
-    grad_alpha_phi += this->beta*x_i*x_i;
   }
   return -grad_alpha_phi;
-}
-
-double Psi::grad_beta(Mat R) {
-  double grad_beta_phi = 0.0;
-  double z_k;
-  int last_index = R.shape1()-1;
-
-  for (int k = 0; k < R.shape0(); k++) {
-    z_k = R.get(k, last_index);
-    grad_beta_phi += z_k*z_k;
-  }
-  return -this->alpha*grad_beta_phi;
 }
