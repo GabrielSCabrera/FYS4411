@@ -25,6 +25,7 @@ public:
 	double get_grad_alpha();
 	double get_variance();
 	double get_accepted_moves_ratio();
+	double* get_E_cycles();
 	void print_info();
 	void copy_step(Mat* from, Mat* to, int index);
 	double random_normal_distribution();

@@ -2,7 +2,7 @@
 #include <chrono>
 #include <fstream>
 #include <string>
-// #include <mpi.h>
+#include <mpi.h>
 using namespace std;
 
 #include "./wavefunctions/Psi.h"
@@ -11,71 +11,45 @@ using namespace std;
 #include "./variational/monte_carlo.h"
 #include "./variational/metropolis.h"
 #include "./variational/hastings.h"
-#include "./matpak/Mat.h"
 #include "./variational/gradient_descent.h"
+#include "monte_carlo_simulation.h"
 
-void run(Monte_Carlo* MC) {
-  double eta = 1E-4;
-  int cycles = 1E7;
-  int equi_cycles = 1E4;
-  Mat R = MC->get_initial_R_no_overlap();
+int main(int narg, char** argv) {
+  int my_rank, num_procs;
+  MPI_Init(&narg, &argv);
 
-  R = MC->equilibriation(R, equi_cycles);
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-  /*R = MC->equilibriation(R, equi_cycles);
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();
+  //------CHANGE PARAMETERS-------
+  int N = 5; 
+  int dim = 2; 
+  double learning_rate = 1E-4;
+  bool importance_samplig = false;
+  bool correlated = true;
+  //------------------------------
 
-  R = MC->equilibriation(R, equi_cycles);
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();*/
-
-  
-  R = gradient_descent(MC, eta, R);
-  R = MC->equilibriation(R, 100);
-  R = MC->sample_energy(R, cycles);
-  MC->print_info();
-
-  ofstream outfile;
-  string filename = MC->filename_E();
-  outfile.open(filename);
-  MC->write_E_to_file(outfile);
-  outfile.close();
-
-  filename = MC->filename_val();
-  outfile.open(filename);
-  MC->write_val_to_file(outfile);
-  outfile.close();
-}
-
-// bool correlated is a lying bastard
-void run_Metropolis(bool correlated, int N, int dim, double learning_rate=1E-4) {
-  if (correlated) {
-    //Psi_OB boson_system;
-    Psi_T boson_system;
-    Metropolis MC(&boson_system, N, dim);
-    run(&MC);
+  if (importance_samplig) {
+    if (correlated) {
+      Psi_T boson_system;
+      Hastings MC(&boson_system, N, dim);
+      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+    } else {
+      Psi_OB boson_system;
+      Hastings MC(&boson_system, N, dim);
+      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+    }
   } else {
-    //Psi_OB boson_system;
-    Psi_T boson_system;
-    Hastings MC(&boson_system, N, dim);
-    run(&MC);
+    if (correlated) {
+      Psi_T boson_system;
+      Metropolis MC(&boson_system, N, dim);
+      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+    } else {
+      Psi_OB boson_system;
+      Metropolis MC(&boson_system, N, dim);
+      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+    }
   }
-  printf("\n");
-}
-
-int main() {
-  int N = 3;
-  /*
-  run_Metropolis(false, N, 3);
-  run_Metropolis(false, N, 2);
-  run_Metropolis(false, N, 1);
-  */
-  printf("\nMetropolis\n");
-  run_Metropolis(true, N, 1);
-  printf("\nHastings\n");
-  run_Metropolis(false, N, 1);
-  //run_Metropolis(true, N, 1);
+  MPI_Finalize();
+  return 0;
 }

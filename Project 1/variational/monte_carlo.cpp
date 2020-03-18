@@ -44,6 +44,10 @@ double Monte_Carlo::get_accepted_moves_ratio() {
   return accepted_moves_ratio;
 }
 
+double* Monte_Carlo::get_E_cycles() {
+  return E_cycles;
+}
+
 void Monte_Carlo::print_info() {
   printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), variance, accepted_moves_ratio);
 }
@@ -195,6 +199,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   grad_alpha = E_grad_psi_alpha - grad_psi_alpha*E;
   return R;
 }
+
 
 void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
   outfile << E_cycles[0];
