@@ -217,7 +217,7 @@ double Psi_T::energy(Mat* R) {
       for (int l = 0; l < M; l++) {
         grad_Psi_C[l] += diff_r_kj[l]/r_kj*up_kj;
       }
-      laplace_Psi_C += u_double_prime(r_kj, up_kj) + up_kj*(2.0/r_kj);
+      laplace_Psi_C += u_double_prime(r_kj, up_kj) + up_kj*((2.0)/r_kj);
       for (int i = 0; i < N; i++) {
         if (i == k) {continue;}
         r_ki = 0.0;

@@ -15,7 +15,7 @@ Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
 	dim = dimensions;
 	bose = bosonic_system;
   E_cycles = new double [1];
-  L = 10;
+  L = 0.5*N;
 }
 
 // DESTRUCTOR
@@ -33,11 +33,11 @@ double Monte_Carlo::get_energy_mean() {
 }
 
 double Monte_Carlo::get_grad_alpha() {
-  return grad_alpha;
+  return E_alpha;
 }
 
 double Monte_Carlo::get_variance() {
-  return variance;
+  return EE - E*E;
 }
 
 double Monte_Carlo::get_accepted_moves_ratio() {
@@ -49,7 +49,7 @@ double* Monte_Carlo::get_E_cycles() {
 }
 
 void Monte_Carlo::print_info() {
-  printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), variance, accepted_moves_ratio);
+  printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), EE - E*E, accepted_moves_ratio);
 }
 
 double Monte_Carlo::random_normal_distribution() {
@@ -59,40 +59,38 @@ double Monte_Carlo::random_normal_distribution() {
 void Monte_Carlo::set_to_zero() {
 	E = 0.0;
 	EE = 0.0;
-	grad_alpha = 0.0;
-	variance = 0.0;
+  E_alpha = 0.0;
+  E_2alpha = 0.0;
 }
+
 
 Mat Monte_Carlo::get_initial_R() {
   Mat R(N, dim);
 	for (int i = 0; i < N*dim; i++) {
-      R.set_raw(UniformNumberGenerator(gen)*0.99*L, i);
+    R.set_raw(UniformNumberGenerator(gen)*L, i);
 	}
-  return R;
-}
-
-Mat Monte_Carlo::get_initial_R_no_overlap() {
-  Mat R(N, dim);
-  double r_ij, dx;
-  bool overlap;
-  double hard_radius = bose->get_a();
-  hard_radius *= hard_radius;
-  for (int i = 0; i < N; i++) {
-    overlap = true;
-    while (overlap) {
-      for (int l = 0; l < dim; l++) {
-        R.set(UniformNumberGenerator(gen)*0.99*L, i, l);
-      }
-      overlap = false;
-      for (int j = 0; j < i; j++) {
-        r_ij = 0.0;
-        for (int l = 0; l < dim; l++) {
-          dx = R.get(j, l) - R.get(i, l);
-          r_ij += dx*dx;
-        }
-        if (r_ij <= hard_radius) {
-          overlap = true;
-          continue;
+  if (bose->interaction()) {
+    double r_ij, dx;
+    bool overlap;
+    double hard_radius = bose->get_a();
+    hard_radius *= hard_radius;
+    for (int i = 0; i < N; i++) {
+      overlap = true;
+      while (overlap) {
+        overlap = false;
+        for (int j = 0; j < i; j++) {
+          r_ij = 0.0;
+          for (int l = 0; l < dim; l++) {
+            dx = R.get(j, l) - R.get(i, l);
+            r_ij += dx*dx;
+          }
+          if (r_ij <= hard_radius) {
+            overlap = true;
+            for (int l = 0; l < dim; l++) {
+              R.set(UniformNumberGenerator(gen)*L, i, l);
+            }
+            continue;
+          }
         }
       }
     }
@@ -100,11 +98,13 @@ Mat Monte_Carlo::get_initial_R_no_overlap() {
   return R;
 }
 
+
 void Monte_Carlo::copy_step(Mat* from, Mat* to, int index) {
   for (int i = 0; i < dim; i++) {
     to->set(from->get(index, i), index, i);
   }
 }
+
 
 Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	Mat R_new = R;
@@ -131,7 +131,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   int accepted_moves = 0;
   double A;															// Acceptance Ratio
   double r, E_L;
-  double psi_R;
+  //double psi_R;
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
@@ -163,40 +163,49 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   E /= cycles;
   EE /= cycles;
   accepted_moves_ratio = (double) accepted_moves/(cycles*N);
-  variance = EE - E*E;
   return R;
 }
 
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new = R;
-  double grad_psi_alpha = 0.0;			//  derivative of Psi with respect to alpha
-  double E_grad_psi_alpha = 0.0;		// (derivative of Psi with respect to alpha)*E
-  double grad_psi_alpha_cycle, E_L;
+  double psi_alpha = 0.0;			      //  derivative of Psi with respect to alpha
+  double E_x_psi_alpha = 0.0;		    // (derivative of Psi with respect to alpha)*E
+  double psi_2alpha = 0.0;          // double derivative of Psi with respect to alpha
+  double E_x_psi_2alpha = 0.0;
+  double psi_alpha_cycle, psi_2alpha_cycle, E_L;
 
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     for (int j = 0; j < N; j++) {
     	random_walk(&R_new, j);
-    	// Determine whether or not to accept movement
       if (acceptance_ratio(&R_new, &R, j) > UniformNumberGenerator(gen)){
         copy_step(&R_new, &R, j);
       } else {
         copy_step(&R, &R_new, j);
       }
-    } // End cycle
+    }
     E_L = bose->energy(&R);
     E += E_L;
 
-    grad_psi_alpha_cycle = bose->grad_alpha(&R);
-    grad_psi_alpha += grad_psi_alpha_cycle;
-    E_grad_psi_alpha += grad_psi_alpha_cycle*E_L;
+    psi_alpha_cycle = bose->grad_alpha(&R);
+    psi_2alpha_cycle = psi_alpha_cycle*psi_alpha_cycle;
+    psi_alpha += psi_alpha_cycle;
+    psi_2alpha += psi_2alpha_cycle;
+
+    E_x_psi_alpha += psi_alpha_cycle*E_L;
+    E_x_psi_2alpha += psi_2alpha_cycle*E_L;
   } // End Monte Carlo
   E /= cycles;
-  grad_psi_alpha /= cycles;
-  E_grad_psi_alpha /= cycles;
+  psi_alpha /= cycles;
+  psi_2alpha /= cycles;
+  E_x_psi_alpha /= cycles;
+  E_x_psi_2alpha /= cycles;
 
-  grad_alpha = E_grad_psi_alpha - grad_psi_alpha*E;
+  E_alpha = 2*(E_x_psi_alpha - psi_alpha*E);
+  E_2alpha = 2*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha);
+  //E_2alpha = 2*(E_x_psi_2alpha - E*psi_2alpha);
+  E_2alpha -= (psi_alpha*E_alpha);// + E*psi_2alpha);
   return R;
 }
 

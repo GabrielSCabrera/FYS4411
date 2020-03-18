@@ -28,7 +28,7 @@ clean:
 	rm -f *.o ./variational/*.o ./wavefunctions/*.o ./matpak/*.o 
 
 test: main
-	make && mpiexec -np 2 ./main
+	make && mpiexec -np 1 ./main
 
 push: clean main clean
 	@ echo "pushing to github"

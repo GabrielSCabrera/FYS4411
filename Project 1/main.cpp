@@ -23,9 +23,9 @@ int main(int narg, char** argv) {
 
   //------CHANGE PARAMETERS-------
   int N = 5; 
-  int dim = 2; 
+  int dim = 1; 
   double learning_rate = 1E-4;
-  bool importance_samplig = false;
+  bool importance_samplig = true;
   bool correlated = true;
   //------------------------------
 
@@ -36,6 +36,7 @@ int main(int narg, char** argv) {
       monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
     } else {
       Psi_OB boson_system;
+      boson_system.update_alpha(0.8);
       Hastings MC(&boson_system, N, dim);
       monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
     }
@@ -46,6 +47,7 @@ int main(int narg, char** argv) {
       monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
     } else {
       Psi_OB boson_system;
+      boson_system.update_alpha(0.8);
       Metropolis MC(&boson_system, N, dim);
       monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
     }

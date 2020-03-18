@@ -10,13 +10,14 @@ protected:
 	int N, dim;
 	double L;
 	double E, EE;
-	double grad_alpha;
+	double E_alpha;		// dE/dalpha
 	double accepted_moves_ratio;
 	double variance;
 	double *E_cycles;
 	int MC_cycles = 1;
 	void set_to_zero();
 public:
+	double E_2alpha;	// d^2E/dalpha^2
 	Psi* bose;
 	Monte_Carlo(Psi* trial_wave_function, int N_particles, int dimensions);
 	~Monte_Carlo();

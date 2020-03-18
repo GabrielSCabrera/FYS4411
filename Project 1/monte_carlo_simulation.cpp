@@ -18,7 +18,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	double E, alpha, acceptance_ratio;
 	double my_E, my_alpha, my_acceptance_ratio;
 	double* my_E_cycles;
-	double* E_cycles;
+	double* E_cycles = nullptr;
 
 	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e4;
