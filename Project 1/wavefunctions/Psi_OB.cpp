@@ -94,7 +94,7 @@ double Psi_OB::energy(Mat* R) {
       }
     }
   }
-  double M_beta = (M == 3) ? 2.0 - beta : M;
+  double M_beta = (M == 3) ? 2.0 + beta : M;
   return N*alpha*M_beta + 0.5*V - 2*alpha_squared*E;
 }
 

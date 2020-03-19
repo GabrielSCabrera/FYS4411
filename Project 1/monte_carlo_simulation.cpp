@@ -46,10 +46,10 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	alpha /= num_procs;
 	MC->bose->update_alpha(alpha);
 
-	// sample energy
+	//sample energy
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
-	MC->print_info();
+	MC->print_info(); 
 
 	// send info to rank zero
 	my_E = MC->get_energy();

@@ -171,9 +171,8 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   Mat R_new = R;
   double psi_alpha = 0.0;			      //  derivative of Psi with respect to alpha
   double E_x_psi_alpha = 0.0;		    // (derivative of Psi with respect to alpha)*E
-  double psi_2alpha = 0.0;          // double derivative of Psi with respect to alpha
   double E_x_psi_2alpha = 0.0;
-  double psi_alpha_cycle, psi_2alpha_cycle, E_L;
+  double psi_alpha_cycle, E_L;
 
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
@@ -187,25 +186,18 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
     }
     E_L = bose->energy(&R);
     E += E_L;
-
     psi_alpha_cycle = bose->grad_alpha(&R);
-    psi_2alpha_cycle = psi_alpha_cycle*psi_alpha_cycle;
     psi_alpha += psi_alpha_cycle;
-    psi_2alpha += psi_2alpha_cycle;
-
     E_x_psi_alpha += psi_alpha_cycle*E_L;
-    E_x_psi_2alpha += psi_2alpha_cycle*E_L;
+    E_x_psi_2alpha += psi_alpha_cycle*psi_alpha_cycle*E_L;
   } // End Monte Carlo
   E /= cycles;
   psi_alpha /= cycles;
-  psi_2alpha /= cycles;
   E_x_psi_alpha /= cycles;
   E_x_psi_2alpha /= cycles;
-
-  E_alpha = 2*(E_x_psi_alpha - psi_alpha*E);
-  E_2alpha = 2*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha);
-  //E_2alpha = 2*(E_x_psi_2alpha - E*psi_2alpha);
-  E_2alpha -= (psi_alpha*E_alpha);// + E*psi_2alpha);
+  // factor two gone
+  E_alpha =  2*(E_x_psi_alpha - psi_alpha*E);
+  E_2alpha = (E_x_psi_2alpha - E_x_psi_alpha*psi_alpha) - (psi_alpha*E_alpha);
   return R;
 }
 

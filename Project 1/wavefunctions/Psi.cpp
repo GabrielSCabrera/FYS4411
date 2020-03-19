@@ -3,7 +3,7 @@
 #include "../matpak/Mat.h"
 
 // CONSTRUCTOR
-Psi::Psi() {
+Psi::Psi() {  
   update_alpha(0.5);
   update_beta(1.0);
   update_a(0.0043);

@@ -6,11 +6,10 @@
 
 Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
   // these should be parameters...
-  int equi_cycles = 1E2;
-  int sample_cycles = 1E4;
-  int max_steps = 20;
+  int equi_cycles = 50;
+  int sample_cycles = 100;
+  int max_steps = 10E3;
   double tol = 1e-16;
-  eta = 1E-5;
 
   // first iteration
   R = MC->sample_variational_derivatives(R, sample_cycles);
@@ -23,11 +22,10 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
   MC->bose->update_alpha(alpha);
   int counter = 0;
   while (change > tol && counter < max_steps) {
-    // Running Monte-Carlo
     R = MC->equilibriation(R, equi_cycles);
     R = MC->sample_variational_derivatives(R, sample_cycles);
     //if (counter % 100 == 0) {
-    printf("alpha: %.6lf,  E: %.6lf,  change: %.2e, %.2e\n", alpha, MC->get_energy_mean(), E_alpha, eta);
+    //printf("alpha: %.6lf,  E: %.6lf,  change: %.2e, %.2e\n", alpha, MC->get_energy_mean(), E_alpha, eta);
     //}
     E_alpha = MC->get_grad_alpha();
     eta = MC->E_2alpha;
@@ -37,7 +35,7 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
     change = E_alpha*E_alpha;
     counter++;
   }
-  if (change < tol) {printf("stopped because tolerance reached\n");}
+  if (change < tol) {printf("stopped because tolerance reached: %d\n", counter);}
   printf("alpha: %.12lf  ->  change: %.3e\n", alpha, change);
   return R;
 }

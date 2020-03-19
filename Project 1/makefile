@@ -6,15 +6,13 @@ main: main.o ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o
 	$(CXX) $(CXXFLAGS) -o main main.cpp monte_carlo_simulation.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./variational/metropolis.o ./variational/gradient_descent.o ./wavefunctions/Psi.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi_OB.o
 
 main.o: main.cpp monte_carlo_simulation.h ./matpak/Mat.h ./variational/hastings.h ./variational/monte_carlo.h  ./variational/metropolis.h ./variational/gradient_descent.h ./wavefunctions/Psi.h ./wavefunctions/Psi_T.h ./wavefunctions/Psi_OB.h
-	$(CXX) $(CXXFLAGS) -c main.cpp 
+	#$(CXX) $(CXXFLAGS) -c main.cpp 
 
 
 ./variational/monte_carlo.o: ./wavefunctions/Psi.h ./matpak/Mat.h
 ./variational/metropolis.o: ./variational/monte_carlo.h ./wavefunctions/Psi.h ./matpak/Mat.h
 ./variational/hastings.o: ./variational/monte_carlo.h ./wavefunctions/Psi.h ./matpak/Mat.h
-
 ./variational/gradient_decent.o: ./variational/monte_carlo.h ./wavefunctions/Psi.h ./matpak/Mat.h
-
 ./wavefunctions/Psi.o: ./matpak/Mat.h
 ./wavefunctions/Psi_OB.o: ./wavefunctions/Psi.h ./matpak/Mat.h
 ./wavefunctions/Psi_T.o: ./wavefunctions/Psi.h ./matpak/Mat.h
@@ -28,7 +26,20 @@ clean:
 	rm -f *.o ./variational/*.o ./wavefunctions/*.o ./matpak/*.o 
 
 test: main
-	make && mpiexec -np 1 ./main
+	make && mpiexec -np 2 ./main
+
+part_e: part_e.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_T.o  ./wavefunctions/Psi.o 
+	$(CXX) $(CXXFLAGS) part_e.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi.o
+	mpiexec --hostfile hostfile -np 3 ./a.out
+	make clean && rm a.out
+
+part_f: part_f.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_T.o  ./wavefunctions/Psi.o ./variational/gradient_descent.o 
+	$(CXX) $(CXXFLAGS) part_f.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi.o  ./variational/gradient_descent.o 
+	mpiexec --hostfile hostfile -np 3 ./a.out
+	make clean && rm a.out
+
+
+
 
 push: clean main clean
 	@ echo "pushing to github"
