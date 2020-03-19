@@ -31,7 +31,7 @@ int main(int narg, char** argv) {
 	double* delta_t = new double [3];
 	delta_t[0] = 0.001; delta_t[1] = 0.05; delta_t[2] = 0.01;
 
-	int cycles = 1e3/num_procs; // cycles per proc
+	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
 	
 	if (my_rank == 0) {

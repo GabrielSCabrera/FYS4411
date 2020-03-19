@@ -21,13 +21,13 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
 
   	//-----change N----------: N = {10, 50, 100, 500}
-	int N = 10; 
+	int N = 500; 
 	//-------------------------
 
 	double* alphas = new double [3];
 	alphas[0] = 0.45; alphas[1] = 0.5; alphas[2] = 0.55;
 
-	int cycles = 1e3/num_procs; // cycles per proc
+	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
 	
 	if (my_rank == 0) {
