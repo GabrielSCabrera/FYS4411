@@ -22,16 +22,19 @@ int main(int narg, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   //------CHANGE PARAMETERS-------
-  int N = 5; 
+  int N = 2; 
   int dim = 3; 
   double learning_rate = 1E-4;
-  bool importance_samplig = false;
+  bool importance_samplig = true;
   bool correlated = true;
   //------------------------------
 
   if (importance_samplig) {
     if (correlated) {
       Psi_T boson_system;
+      boson_system.update_alpha(0.5);
+      boson_system.update_beta(1.0);
+      boson_system.update_gamma(1.0);
       Hastings MC(&boson_system, N, dim);
       monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
     } else {

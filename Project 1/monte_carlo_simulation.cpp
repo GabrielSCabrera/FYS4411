@@ -36,6 +36,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
 	MC->print_info();
+	printf("<E> : %.6lf \n", MC->get_energy());
 	//-------------------------
 
 	// Find alpha
@@ -50,6 +51,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
 	MC->print_info(); 
+	printf("<E> : %.6lf \n", MC->get_energy());
 
 	// send info to rank zero
 	my_E = MC->get_energy();

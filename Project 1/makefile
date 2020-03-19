@@ -26,7 +26,26 @@ clean:
 	rm -f *.o ./variational/*.o ./wavefunctions/*.o ./matpak/*.o 
 
 test: main
-	make && mpiexec -np 2 ./main
+	make && mpiexec -np 1 ./main
+
+
+part_b: part_b.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_OB.o  ./wavefunctions/Psi.o 
+	$(CXX) $(CXXFLAGS) part_b.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_OB.o ./wavefunctions/Psi.o
+	#mpiexec --hostfile hostfile -np 3 ./a.out
+	mpiexec -np 2 ./a.out
+	make clean && rm a.out
+
+part_c: part_c.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o  ./wavefunctions/Psi_OB.o  ./wavefunctions/Psi.o 
+	$(CXX) $(CXXFLAGS) part_c.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./wavefunctions/Psi_OB.o ./wavefunctions/Psi.o
+	#mpiexec --hostfile hostfile -np 3 ./a.out
+	mpiexec -np 2 ./a.out
+	make clean && rm a.out
+
+part_d: part_d.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o  ./wavefunctions/Psi_OB.o  ./wavefunctions/Psi.o 
+	$(CXX) $(CXXFLAGS) part_d.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./wavefunctions/Psi_OB.o ./wavefunctions/Psi.o
+	#mpiexec --hostfile hostfile -np 3 ./a.out
+	mpiexec -np 2 ./a.out
+	make clean && rm a.out
 
 part_e: part_e.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_T.o  ./wavefunctions/Psi.o 
 	$(CXX) $(CXXFLAGS) part_e.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi.o
@@ -35,6 +54,11 @@ part_e: part_e.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte
 
 part_f: part_f.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_T.o  ./wavefunctions/Psi.o ./variational/gradient_descent.o 
 	$(CXX) $(CXXFLAGS) part_f.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi.o  ./variational/gradient_descent.o 
+	mpiexec --hostfile hostfile -np 3 ./a.out
+	make clean && rm a.out
+
+part_g: part_g.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o  ./wavefunctions/Psi_T.o ./wavefunctions/Psi_OB.o  ./wavefunctions/Psi.o ./variational/gradient_descent.o 
+	$(CXX) $(CXXFLAGS) part_g.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte_carlo.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi_OB.o ./wavefunctions/Psi.o  ./variational/gradient_descent.o 
 	mpiexec --hostfile hostfile -np 3 ./a.out
 	make clean && rm a.out
 
