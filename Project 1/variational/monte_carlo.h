@@ -37,8 +37,6 @@ public:
 	Mat equilibriation(Mat R, int cycles);
 	Mat sample_energy(Mat R, int cycles);
 	Mat sample_variational_derivatives(Mat R, int cycles);
-	virtual std::string filename_E() = 0;
-	virtual std::string filename_val() = 0;
 	void write_E_to_file(std::ofstream& outfile);
 	void write_val_to_file(std::ofstream& outfile);
 };

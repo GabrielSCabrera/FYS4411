@@ -21,8 +21,8 @@ int main(int narg, char** argv) {
   	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
 
-  	//-----change N----------: N = {10, 50, 100, 500}
-	int N = 10; 
+  	//-----change N----------: N = {1, 10, 100, 500}
+	int N = 500; 
 	//-------------------------
 
 	double* alphas = new double [3];
@@ -54,9 +54,11 @@ int main(int narg, char** argv) {
 	  		outfile.open(filename);
 	  		outfile << "cycles  " << cycles << "\n";
 	  		outfile << "workers " << num_procs << "\n";
+	  		printf("------------->dim: %d\n", dim);
 	  	}
 		for (int t = 0; t < 3; t++) {
 			dt = delta_t[t];
+			MC.set_dt(dt);
 			for (int i = 0; i < 3; i++) {
 				MC.bose->update_alpha(alphas[i]);
 				R = MC.equilibriation(R, 100);
@@ -96,6 +98,7 @@ int main(int narg, char** argv) {
 					outfile << "\naccept  " << acceptance_ratios[i];
 					outfile << "\ndt      " << dt;
 				}
+				printf("---------\n");
 			}
 		}
 		// write to file

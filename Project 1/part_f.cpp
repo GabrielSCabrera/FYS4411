@@ -23,7 +23,7 @@ int main(int narg, char** argv) {
 
 	double alpha = 0.5;
 
-	int cycles = 1e4/num_procs; // cycles per proc
+	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
 
 	// set up

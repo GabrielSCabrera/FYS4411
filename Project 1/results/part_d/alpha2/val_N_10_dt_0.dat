@@ -1,8 +1,0 @@
-cycles  500
-workers 2
-alpha   0.55
-E       15.0515
-E/Nd    0.501716
-var     0.117289
-accept  0.9997
-dt      0.001
