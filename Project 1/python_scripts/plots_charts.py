@@ -1,11 +1,24 @@
-from file_io import read_energies, read_vals
 from matplotlib.ticker import MaxNLocator
 from analysis import dataAnalysisClass
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import file_io
 import re
 import os
+
+label_map = {
+             'alpha'    :   '$\\alpha$',
+             'E'        :   '$\\left\\langle E \\right\\rangle$',
+             'E/Nd'     :   '$\\left\\langle E \\right\\rangle / Nd$',
+             'var'      :   '$\\text{var}(E)$',
+             'accept'   :   'Accept Ratio',
+             'cycles'   :   'Cycles',
+             'workers'  :   'Workers',
+             'N'        :   '$N$',
+             'dim'      :   '$d$',
+             'dt'       :   '$\\delta t$'
+            }
 
 def parse_args():
 
@@ -77,6 +90,9 @@ def fmt_exp_float(x):
     if np.isnan(x):
         return 'NAN'
 
+    if 'e' not in f'{x:.4g}'.lower():
+        return f'{x:.4g}'
+
     string = f'{x:.2E}'
 
     pattern = r'E([\-\+]?)\d+'
@@ -101,7 +117,7 @@ def fmt_exp_float(x):
 
     return out
 
-def chart_from(path_prefix_E, path_prefix_val, N_vals, caption = None,
+def chart_from_path(path_prefix_E, path_prefix_val, N_vals, caption = None,
                fig_num = None):
 
     chart = ('\\begin{table}[H]\n'
@@ -138,6 +154,56 @@ def chart_from(path_prefix_E, path_prefix_val, N_vals, caption = None,
                   f'${fmt_exp_float(np.mean(avgs))}$ & '
                   f'${fmt_exp_float(np.mean(vars))}$ & '
                   f'${fmt_exp_float(np.mean(stds))}$\\\\\n')
+
+    chart += '\t\\end{tabular}\n'
+    if caption is not None and fig_num is not None:
+        chart += '\t\\caption{'
+        if caption is not None:
+            chart += caption
+        if fig_num is not None:
+            chart += f'\\label{{table_{fig_num:d}}}'
+        chart += '}\n'
+    chart += '\\end{table}'
+
+    return chart
+
+def chart_from_data(data, caption = None, fig_num = None):
+
+    chart = ('\\begin{table}[H]\n'
+             '\t\\centering\n'
+             '\t\\begin{tabular}{')
+
+    cols = []
+    for d in data:
+        for key, val in d.items():
+            if key not in cols and key in label_map.keys():
+                cols.append(key)
+
+    chart += 'r'*len(cols)
+    chart += '}\n\t\t'
+    for col in cols:
+        chart += f'{label_map[col]} & '
+    chart = chart[:-2] + '\\\\\n\t\t\\hline\n'
+
+    col_data = {col:[] for col in cols}
+    for d in data:
+        checked = {col:False for col in cols}
+        for key, val in d.items():
+            if key in label_map.keys():
+                col_data[key].append(val)
+                checked[key] = True
+        for key, val in checked.items():
+            if val is False:
+                raise Exception('Inconsistent Labeling in Loaded Files')
+
+    for key, val in col_data.items():
+        col_data[key] = np.array(val)
+
+    for i in range(len(data)):
+        chart += '\t\t'
+        for col in cols:
+            chart += f'${fmt_exp_float(col_data[col][i])}$ & '
+        chart = chart[:-2] + '\\\\\n'
 
     chart += '\t\\end{tabular}\n'
     if caption is not None and fig_num is not None:
@@ -211,6 +277,101 @@ def run_all(cmdline_args):
     with open(chart_path + 'tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
+def part_b(path, show = False):
+    data = file_io.load_part_b(path)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                print(f'{key:10s}\t{val:g}')
+            print()
+
+    chart = chart_from_data(data, fig_num = 1)
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(chart)
+
+def part_c(path, show = False):
+    data = file_io.load_part_c(path)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                print(f'{key:10s}\t{val:g}')
+            print()
+    chart = chart_from_data(data, fig_num = 1)
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(chart)
+
+def part_d(path, show = False):
+    data = file_io.load_part_d(path)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                if isinstance(val, np.ndarray):
+                    print(f'{key:10s}\t{"array"}')
+                else:
+                    print(f'{key:10s}\t{val:g}')
+            print()
+    chart = chart_from_data(data, fig_num = 1)
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(chart)
+
+def part_e(path, show = False):
+    data = file_io.load_part_e(path)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                if isinstance(val, np.ndarray):
+                    print(f'{key:10s}\t{val}')
+                else:
+                    print(f'{key:10s}\t{val:g}')
+            print()
+    chart = chart_from_data(data, fig_num = 1)
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(chart)
+
+def part_g(path, show = False):
+    data = file_io.load_part_g(path)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                if not isinstance(val, (float, int)):
+                    print(f'{key:12s}\t{val}')
+                else:
+                    print(f'{key:12s}\t{val:g}')
+            print()
+    chart = chart_from_data(data, fig_num = 1)
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(chart)
+
+def run_all_parts(cmdline_args, show = False):
+    all_files = os.listdir(cmdline_args.set)
+    parts = {
+             'part_b'   :   part_b,
+             'part_c'   :   part_c,
+             'part_d'   :   part_d,
+             'part_e'   :   part_e,
+             'part_g'   :   part_g
+            }
+
+    for part, func in parts.items():
+        if part not in all_files:
+            print(f'Missing directory \'{part}\', skipping to next part...')
+            continue
+        if show:
+            msg = ' '.join(part.upper().split('_'))
+            print(f'\033[1m{msg}\033[m START')
+
+        path = cmdline_args.set + part
+
+        if not os.path.isdir(path + '/charts/'):
+            os.mkdir(path + '/charts/')
+
+        if not os.path.isdir(path + '/plots/'):
+            os.mkdir(path + '/plots/')
+
+        parts[part](path, show)
+        if show:
+            print(f'\033[1m{msg}\033[m FINISH')
+
 if __name__ == '__main__':
 
     cmdline_args = parse_args()
@@ -218,4 +379,4 @@ if __name__ == '__main__':
     msg = f'Invalid Directory \033[3m{data_dir}\033[m'
     assert os.path.isdir(data_dir), msg
 
-    run_all(cmdline_args)
+    run_all_parts(cmdline_args, show = False)

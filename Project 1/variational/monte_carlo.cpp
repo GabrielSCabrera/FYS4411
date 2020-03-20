@@ -211,6 +211,9 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
   int fac = 1e4;
   N_rho = anticipated_max*fac;
   rho = new double [anticipated_max*fac];
+	for (int i = 0; i < anticipated_max*fac; i++) {
+		rho[i] = 0;
+	}
   double x, y, z, r;
   int index;
   for (int i = 0; i < cycles; i++) {
@@ -230,9 +233,7 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
   return R;
 }
 
-
 double* Monte_Carlo::get_rho(int *length_rho) {
   (*length_rho) = N_rho;
   return rho;
 }
-

@@ -1,8 +1,0 @@
-TESTS:
-
-  Mat.cpp
-
-    Mat::operator*(const Mat& u)
-    Mat::operator/ (const Mat& u)
-    Mat::pow (const double& a)
-    Mat::pow (const Mat& u)

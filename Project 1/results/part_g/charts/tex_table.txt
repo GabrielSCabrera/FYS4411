@@ -1,0 +1,9 @@
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rr}
+		$N$ & $d$ \\
+		\hline
+		$10$ & $3$ \\
+		$10$ & $3$ \\
+	\end{tabular}
+\end{table}
