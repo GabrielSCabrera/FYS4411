@@ -22,7 +22,7 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
 
   	//-----change N----------: N = {1, 10, 100, 500}
-	int N = 1; 
+	int N = 500; 
 	//-------------------------
 	double* alphas = new double [3];
 	alphas[0] = 0.45; alphas[1] = 0.5; alphas[2] = 0.55;
@@ -87,8 +87,12 @@ int main(int narg, char** argv) {
 					outfile << "\n" << Es[j];
 				}
 				outfile.close();
+			} else if (my_rank == 1) {
 				printf("\n");
 			}
+		}
+		if (my_rank == 1) {
+			printf("--------------\n");
 		}
 	}
 	if (my_rank == 0) {
