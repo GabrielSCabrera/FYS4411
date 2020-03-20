@@ -23,7 +23,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e4;
 
-	if (my_rank == 0) {	
+	if (my_rank == 0) {
 		alpha = 0.0;
 		E = 0.0;
 		acceptance_ratio = 0.0;
@@ -50,7 +50,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	//sample energy
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
-	MC->print_info(); 
+	MC->print_info();
 	printf("<E> : %.6lf \n", MC->get_energy());
 
 	// send info to rank zero
@@ -63,7 +63,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 
 	// write to file
 	if (my_rank == 0) {
-		// write all energies to file 
+		// write all energies to file
 		ofstream outfile;
 		string filename = "results/test_E.dat";
 		outfile.open(filename);

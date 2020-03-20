@@ -6,7 +6,6 @@
 #include "./variational/monte_carlo.h"
 #include "./variational/metropolis.h"
 
-
 int main(int narg, char** argv) {
 	double my_E, my_acceptance_ratio, dE, my_var;
 	double E, acceptance_ratio, var;
@@ -18,10 +17,10 @@ int main(int narg, char** argv) {
 	int my_rank, num_procs;
   	MPI_Init(&narg, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
+  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-  	//-----change N----------: N = {1, 10, 100, 500}
-	int N = 1; 
+  //-----change N----------: N = {1, 10, 100, 500}
+	int N = 500;
 	//-------------------------
 
 	double* alphas = new double [3];
@@ -29,7 +28,7 @@ int main(int narg, char** argv) {
 
 	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
-	
+
 	if (my_rank == 0) {
 	 	Es = new double [3];
 	 	variance = new double[3];
@@ -66,7 +65,7 @@ int main(int narg, char** argv) {
 			if (my_rank == 0) {
 				Es[i] = E;
 				acceptance_ratios[i] = acceptance_ratio/num_procs;
-				variance[i] = var/num_procs; 
+				variance[i] = var/num_procs;
 				printf("\n");
 			}
 		}
@@ -100,7 +99,3 @@ int main(int narg, char** argv) {
 	MPI_Finalize();
 	return 0;
 }
-
-
-
-

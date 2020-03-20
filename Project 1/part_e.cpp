@@ -17,10 +17,10 @@ int main(int narg, char** argv) {
 	int my_rank, num_procs;
   	MPI_Init(&narg, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
+  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   	//-----change N----------: N = {10, 50, 100}
-	int N = 50; 
+	int N = 100; 
 	//-------------------------
 
 
@@ -34,7 +34,7 @@ int main(int narg, char** argv) {
 	Metropolis MC(&bose_system, N, 3);
 	Mat R = MC.get_initial_R();
 	R = MC.equilibriation(R, equi_cycles);
-	
+
 	if (my_rank == 0) {
 	 	Es = new double [3];
 	 	variance = new double[3];
@@ -66,7 +66,7 @@ int main(int narg, char** argv) {
 		if (my_rank == 0) {
 			Es[i] = E;
 			acceptance_ratios[i] = acceptance_ratio/num_procs;
-			variance[i] = var/num_procs; 
+			variance[i] = var/num_procs;
 			printf("\n");
 		}
 	}

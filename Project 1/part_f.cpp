@@ -15,10 +15,10 @@ int main(int narg, char** argv) {
 	int my_rank, num_procs;
   	MPI_Init(&narg, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
+  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   	//-----change N----------: N = {10, 50, 100}
-	int N = 10; 
+	int N = 100; 
 	//-------------------------
 
 	double alpha = 0.5;
@@ -32,7 +32,7 @@ int main(int narg, char** argv) {
 	Metropolis MC(&bose_system, N, 3);
 	Mat R = MC.get_initial_R();
 	R = MC.equilibriation(R, equi_cycles);
-	
+
 	// Find alpha (choose mean value of all alphas)
 	R = gradient_descent(&MC, 0.0, R);
 	my_alpha = MC.bose->get_alpha();
@@ -82,7 +82,3 @@ int main(int narg, char** argv) {
 	}
 	MPI_Finalize();
 }
-
-
-
-
