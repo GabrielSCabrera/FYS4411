@@ -15,12 +15,14 @@ Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
 	dim = dimensions;
 	bose = bosonic_system;
   E_cycles = new double [1];
+  rho = new double [1];
   L = 0.5*N;
 }
 
 // DESTRUCTOR
 Monte_Carlo::~Monte_Carlo() {
   delete[] E_cycles;
+  delete[] rho;
 }
 
 // GETTERS
@@ -201,18 +203,36 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   return R;
 }
 
-
-void Monte_Carlo::write_E_to_file(std::ofstream& outfile) {
-  outfile << E_cycles[0];
-  for (int i = 1; i < MC_cycles; i++) {
-    outfile << "\n" << E_cycles[i];
+// for three dim only!!
+Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
+  Mat R_new = R;
+  delete[] rho;
+  int anticipated_max = 4;
+  int fac = 1e4;
+  N_rho = anticipated_max*fac;
+  rho = new double [anticipated_max*fac];
+  double x, y, z, r;
+  int index;
+  for (int i = 0; i < cycles; i++) {
+    for (int j = 0; j < N; j++) {
+      random_walk(&R_new, j);
+      if (acceptance_ratio(&R_new, &R, j) > UniformNumberGenerator(gen)) {
+        copy_step(&R_new, &R, j);
+      } else {
+        copy_step(&R, &R_new, j);
+      }
+      x = R.get(j, 0); y = R.get(j, 1); z = R.get(j, 2);
+      r = std::sqrt(x*x + y*y + z*z);
+      index = r*fac + 0.5;
+      rho[index]++;
+    }
   }
+  return R;
 }
 
-void Monte_Carlo::write_val_to_file(std::ofstream& outfile) {
-  outfile << "alpha " << bose->get_alpha() << "\n";
-  outfile << "beta " << bose->get_beta() << "\n";
-  outfile << "E " << E << "\n";
-	outfile << "accept " << accepted_moves_ratio << "\n";
-  outfile << "cycles " << MC_cycles;
+
+double* Monte_Carlo::get_rho(int *length_rho) {
+  (*length_rho) = N_rho;
+  return rho;
 }
+

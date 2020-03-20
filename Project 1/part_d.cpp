@@ -83,7 +83,7 @@ int main(int narg, char** argv) {
 				filename.append(end);
 		  		outfile.open(filename);
 		  		outfile << Es[0];
-				for (int j = 0; j < cycles*num_procs; j++) {
+				for (int j = 1; j < cycles*num_procs; j++) {
 					outfile << "\n" << Es[j];
 				}
 				outfile.close();

@@ -65,7 +65,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	if (my_rank == 0) {
 		// write all energies to file 
 		ofstream outfile;
-		string filename = MC->filename_E();
+		string filename = "results/test_E.dat";
 		outfile.open(filename);
 		outfile << E_cycles[0];
 		for (int i = 1; i < cycles*num_procs; i++) {
@@ -74,12 +74,14 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 		outfile.close();
 		delete[] E_cycles;
 		// write rest of info to file
-		filename = MC->filename_val();
+		filename = "results/test_val.dat";
   		outfile.open(filename);
 		outfile << "alpha " << alpha << "\n";
 		outfile << "beta " << MC->bose->get_beta() << "\n";
 		outfile << "E " << E/num_procs << "\n";
 		outfile << "accept " << acceptance_ratio/num_procs << "\n";
+		outfile << "N " << N << "\n";
+		outfile << "dim " << dim << "\n";
 		outfile << "cycles " << cycles;
 		outfile.close();
 	}
