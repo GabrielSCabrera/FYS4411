@@ -51,7 +51,7 @@ double* Monte_Carlo::get_E_cycles() {
 }
 
 void Monte_Carlo::print_info() {
-  printf("E: %.6lf, var: %.6lf , acceptance: %.6lf\n", E/(N*dim), EE - E*E, accepted_moves_ratio);
+  printf("E: %.6lf +/- %8.2e , accept: %.4lf\n", E/(N*dim), std::sqrt((EE - E*E)/(N*dim)), accepted_moves_ratio);
 }
 
 double Monte_Carlo::random_normal_distribution() {
@@ -172,6 +172,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new = R;
   double psi_alpha = 0.0;			      //  derivative of Psi with respect to alpha
+  double psi_2alpha = 0.0;
   double E_x_psi_alpha = 0.0;		    // (derivative of Psi with respect to alpha)*E
   double E_x_psi_2alpha = 0.0;
   double psi_alpha_cycle, E_L;
@@ -188,18 +189,25 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
     }
     E_L = bose->energy(&R);
     E += E_L;
+
     psi_alpha_cycle = bose->grad_alpha(&R);
-    psi_alpha += psi_alpha_cycle;
-    E_x_psi_alpha += psi_alpha_cycle*E_L;
+    psi_alpha  += psi_alpha_cycle;
+    psi_2alpha += psi_alpha_cycle*psi_alpha_cycle;
+
+    E_x_psi_alpha  += psi_alpha_cycle*E_L;
     E_x_psi_2alpha += psi_alpha_cycle*psi_alpha_cycle*E_L;
   } // End Monte Carlo
   E /= cycles;
   psi_alpha /= cycles;
+  psi_2alpha /= cycles;
   E_x_psi_alpha /= cycles;
   E_x_psi_2alpha /= cycles;
-  // factor two gone
-  E_alpha =  2*(E_x_psi_alpha - psi_alpha*E);
-  E_2alpha = (E_x_psi_2alpha - E_x_psi_alpha*psi_alpha) - (psi_alpha*E_alpha);
+
+  E_alpha = 2*(E_x_psi_alpha - psi_alpha*E);
+
+  E_2alpha  = 4*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha); 
+  E_2alpha -= 2*(psi_alpha*E_alpha);
+  E_2alpha -= 4*(psi_2alpha - psi_alpha*psi_alpha);
   return R;
 }
 
@@ -211,6 +219,9 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
   int fac = 1e4;
   N_rho = anticipated_max*fac;
   rho = new double [anticipated_max*fac];
+	for (int i = 0; i < anticipated_max*fac; i++) {
+		rho[i] = 0.0;
+	}
   double x, y, z, r;
   int index;
   for (int i = 0; i < cycles; i++) {
@@ -230,9 +241,7 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
   return R;
 }
 
-
 double* Monte_Carlo::get_rho(int *length_rho) {
   (*length_rho) = N_rho;
   return rho;
 }
-

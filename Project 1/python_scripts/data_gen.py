@@ -37,16 +37,16 @@ def gen_arrs(N_cycles = 1E3):
     return N_vals, outputs
 
 def save_E(N_vals, outputs):
-    if not os.path.isdir('../data_out/test_set/'):
-        os.mkdir('../data_out/test_set/')
+    if not os.path.isdir('../results/test_set/'):
+        os.mkdir('../results/test_set/')
 
     for N, arr in zip(N_vals, outputs):
-        fname = f'../data_out/test_set/E_{int(N):d}.dat'
+        fname = f'../results/test_set/E_{int(N):d}.dat'
         np.savetxt(fname = fname, X = arr, fmt = '%f', delimiter = '\n')
 
 def save_val(N_vals, outputs):
-    if not os.path.isdir('../data_out/test_set/'):
-        os.mkdir('../data_out/test_set/')
+    if not os.path.isdir('../results/test_set/'):
+        os.mkdir('../results/test_set/')
 
     N_arr = np.array(list(map(int, N_vals)))
     N_min = np.min(N_arr)
@@ -54,7 +54,7 @@ def save_val(N_vals, outputs):
     alpha_0 = 0.5
     beta_0 = 1
     for N, arr in zip(N_vals, outputs):
-        fname = f'../data_out/test_set/val_{int(N):d}.dat'
+        fname = f'../results/test_set/val_{int(N):d}.dat'
 
         alpha = alpha_0-0.02*(float(N)-N_min)/(N_max-N_min)
         beta = beta_0-0.01*(float(N)-N_min)/(N_max-N_min)

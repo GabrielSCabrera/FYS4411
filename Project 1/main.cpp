@@ -22,10 +22,10 @@ int main(int narg, char** argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   //------CHANGE PARAMETERS-------
-  int N = 2;
+  int N = 10;
   int dim = 3;
   double learning_rate = 1E-4;
-  bool importance_samplig = true;
+  bool importance_samplig = false;
   bool correlated = true;
   //------------------------------
 
