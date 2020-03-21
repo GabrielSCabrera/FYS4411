@@ -20,7 +20,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	double* my_E_cycles;
 	double* E_cycles = nullptr;
 
-	int cycles = 1e6/num_procs; // cycles per proc
+	int cycles = 1e5/num_procs; // cycles per proc
 	int equi_cycles = 1e4;
 
 	if (my_rank == 0) {
@@ -36,7 +36,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
 	MC->print_info();
-	printf("<E> : %.6lf \n", MC->get_energy());
+	//printf("<E> : %.6lf \n", MC->get_energy());
 	//-------------------------
 
 	// Find alpha
@@ -51,7 +51,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	R = MC->equilibriation(R, equi_cycles);
 	R = MC->sample_energy(R, cycles);
 	MC->print_info();
-	printf("<E> : %.6lf \n", MC->get_energy());
+	//printf("<E> : %.6lf \n", MC->get_energy());
 
 	// send info to rank zero
 	my_E = MC->get_energy();
@@ -80,8 +80,8 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 		outfile << "beta " << MC->bose->get_beta() << "\n";
 		outfile << "E " << E/num_procs << "\n";
 		outfile << "accept " << acceptance_ratio/num_procs << "\n";
-		outfile << "N " << N << "\n";
-		outfile << "dim " << dim << "\n";
+		outfile << "N " << R.shape0() << "\n";
+		outfile << "dim " << R.shape1() << "\n";
 		outfile << "cycles " << cycles;
 		outfile.close();
 	}
