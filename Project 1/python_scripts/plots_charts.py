@@ -285,7 +285,7 @@ def part_b(path, show = False):
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    chart = chart_from_data(data, fig_num = 1)
+    chart = chart_from_data(data, caption = 'Part B', fig_num = 1)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
@@ -296,7 +296,7 @@ def part_c(path, show = False):
             for key, val in run.items():
                 print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, fig_num = 1)
+    chart = chart_from_data(data, caption = 'Part C', fig_num = 2)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
@@ -310,7 +310,7 @@ def part_d(path, show = False):
                 else:
                     print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, fig_num = 1)
+    chart = chart_from_data(data, caption = 'Part D', fig_num = 3)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
@@ -324,7 +324,7 @@ def part_e(path, show = False):
                 else:
                     print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, fig_num = 1)
+    chart = chart_from_data(data, caption = 'Part E', fig_num = 4)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
@@ -338,7 +338,7 @@ def part_g(path, show = False):
                 else:
                     print(f'{key:12s}\t{val:g}')
             print()
-    chart = chart_from_data(data, fig_num = 1)
+    chart = chart_from_data(data, caption = 'Part G', fig_num = 5)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 

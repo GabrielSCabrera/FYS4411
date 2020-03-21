@@ -19,7 +19,7 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   	//-----change N------------
-	int N = 100; 
+	int N = 10; 
 	//-------------------------
 	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;

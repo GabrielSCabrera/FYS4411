@@ -205,7 +205,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 
   E_alpha = 2*(E_x_psi_alpha - psi_alpha*E);
 
-  E_2alpha  = 4*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha); 
+  E_2alpha  = 4*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha);
   E_2alpha -= 2*(psi_alpha*E_alpha);
   E_2alpha -= 4*(psi_2alpha - psi_alpha*psi_alpha);
   return R;
@@ -215,7 +215,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
   Mat R_new = R;
   delete[] rho;
-  int anticipated_max = 4;
+  int anticipated_max = 5;
   int fac = 1e4;
   N_rho = anticipated_max*fac;
   rho = new double [anticipated_max*fac];
