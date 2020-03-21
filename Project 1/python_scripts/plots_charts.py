@@ -16,7 +16,7 @@ label_map = {
              'cycles'   :   'Cycles',
              'workers'  :   'Workers',
              'N'        :   '$N$',
-             'dim'      :   '$d$',
+             'dim'      :   '$d_r$',
              'dt'       :   '$\\delta t$'
             }
 
@@ -379,4 +379,4 @@ if __name__ == '__main__':
     msg = f'Invalid Directory \033[3m{data_dir}\033[m'
     assert os.path.isdir(data_dir), msg
 
-    run_all_parts(cmdline_args, show = False)
+    run_all_parts(cmdline_args, show = True)

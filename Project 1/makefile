@@ -1,6 +1,6 @@
 CXX = mpic++
-CXXFLAGS = -Wall -g -std=c++17
-CORES = 2
+CXXFLAGS = -Wall -g -std=c++17 -O3
+CORES = 8
 
 main: main.o ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./variational/metropolis.o ./variational/gradient_descent.o ./wavefunctions/Psi.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi_OB.o
 	$(CXX) $(CXXFLAGS) -o main main.o monte_carlo_simulation.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./variational/metropolis.o ./variational/gradient_descent.o ./wavefunctions/Psi.o ./wavefunctions/Psi_T.o ./wavefunctions/Psi_OB.o

@@ -1,7 +1,7 @@
 \begin{table}[H]
 	\centering
 	\begin{tabular}{rr}
-		$N$ & $d$ \\
+		$N$ & $d_r$ \\
 		\hline
 		$10$ & $3$ \\
 		$10$ & $3$ \\
