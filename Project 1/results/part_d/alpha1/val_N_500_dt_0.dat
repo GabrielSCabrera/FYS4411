@@ -1,5 +1,5 @@
-cycles  500000
-workers 2
+cycles  125000
+workers 8
 alpha   0.5
 E       750
 accept  0.999986
