@@ -1,7 +1,14 @@
+from analysis import dataAnalysisClass
 from multiprocessing import Pool
 import numpy as np
 import re
 import os
+
+def get_analyser_data(path):
+    analyzer = dataAnalysisClass(path)
+    analyzer.runAllAnalyses()
+    anal_dict = analyzer.returnOutput()
+    return anal_dict
 
 def read_energies(filename):
     pool = Pool()
@@ -11,8 +18,8 @@ def read_energies(filename):
     return E
 
 def read_vals(filename):
+    values = {}
     with open(filename, 'r') as infile:
-        values = {}
         for line in infile.readlines():
             line = line.split()
             values[line[0]] = float(line[1])
@@ -111,8 +118,14 @@ def load_part_d(path):
     all_files = os.listdir(path)
     files = []
     prefix = 'alpha'
+    N_files = 0
+    for f in all_files:
+        if prefix in f:
+            N_files += 1
+    count = 0
     for n,f in enumerate(all_files):
         if prefix in f:
+            count += 1
             local_files = os.listdir(path + '/' + f)
             suffixes = []
             N_vals = []
@@ -120,19 +133,30 @@ def load_part_d(path):
             for l in local_files:
                 if '.dat' in l:
                     suffix = re.findall(r'.*(_N_\d+_dt_\d+.dat)', l)[0]
-                    N, dim = re.findall(r'.*_N_(\d+)_dt_(\d+).dat', l)[0]
-                    N_vals.append(N)
-                    dim_vals.append(dim)
+                    N = re.findall(r'.*_N_(\d+)_dt_\d+.dat', l)
+                    N = N[0]
                     if suffix not in suffixes:
+                        N_vals.append(N)
                         suffixes.append(suffix)
             file_pairs = [[f'E{s}', f'val{s}'] for s in suffixes]
             for m,(i,j) in enumerate(file_pairs):
+                out = f'Dir {count:{len(str(N_files))}d}/{N_files} '
+                out += f'{m+1:{len(str(len(file_pairs)))}d}/{len(file_pairs)}\t'
+                print(out, end = '')
                 E = read_energies(path + '/' + f + '/' + i)
+                means = get_analyser_data(E)
                 val = read_vals(path + '/' + f + '/' + j)
                 val['energies'] = E
+                val['E'] = means['sample']['avg']
+                val['var'] = means['sample']['var']
+                val['blocking'] = means['blocking']['avg']
+                val['var_blocking'] = means['blocking']['var']
+                val['bootstrap'] = means['bootstrap']['avg']
+                val['var_bootstrap'] = means['bootstrap']['var']
                 val['N'] = int(N_vals[m])
-                val['dim'] = int(dim_vals[m])
-                files.append(val)
+                val['dim'] = 3
+                files.append(val.copy())
+
     return files
 
 def load_part_e(path):

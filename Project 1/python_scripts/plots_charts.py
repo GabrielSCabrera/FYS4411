@@ -1,5 +1,4 @@
 from matplotlib.ticker import MaxNLocator
-from analysis import dataAnalysisClass
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -18,7 +17,11 @@ label_map = {
              # 'workers'  :   'Workers',
              'N'        :   '$N$',
              'dim'      :   '$d_r$',
-             'dt'       :   '$\\Delta t$'
+             'dt'       :   '$\\Delta t$',
+             'blocking' :   '$\\left\\langle E \\right\\rangle_\\text{block}$',
+             'var_blocking' :   '$\\left\\langle E \\right\\rangle_\\text{block}$',
+             'bootstrap' :   '$\\left\\langle E \\right\\rangle_\\text{boot}$',
+             'var_bootstrap' :   '$\\left\\langle E \\right\\rangle_\\text{boot}$',
             }
 
 def parse_args():
@@ -248,8 +251,17 @@ def chart_from_data(col_data, caption = None, fig_num = None, div_col = None):
     split_val = None
 
     chart = ('\\begin{table}[H]\n'
-             '\t\\centering\n'
-             '\t\\begin{tabular}{')
+             '\t\\centering\n')
+
+    if caption is not None and fig_num is not None:
+        chart += '\t\\caption{'
+        if caption is not None:
+            chart += caption
+        if fig_num is not None:
+            chart += f'\\label{{table_{fig_num}}}'
+        chart += '}\n'
+
+    chart += '\t\\begin{tabular}{'
 
     cols = list(col_data.keys())
 
@@ -294,24 +306,9 @@ def chart_from_data(col_data, caption = None, fig_num = None, div_col = None):
         chart = chart[:-2] + '\\\\\n'
 
     chart += '\t\\end{tabular}\n'
-    if caption is not None and fig_num is not None:
-        chart += '\t\\caption{'
-        if caption is not None:
-            chart += caption
-        if fig_num is not None:
-            chart += f'\\label{{table_{fig_num}}}'
-        chart += '}\n'
     chart += '\\end{table}'
 
     return chart
-
-def get_analyser_data(path):
-    analyzer = dataAnalysisClass(path)
-    analyzer.bootstrap()
-    analyzer.jackknife()
-    analyzer.blocking()
-    anal_dict = analyzer.returnOutput()
-    return anal_dict
 
 def run_all(cmdline_args):
     all_files = os.listdir(cmdline_args.set)
@@ -444,6 +441,8 @@ def part_c(path, main_dir, show = False):
 
 def part_d(path, main_dir, show = False):
     data = file_io.load_part_d(path)
+    out = ''
+
     data = get_col_data(data)
     if show:
         for run in data:
@@ -454,16 +453,25 @@ def part_d(path, main_dir, show = False):
                     print(f'{key:10s}\t{val:g}')
             print()
 
-    data = sort_col_data(data, ['dim','N','alpha','dt'])
-    sub_data = divide_by(data, 'dim')
+    data = sort_col_data(data, ['N','alpha','dt'])
 
-    out = ''
-    for n, (key, data) in enumerate(sub_data.items()):
-        div_col = 'N'
-        caption = f'PART D, {label_map["dim"]}={key}'
-        fig_num = '3.' + str(n)
-        chart = chart_from_data(data, caption, fig_num, div_col)
-        out += chart + '\n'
+    data['std'] = np.sqrt(data['var_blocking'])
+    data = combine_cols_uncertainty(data, 'blocking', 'std')
+
+    data['std'] = np.sqrt(data['var_bootstrap'])
+    data = combine_cols_uncertainty(data, 'bootstrap', 'std')
+    del data['std']
+
+    del data['var']
+    del data['var_blocking']
+    del data['var_bootstrap']
+    del data['dim']
+
+    div_col = 'N'
+    caption = f'PART D'
+    fig_num = 3
+    chart = chart_from_data(data, caption, fig_num, div_col)
+    out += chart + '\n'
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(out)
     with open(main_dir + '/all_tables.txt', 'a+') as outfile:
@@ -562,7 +570,7 @@ def run_all_parts(cmdline_args, show = False):
              'part_d'   :   part_d,
              'part_e'   :   part_e,
              'part_f'   :   part_f,
-             'part_g'   :   part_g
+             # 'part_g'   :   part_g
             }
 
     for part, func in parts.items():
