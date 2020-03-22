@@ -4,17 +4,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import file_io
+import pandas
 import re
 import os
 
 label_map = {
              'alpha'    :   '$\\alpha$',
              'E'        :   '$\\left\\langle E \\right\\rangle$',
-             'E/Nd'     :   '$\\left\\langle E \\right\\rangle / Nd$',
+             'E/Nd'     :   '$\\left\\langle E \\right\\rangle / N d_r$',
              'var'      :   '$\\text{var}(E)$',
              'accept'   :   'Accept Ratio',
-             'cycles'   :   'Cycles',
-             'workers'  :   'Workers',
+             # 'cycles'   :   'Cycles',
+             # 'workers'  :   'Workers',
              'N'        :   '$N$',
              'dim'      :   '$d_r$',
              'dt'       :   '$\\delta t$'
@@ -44,6 +45,13 @@ def parse_args():
     parser.add_argument('--fig', type = int, default = None, help = fig_help)
 
     return parser.parse_args()
+
+def get_uncertainty(val, var):
+    val = fmt_exp_float(val)
+    var = fmt_exp_float(var)
+    out = f'{f"{val} ± {var}"}'
+    out = re.sub(r'±', '\\pm', out)
+    return out
 
 def prep_plot_energies(path_prefix, N_vals):
     '''
@@ -87,13 +95,18 @@ def prep_plot_energies(path_prefix, N_vals):
 
 def fmt_exp_float(x):
 
+    if isinstance(x, str):
+        return x
+
     if np.isnan(x):
         return 'NAN'
 
-    if 'e' not in f'{x:.4g}'.lower():
+    if int(x) == x and len(str(int(x))) <= 4:
+        return str(int(x))
+    elif 'e' not in f'{x:.4g}'.lower():
         return f'{x:.4g}'
 
-    string = f'{x:.2E}'
+    string = f'{x:.0E}'
 
     pattern = r'E([\-\+]?)\d+'
     sign = re.findall(pattern = pattern, string = string)[0]
@@ -102,7 +115,8 @@ def fmt_exp_float(x):
     exp = re.findall(pattern = pattern, string = string)[0]
     exp = int(exp)
 
-    pattern = r'(\d+\.\d+)E[\-\+]?\d+'
+    pattern = r'(\d+)E[\-\+]?\d+'
+    # pattern = r'(\d+\.\d+)E[\-\+]?\d+'
     val = re.findall(pattern = pattern, string = string)[0]
 
     if sign == '+':
@@ -116,6 +130,29 @@ def fmt_exp_float(x):
         out += '}'
 
     return out
+
+def get_col_data(data):
+    cols = []
+    for d in data:
+        for key, val in d.items():
+            if key not in cols and key in label_map.keys():
+                cols.append(key)
+
+    col_data = {col:[] for col in cols}
+    for d in data:
+        checked = {col:False for col in cols}
+        for key, val in d.items():
+            if key in label_map.keys():
+                col_data[key].append(val)
+                checked[key] = True
+        for key, val in checked.items():
+            if val is False:
+                raise Exception('Inconsistent Labeling in Loaded Files')
+
+    for key, val in col_data.items():
+        col_data[key] = np.array(val)
+
+    return col_data
 
 def chart_from_path(path_prefix_E, path_prefix_val, N_vals, caption = None,
                fig_num = None):
@@ -167,39 +204,55 @@ def chart_from_path(path_prefix_E, path_prefix_val, N_vals, caption = None,
 
     return chart
 
-def chart_from_data(data, caption = None, fig_num = None):
+def sort_col_data(col_data, cols):
+    '''
+        Sort <dict> 'col_data' by a list of its keys, given by 'col'
+    '''
+    data = pandas.DataFrame(col_data)
+    data = data.sort_values(cols)
+    out = {}
+    for key in data:
+        out[key] = np.array(data[key])
+    return out
+
+def divide_by(col_data, col):
+    '''
+        Split <dict> 'col_data' by one of its keys, given by 'col'
+        'col_data' should already be sorted by 'col'
+    '''
+    data = pandas.DataFrame(col_data)
+    sub_data = {}
+    for n,i in enumerate(data[col]):
+        if i not in sub_data.keys():
+            sub_data[i] = [n]
+        else:
+            sub_data[i].append(n)
+
+    for key, val in sub_data.items():
+        sub_data[key] = data.iloc[val].drop(columns = col)
+        out = {}
+
+        for d in sub_data[key]:
+            out[d] = np.array(sub_data[key][d])
+        sub_data[key] = out
+
+    return sub_data
+
+def chart_from_data(col_data, caption = None, fig_num = None):
 
     chart = ('\\begin{table}[H]\n'
              '\t\\centering\n'
              '\t\\begin{tabular}{')
 
-    cols = []
-    for d in data:
-        for key, val in d.items():
-            if key not in cols and key in label_map.keys():
-                cols.append(key)
+    cols = list(col_data.keys())
 
-    chart += 'r'*len(cols)
+    chart += 'c '*len(cols)
     chart += '}\n\t\t'
     for col in cols:
         chart += f'{label_map[col]} & '
     chart = chart[:-2] + '\\\\\n\t\t\\hline\n'
 
-    col_data = {col:[] for col in cols}
-    for d in data:
-        checked = {col:False for col in cols}
-        for key, val in d.items():
-            if key in label_map.keys():
-                col_data[key].append(val)
-                checked[key] = True
-        for key, val in checked.items():
-            if val is False:
-                raise Exception('Inconsistent Labeling in Loaded Files')
-
-    for key, val in col_data.items():
-        col_data[key] = np.array(val)
-
-    for i in range(len(data)):
+    for i in range(len(col_data[cols[0]])):
         chart += '\t\t'
         for col in cols:
             chart += f'${fmt_exp_float(col_data[col][i])}$ & '
@@ -211,7 +264,7 @@ def chart_from_data(data, caption = None, fig_num = None):
         if caption is not None:
             chart += caption
         if fig_num is not None:
-            chart += f'\\label{{table_{fig_num:d}}}'
+            chart += f'\\label{{table_{fig_num}}}'
         chart += '}\n'
     chart += '\\end{table}'
 
@@ -277,31 +330,83 @@ def run_all(cmdline_args):
     with open(chart_path + 'tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
-def part_b(path, show = False):
+def combine_cols_uncertainty(data, vals_label, vars_label):
+    combined = []
+    dataframe = pandas.DataFrame(data)
+    for val, var in zip(dataframe[vals_label], dataframe[vars_label]):
+        combined.append(get_uncertainty(val, var))
+    col_vals = []
+    for i in range(len(data[vals_label])):
+        col_vals.append(combined[i])
+    col_vals = np.array(col_vals)
+    data[vals_label] = col_vals
+    return data
+
+def part_b(path, main_dir, show = False):
+
     data = file_io.load_part_b(path)
+    data = get_col_data(data)
+    data = sort_col_data(data, ['dim', 'N'])
     if show:
         for run in data:
             for key, val in run.items():
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    chart = chart_from_data(data, caption = 'Part B', fig_num = 1)
-    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
-        outfile.write(chart)
+    # data = combine_cols_uncertainty(data, 'E', 'var')
+    data['var'] /= (data['N']*data['dim'])
+    data['var'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    del data['var']
+    del data['E']
 
-def part_c(path, show = False):
+    data = sort_col_data(data, ['dim','N','E/Nd'])
+    sub_data = divide_by(data, 'dim')
+
+    out = ''
+    for n, (key, data) in enumerate(sub_data.items()):
+        caption = f'PART B, {label_map["dim"]}={key}'
+        fig_num = '1.' + str(n)
+        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        out += chart + '\n'
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(out)
+    with open(main_dir + '/all_tables.txt', 'w+') as outfile:
+        outfile.write(out)
+
+def part_c(path, main_dir, show = False):
     data = file_io.load_part_c(path)
+    data = get_col_data(data)
     if show:
         for run in data:
             for key, val in run.items():
                 print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, caption = 'Part C', fig_num = 2)
-    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
-        outfile.write(chart)
 
-def part_d(path, show = False):
+    # data = combine_cols_uncertainty(data, 'E', 'var')
+    data['var'] /= (data['N']*data['dim'])
+    data['var'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    del data['var']
+    del data['E']
+
+    data = sort_col_data(data, ['dim','N','E/Nd'])
+    sub_data = divide_by(data, 'dim')
+
+    out = ''
+    for n, (key, data) in enumerate(sub_data.items()):
+        caption = f'PART C, {label_map["dim"]}={key}'
+        fig_num = '2.' + str(n)
+        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        out += chart + '\n'
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(out)
+    with open(main_dir + '/all_tables.txt', 'a+') as outfile:
+        outfile.write(out)
+
+def part_d(path, main_dir, show = False):
     data = file_io.load_part_d(path)
+    data = get_col_data(data)
     if show:
         for run in data:
             for key, val in run.items():
@@ -310,12 +415,24 @@ def part_d(path, show = False):
                 else:
                     print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, caption = 'Part D', fig_num = 3)
-    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
-        outfile.write(chart)
 
-def part_e(path, show = False):
+    data = sort_col_data(data, ['dim','N','E'])
+    sub_data = divide_by(data, 'dim')
+
+    out = ''
+    for n, (key, data) in enumerate(sub_data.items()):
+        caption = f'PART D, {label_map["dim"]}={key}'
+        fig_num = '3.' + str(n)
+        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        out += chart + '\n'
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(out)
+    with open(main_dir + '/all_tables.txt', 'a+') as outfile:
+        outfile.write(out)
+
+def part_e(path, main_dir, show = False):
     data = file_io.load_part_e(path)
+    data = get_col_data(data)
     if show:
         for run in data:
             for key, val in run.items():
@@ -324,12 +441,31 @@ def part_e(path, show = False):
                 else:
                     print(f'{key:10s}\t{val:g}')
             print()
-    chart = chart_from_data(data, caption = 'Part E', fig_num = 4)
-    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
-        outfile.write(chart)
 
-def part_g(path, show = False):
+    # data = combine_cols_uncertainty(data, 'E', 'var')
+    data['var'] /= (data['N']*data['dim'])
+    data['var'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    del data['var']
+    del data['E']
+
+    data = sort_col_data(data, ['dim','N','E/Nd'])
+    sub_data = divide_by(data, 'dim')
+
+    out = ''
+    for n, (key, data) in enumerate(sub_data.items()):
+        caption = f'PART E, {label_map["dim"]}={key}'
+        fig_num = '4.' + str(n)
+        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        out += chart + '\n'
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(out)
+    with open(main_dir + '/all_tables.txt', 'a+') as outfile:
+        outfile.write(out)
+
+def part_g(path, main_dir, show = False):
     data = file_io.load_part_g(path)
+    data = get_col_data(data)
     if show:
         for run in data:
             for key, val in run.items():
@@ -349,7 +485,7 @@ def run_all_parts(cmdline_args, show = False):
              'part_c'   :   part_c,
              'part_d'   :   part_d,
              'part_e'   :   part_e,
-             'part_g'   :   part_g
+             # 'part_g'   :   part_g
             }
 
     for part, func in parts.items():
@@ -368,7 +504,7 @@ def run_all_parts(cmdline_args, show = False):
         if not os.path.isdir(path + '/plots/'):
             os.mkdir(path + '/plots/')
 
-        parts[part](path, show)
+        parts[part](path, cmdline_args.set, show)
         if show:
             print(f'\033[1m{msg}\033[m FINISH')
 
@@ -379,4 +515,4 @@ if __name__ == '__main__':
     msg = f'Invalid Directory \033[3m{data_dir}\033[m'
     assert os.path.isdir(data_dir), msg
 
-    run_all_parts(cmdline_args, show = True)
+    run_all_parts(cmdline_args, show = False)

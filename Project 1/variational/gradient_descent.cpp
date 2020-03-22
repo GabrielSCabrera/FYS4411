@@ -27,6 +27,7 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
     printf("alpha:%.6lf  E:%.6lf  E':%9.2e  E'':%9.2e  E'/E'':%9.2e\n",
     alpha, MC->get_energy_mean(), E_alpha, E_2alpha, E_alpha/E_2alpha);
     }*/
+    
     counter++;
   }
   if (E_alpha*E_alpha < tol) {printf("stopped because tolerance reached: %d\n", counter);}
