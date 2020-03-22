@@ -1,6 +1,0 @@
-cycles  500000
-workers 2
-alpha   0.5
-E       15
-accept  0.999986
-dt      0.001

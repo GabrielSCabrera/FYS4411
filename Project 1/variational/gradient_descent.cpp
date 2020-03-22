@@ -6,11 +6,11 @@
 
 Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
   double E_alpha = 42.0;
-  double E_2alpha;
-  int equi_cycles = 500;
-  int sample_cycles = 1E4;
-  int max_steps = 1E4;
-  double tol = 1e-10;
+  //double E_2alpha;
+  int equi_cycles = 100;
+  int sample_cycles = 1E3;
+  int max_steps = 1E3;
+  double tol = 1e-9;
 
   double alpha = MC->bose->get_alpha();
   int counter = 0;
@@ -19,8 +19,9 @@ Mat gradient_descent(Monte_Carlo* MC, double eta, Mat R) {
     R = MC->sample_variational_derivatives(R, sample_cycles);
 
     E_alpha = MC->get_grad_alpha();
-    E_2alpha = MC->E_2alpha;
-    alpha -= E_alpha/E_2alpha;
+    //E_2alpha = MC->E_2alpha;
+    alpha -= E_alpha/MC->E_2alpha;
+
     MC->bose->update_alpha(alpha);
 
     /*if (counter % 100 == 0) {

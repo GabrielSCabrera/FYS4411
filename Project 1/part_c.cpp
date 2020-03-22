@@ -25,19 +25,19 @@ int main(int narg, char** argv) {
 	int N = 500; 
 	//-------------------------
 
-	double* alphas = new double [3];
-	alphas[0] = 0.45; alphas[1] = 0.5; alphas[2] = 0.55;
+	double* alphas = new double [2];
+	alphas[0] = 0.5; alphas[1] = 0.55;
 
 	double* delta_t = new double [3];
-	delta_t[0] = 0.001; delta_t[1] = 0.05; delta_t[2] = 0.01;
+	delta_t[0] = 0.001; delta_t[1] = 0.005; delta_t[2] = 0.01;
 
 	int cycles = 1e6/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
 	
 	if (my_rank == 0) {
-	 	Es = new double [3];
-	 	variance = new double[3];
-	 	acceptance_ratios = new double [3];
+	 	Es = new double [2];
+	 	variance = new double[2];
+	 	acceptance_ratios = new double [2];
 	}
 	Psi_OB bose_system;
 	double dt;
@@ -59,7 +59,7 @@ int main(int narg, char** argv) {
 		for (int t = 0; t < 3; t++) {
 			dt = delta_t[t];
 			MC.set_dt(dt);
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 				MC.bose->update_alpha(alphas[i]);
 				R = MC.equilibriation(R, 100);
 				R = MC.sample_energy(R, cycles);
@@ -90,7 +90,7 @@ int main(int narg, char** argv) {
 			}
 			if (my_rank == 0) {
 				outfile << "\n-------------------------------------";
-		  		for (int i = 0; i < 3; i++) {
+		  		for (int i = 0; i < 2; i++) {
 					outfile << "\n\nalpha   " << alphas[i];
 					outfile << "\nE       " << Es[i];
 					outfile << "\nE/Nd    " << Es[i]/(dim*N);
