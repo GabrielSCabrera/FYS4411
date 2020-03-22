@@ -16,7 +16,6 @@ main.o: main.cpp ./matpak/Mat.h ./variational/hastings.h ./variational/monte_car
 ./wavefunctions/Psi.o: ./matpak/Mat.h
 ./wavefunctions/Psi_OB.o: ./wavefunctions/Psi.h ./matpak/Mat.h
 ./wavefunctions/Psi_T.o: ./wavefunctions/Psi.h ./matpak/Mat.h
-
 ./matpak/Mat.o: ./matpak/Mat.h
 
 valgrind:
@@ -35,7 +34,6 @@ part_b: part_b.cpp ./matpak/Mat.o ./variational/metropolis.o ./variational/monte
 
 part_c: part_c.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o  ./wavefunctions/Psi_OB.o  ./wavefunctions/Psi.o
 	$(CXX) $(CXXFLAGS) part_c.cpp ./matpak/Mat.o ./variational/hastings.o ./variational/monte_carlo.o ./wavefunctions/Psi_OB.o ./wavefunctions/Psi.o
-	#mpiexec --hostfile hostfile -np 3 ./a.out
 	mpiexec -np $(CORES) ./a.out
 	make clean && rm a.out
 
