@@ -1,10 +1,11 @@
 \begin{table}[H]
 	\centering
-	\begin{tabular}{c c }
+	\begin{tabular}{c c}
 		$N$ & $d_r$ \\
+		\hline
 		\hline
 		$10$ & $3$ \\
 		$10$ & $3$ \\
 	\end{tabular}
-	\caption{Part G\label{table_5}}
+	\caption{Part G\label{table_6}}
 \end{table}

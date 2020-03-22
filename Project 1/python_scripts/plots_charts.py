@@ -18,7 +18,7 @@ label_map = {
              # 'workers'  :   'Workers',
              'N'        :   '$N$',
              'dim'      :   '$d_r$',
-             'dt'       :   '$\\delta t$'
+             'dt'       :   '$\\Delta t$'
             }
 
 def parse_args():
@@ -93,7 +93,7 @@ def prep_plot_energies(path_prefix, N_vals):
 
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-def fmt_exp_float(x):
+def fmt_exp_float(x, fmt_f = 'g', fmt_e = '.0E'):
 
     if isinstance(x, str):
         return x
@@ -103,10 +103,10 @@ def fmt_exp_float(x):
 
     if int(x) == x and len(str(int(x))) <= 4:
         return str(int(x))
-    elif 'e' not in f'{x:.4g}'.lower():
-        return f'{x:.4g}'
+    elif 'e' not in f'{x:{fmt_f}}'.lower():
+        return f'{x:{fmt_f}}'
 
-    string = f'{x:.0E}'
+    string = f'{x:{fmt_e}}'
 
     pattern = r'E([\-\+]?)\d+'
     sign = re.findall(pattern = pattern, string = string)[0]
@@ -122,12 +122,15 @@ def fmt_exp_float(x):
     if sign == '+':
         sign = ''
 
-    out = f'{val}'
     if exp != 0:
-        out += ' \\times 10^{'
+        out = f'{val}'
+        if val != 1:
+            out += ' \\times 10^{'
         out += sign
         out += f'{exp:d}'
         out += '}'
+    else:
+        out = f'{val}'
 
     return out
 
@@ -238,7 +241,11 @@ def divide_by(col_data, col):
 
     return sub_data
 
-def chart_from_data(col_data, caption = None, fig_num = None):
+def chart_from_data(col_data, caption = None, fig_num = None, div_col = None):
+    '''
+        Make sure col_data is sorted by 'div_col' if 'div_col' is not None
+    '''
+    split_val = None
 
     chart = ('\\begin{table}[H]\n'
              '\t\\centering\n'
@@ -246,16 +253,44 @@ def chart_from_data(col_data, caption = None, fig_num = None):
 
     cols = list(col_data.keys())
 
-    chart += 'c '*len(cols)
+    if div_col is not None:
+        chart += 'c | ' + 'c '*(len(cols)-1)
+    else:
+        chart += 'c '*len(cols)
+
+    chart = chart[:-1]
     chart += '}\n\t\t'
+    if div_col is not None:
+        chart += f'{label_map[div_col]} & '
     for col in cols:
-        chart += f'{label_map[col]} & '
-    chart = chart[:-2] + '\\\\\n\t\t\\hline\n'
+        if div_col is None or col != div_col:
+            chart += f'{label_map[col]} & '
+    chart = chart[:-2] + '\\\\\n\t\t\\hline\n\t\t\\hline\n'
 
     for i in range(len(col_data[cols[0]])):
         chart += '\t\t'
+        if div_col is not None:
+            if split_val is None:
+                split_val = col_data[div_col][0]
+            else:
+                if split_val != col_data[div_col][i]:
+                    split_val = col_data[div_col][i]
+                    chart += '\\hline\n\t\t'
+            chart += f'${fmt_exp_float(col_data[div_col][i])}$ & '
+
         for col in cols:
-            chart += f'${fmt_exp_float(col_data[col][i])}$ & '
+            if col == 'alpha':
+                chart += f'${fmt_exp_float(col_data[col][i], ".4f")}$ & '
+            elif col == 'accept':
+                if f'{col_data[col][i]:.2f}' == f'{1:.2f}':
+                    chart += f'$0.99$ & '
+                else:
+                    chart += f'${fmt_exp_float(col_data[col][i], ".2f")}$ & '
+            elif col == 'dt':
+                chart += f'${fmt_exp_float(col_data[col][i], ".3f")}$ & '
+            elif div_col is None or col != div_col:
+                chart += f'${fmt_exp_float(col_data[col][i])}$ & '
+
         chart = chart[:-2] + '\\\\\n'
 
     chart += '\t\\end{tabular}\n'
@@ -346,28 +381,29 @@ def part_b(path, main_dir, show = False):
 
     data = file_io.load_part_b(path)
     data = get_col_data(data)
-    data = sort_col_data(data, ['dim', 'N'])
     if show:
         for run in data:
             for key, val in run.items():
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    # data = combine_cols_uncertainty(data, 'E', 'var')
-    data['var'] /= (data['N']*data['dim'])
-    data['var'] = np.sqrt(data['var'])
-    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['E']
 
-    data = sort_col_data(data, ['dim','N','E/Nd'])
+    data = sort_col_data(data, ['dim', 'N', 'alpha'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
     for n, (key, data) in enumerate(sub_data.items()):
+        div_col = 'N'
         caption = f'PART B, {label_map["dim"]}={key}'
         fig_num = '1.' + str(n)
-        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        chart = chart_from_data(data, caption, fig_num, div_col)
         out += chart + '\n'
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(out)
@@ -383,21 +419,23 @@ def part_c(path, main_dir, show = False):
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    # data = combine_cols_uncertainty(data, 'E', 'var')
-    data['var'] /= (data['N']*data['dim'])
-    data['var'] = np.sqrt(data['var'])
-    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['E']
 
-    data = sort_col_data(data, ['dim','N','E/Nd'])
+    data = sort_col_data(data, ['dim','N','alpha','dt'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
     for n, (key, data) in enumerate(sub_data.items()):
+        div_col = 'N'
         caption = f'PART C, {label_map["dim"]}={key}'
         fig_num = '2.' + str(n)
-        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        chart = chart_from_data(data, caption, fig_num, div_col)
         out += chart + '\n'
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(out)
@@ -416,14 +454,15 @@ def part_d(path, main_dir, show = False):
                     print(f'{key:10s}\t{val:g}')
             print()
 
-    data = sort_col_data(data, ['dim','N','E'])
+    data = sort_col_data(data, ['dim','N','alpha','dt'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
     for n, (key, data) in enumerate(sub_data.items()):
+        div_col = 'N'
         caption = f'PART D, {label_map["dim"]}={key}'
         fig_num = '3.' + str(n)
-        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        chart = chart_from_data(data, caption, fig_num, div_col)
         out += chart + '\n'
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(out)
@@ -442,21 +481,58 @@ def part_e(path, main_dir, show = False):
                     print(f'{key:10s}\t{val:g}')
             print()
 
-    # data = combine_cols_uncertainty(data, 'E', 'var')
-    data['var'] /= (data['N']*data['dim'])
-    data['var'] = np.sqrt(data['var'])
-    data = combine_cols_uncertainty(data, 'E/Nd', 'var')
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['E']
 
-    data = sort_col_data(data, ['dim','N','E/Nd'])
+    data = sort_col_data(data, ['dim','N','alpha'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
     for n, (key, data) in enumerate(sub_data.items()):
+        div_col = 'N'
         caption = f'PART E, {label_map["dim"]}={key}'
         fig_num = '4.' + str(n)
-        chart = chart_from_data(data, caption = caption, fig_num = fig_num)
+        chart = chart_from_data(data, caption, fig_num, div_col)
+        out += chart + '\n'
+    with open(path + '/charts/tex_table.txt', 'w+') as outfile:
+        outfile.write(out)
+    with open(main_dir + '/all_tables.txt', 'a+') as outfile:
+        outfile.write(out)
+
+def part_f(path, main_dir, show = False):
+    data = file_io.load_part_e(path)
+    data = get_col_data(data)
+    if show:
+        for run in data:
+            for key, val in run.items():
+                if isinstance(val, np.ndarray):
+                    print(f'{key:10s}\t{val}')
+                else:
+                    print(f'{key:10s}\t{val:g}')
+            print()
+
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
+    del data['var']
+
+    data = sort_col_data(data, ['dim','N','alpha'])
+    sub_data = divide_by(data, 'dim')
+
+    out = ''
+    for n, (key, data) in enumerate(sub_data.items()):
+        div_col = 'N'
+        caption = f'PART F, {label_map["dim"]}={key}'
+        fig_num = '5.' + str(n)
+        chart = chart_from_data(data, caption, fig_num, div_col)
         out += chart + '\n'
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(out)
@@ -474,7 +550,7 @@ def part_g(path, main_dir, show = False):
                 else:
                     print(f'{key:12s}\t{val:g}')
             print()
-    chart = chart_from_data(data, caption = 'Part G', fig_num = 5)
+    chart = chart_from_data(data, caption = 'Part G', fig_num = 6)
     with open(path + '/charts/tex_table.txt', 'w+') as outfile:
         outfile.write(chart)
 
@@ -485,7 +561,8 @@ def run_all_parts(cmdline_args, show = False):
              'part_c'   :   part_c,
              'part_d'   :   part_d,
              'part_e'   :   part_e,
-             # 'part_g'   :   part_g
+             'part_f'   :   part_f,
+             'part_g'   :   part_g
             }
 
     for part, func in parts.items():
