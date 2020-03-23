@@ -73,7 +73,11 @@ def read_part_e_file(filename):
     headers = {line.split()[0]:int(line.split()[1]) for line in header}
     for n, data in enumerate(runs):
         temp = data.split('\n')
-        temp = {line.split()[0]:float(line.split()[1]) for line in temp}
+        new_temp = []
+        for i in temp:
+            if i:
+                new_temp.append(i)
+        temp = {line.split()[0]:float(line.split()[1]) for line in new_temp}
         for key, value in headers.items():
             temp[key] = value
         out.append(temp)

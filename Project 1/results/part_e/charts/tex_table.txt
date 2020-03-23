@@ -1,5 +1,6 @@
 \begin{table}[H]
 	\centering
+	\caption{PART E, $d_r$=3\label{table_4.0}}
 	\begin{tabular}{c | c c c c}
 		$N$ & $\alpha$ & $\left\langle E \right\rangle$ & $\left\langle E \right\rangle / N d_r$ & Accept Ratio \\
 		\hline
@@ -16,5 +17,4 @@
 		$100$ & $0.5000$ & $266.361 \pm 1.07403$ & $0.887871 \pm 0.0620094$ & $0.53$ \\
 		$100$ & $0.5500$ & $268.47 \pm 2.87166$ & $0.894902 \pm 0.165795$ & $0.51$ \\
 	\end{tabular}
-	\caption{PART E, $d_r$=3\label{table_4.0}}
 \end{table}

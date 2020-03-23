@@ -1,21 +1,21 @@
-cycles  500000
-workers 2
+cycles  125000
+workers 8
 
 
 alpha   0.45
-E       1.50864
-E/Nd    0.50288
-var     0.0167997
-accept  0.602156
+E       1.50921
+E/Nd    0.50307
+var     0.017118
+accept  0.603192
 
 alpha   0.5
 E       1.5
 E/Nd    0.5
-var     1.02754e-32
-accept  0.582994
+var     1.03661e-32
+accept  0.58371
 
 alpha   0.55
-E       1.50654
-E/Nd    0.50218
-var     0.0136973
-accept  0.566347
+E       1.50677
+E/Nd    0.502258
+var     0.0137215
+accept  0.566877

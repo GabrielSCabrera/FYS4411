@@ -1,5 +1,6 @@
 \begin{table}[H]
 	\centering
+	\caption{PART B, $d_r$=1\label{table_1.0}}
 	\begin{tabular}{c | c c c c}
 		$N$ & $\alpha$ & $\left\langle E \right\rangle$ & $\left\langle E \right\rangle / N d_r$ & Accept Ratio \\
 		\hline
@@ -20,10 +21,10 @@
 		$500$ & $0.5000$ & $250 \pm 2 \times 10^{-14}$ & $0.5 \pm 7 \times 10^{-16}$ & $0.78$ \\
 		$500$ & $0.5500$ & $251.13 \pm 1.50775$ & $0.502261 \pm 0.0674288$ & $0.77$ \\
 	\end{tabular}
-	\caption{PART B, $d_r$=1\label{table_1.0}}
 \end{table}
 \begin{table}[H]
 	\centering
+	\caption{PART B, $d_r$=2\label{table_1.1}}
 	\begin{tabular}{c | c c c c}
 		$N$ & $\alpha$ & $\left\langle E \right\rangle$ & $\left\langle E \right\rangle / N d_r$ & Accept Ratio \\
 		\hline
@@ -44,10 +45,10 @@
 		$500$ & $0.5000$ & $500 \pm 3 \times 10^{-14}$ & $0.5 \pm 1 \times 10^{-15}$ & $0.67$ \\
 		$500$ & $0.5500$ & $502.26 \pm 2.13542$ & $0.50226 \pm 0.067528$ & $0.65$ \\
 	\end{tabular}
-	\caption{PART B, $d_r$=2\label{table_1.1}}
 \end{table}
 \begin{table}[H]
 	\centering
+	\caption{PART B, $d_r$=3\label{table_1.2}}
 	\begin{tabular}{c | c c c c}
 		$N$ & $\alpha$ & $\left\langle E \right\rangle$ & $\left\langle E \right\rangle / N d_r$ & Accept Ratio \\
 		\hline
@@ -68,5 +69,4 @@
 		$500$ & $0.5000$ & $750 \pm 6 \times 10^{-14}$ & $0.5 \pm 1 \times 10^{-15}$ & $0.58$ \\
 		$500$ & $0.5500$ & $753.403 \pm 2.61828$ & $0.502269 \pm 0.0676038$ & $0.57$ \\
 	\end{tabular}
-	\caption{PART B, $d_r$=3\label{table_1.2}}
 \end{table}

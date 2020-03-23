@@ -1,6 +1,6 @@
 cycles  500000
 workers 2
 alpha   0.55
-E       1.50663
-accept  0.818778
-dt      0.5
+E       1.50673
+accept  0.999469
+dt      0.01

@@ -19,20 +19,20 @@ int main(int narg, char** argv) {
 	int my_rank, num_procs;
   	MPI_Init(&narg, &argv);
   	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs); 
+  	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-  	//-----change N----------: N = {1, 10, 100, 500}
-	int N = 10; 
+  //-----change N----------: N = {1, 10, 100, 500}
+	int N = 1;
 	//-------------------------
 
 	double* alphas = new double [2];
-	alphas[0] = 0.45; alphas[1] = 0.55;
+	alphas[0] = 0.5; alphas[1] = 0.55;
 
 	double* delta_t = new double [3];
 	delta_t[0] = 0.005; delta_t[1] = 0.1; delta_t[2] = 0.5;
 
 	int cycles = 1e6/num_procs; // cycles per proc
-	
+
 	if (my_rank == 0) {
 	 	Es = new double [2];
 	 	variance = new double[2];
@@ -57,8 +57,8 @@ int main(int narg, char** argv) {
 			dt = delta_t[t];
 			MC.set_dt(dt);
 			for (int i = 0; i < 2; i++) {
-				MC.bose->update_alpha(alphas[i]);
 				Mat R = MC.get_initial_R();
+				MC.bose->update_alpha(alphas[i]);
 				R = MC.equilibriation(R, 100);
 				R = MC.sample_energy(R, cycles);
 				MC.print_info();
@@ -82,7 +82,7 @@ int main(int narg, char** argv) {
 				if (my_rank == 0) {
 					Es[i] = E;
 					acceptance_ratios[i] = acceptance_ratio/num_procs;
-					variance[i] = var/num_procs; 
+					variance[i] = var/num_procs;
 					printf("\n");
 				}
 			}

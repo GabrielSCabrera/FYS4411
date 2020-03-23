@@ -22,22 +22,25 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   	//-----change N----------: N = {1, 10, 100, 500}
-	int N = 1; 
+	int N = 100; 
 	//-------------------------
 	double* alphas = new double [2];
-	alphas[0] = 0.45; alphas[1] = 0.55;
+	alphas[0] = 0.5; alphas[1] = 0.55;
 
 	double* delta_t = new double [3];
-	delta_t[0] = 0.005; delta_t[1] = 0.1; delta_t[2] = 0.5;
+	delta_t[0] = 0.001; delta_t[1] = 0.005; delta_t[2] = 0.01;
 
 	int dim = 3;
 	int cycles = 1e6/num_procs; // cycles per proc
+	int equi_cycles = 1e3;
 	if (my_rank == 0) {
 	 	Es = new double [num_procs*cycles];
 	}
 	Psi_OB bose_system;
 	double dt;
 	Hastings MC(&bose_system, N, dim);
+	Mat R = MC.get_initial_R();
+	R = MC.equilibriation(R, equi_cycles);
 	for (int t = 0; t < 3; t++) {
 		dt = delta_t[t];
 		MC.set_dt(dt);
@@ -48,7 +51,6 @@ int main(int narg, char** argv) {
 		end.append(".dat");
 		for (int i = 0; i < 2; i++) {
 			MC.bose->update_alpha(alphas[i]);
-			Mat R = MC.get_initial_R();
 			R = MC.equilibriation(R, 100);
 			R = MC.sample_energy(R, cycles);
 			MC.print_info();
