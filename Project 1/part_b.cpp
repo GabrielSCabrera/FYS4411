@@ -20,14 +20,13 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   //-----change N----------: N = {1, 10, 100, 500}
-	int N = 500;
+	int N = 1;
 	//-------------------------
 
 	double* alphas = new double [3];
 	alphas[0] = 0.45; alphas[1] = 0.5; alphas[2] = 0.55;
 
 	int cycles = 1e6/num_procs; // cycles per proc
-	int equi_cycles = 1e3;
 
 	if (my_rank == 0) {
 	 	Es = new double [3];
@@ -38,10 +37,9 @@ int main(int narg, char** argv) {
 
 	for (int dim = 1; dim < 4; dim++) {
 		Metropolis MC(&bose_system, N, dim);
-		Mat R = MC.get_initial_R();
-		R = MC.equilibriation(R, equi_cycles);
 		for (int i = 0; i < 3; i++) {
 			MC.bose->update_alpha(alphas[i]);
+			Mat R = MC.get_initial_R();
 			R = MC.equilibriation(R, 100);
 			R = MC.sample_energy(R, cycles);
 			MC.print_info();
