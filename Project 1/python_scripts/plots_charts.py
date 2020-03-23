@@ -462,6 +462,7 @@ def part_d(path, main_dir, show = False):
     data = combine_cols_uncertainty(data, 'bootstrap', 'std')
     del data['std']
 
+    del data['E']
     del data['var']
     del data['var_blocking']
     del data['var_bootstrap']
@@ -531,9 +532,9 @@ def part_f(path, main_dir, show = False):
     data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
     del data['std_2']
     del data['var']
-
-    data = sort_col_data(data, ['dim','N','alpha'])
-    sub_data = divide_by(data, 'dim')
+    del data['dim']
+    
+    data = sort_col_data(data, ['N','alpha'])
 
     out = ''
     for n, (key, data) in enumerate(sub_data.items()):
