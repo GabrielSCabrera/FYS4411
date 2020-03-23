@@ -15,13 +15,19 @@ Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
 	dim = dimensions;
 	bose = bosonic_system;
   E_cycles = new double [1];
-  rho = new double [1];
+  rho = new int*[3];
+  rho[0] = new int[1];
+  rho[1] = new int[1];
+  rho[2] = new int[1];
   L = 0.5*N;
 }
 
 // DESTRUCTOR
 Monte_Carlo::~Monte_Carlo() {
   delete[] E_cycles;
+  delete[] rho[0];
+  delete[] rho[1];
+  delete[] rho[2];
   delete[] rho;
 }
 
@@ -212,17 +218,23 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
 }
 
 // for three dim only!!
-Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
+Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
   Mat R_new = R;
+  delete[] rho[0];
+  delete[] rho[1];
+  delete[] rho[2];
   delete[] rho;
-  int anticipated_max = 5;
-  int fac = 1e4;
-  N_rho = anticipated_max*fac;
-  rho = new double [anticipated_max*fac];
-	for (int i = 0; i < anticipated_max*fac; i++) {
-		rho[i] = 0.0;
+  int fac = 1e2;
+  N_rho = 2*anticipated_max*fac+ 1;
+  rho = new int* [3];
+  rho[0] = new int [N_rho];
+  rho[1] = new int [N_rho];
+  rho[2] = new int [N_rho];
+	for (int i = 0; i < N_rho; i++) {
+		rho[0][i] = 0;
+    rho[1][i] = 0;
+    rho[2][i] = 0;
 	}
-  double x, y, z, r;
   int index;
   for (int i = 0; i < cycles; i++) {
     for (int j = 0; j < N; j++) {
@@ -232,16 +244,18 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles) {
       } else {
         copy_step(&R, &R_new, j);
       }
-      x = R.get(j, 0); y = R.get(j, 1); z = R.get(j, 2);
-      r = std::sqrt(x*x + y*y + z*z);
-      index = r*fac + 0.5;
-      rho[index]++;
+      index = (R.get(j, 0) + anticipated_max)*fac + 0.5;
+      rho[0][index]++;
+      index = (R.get(j, 1) + anticipated_max)*fac + 0.5;
+      rho[1][index]++;
+      index = (R.get(j, 2) + anticipated_max)*fac + 0.5;
+      rho[2][index]++;
     }
   }
   return R;
 }
 
-double* Monte_Carlo::get_rho(int *length_rho) {
+int** Monte_Carlo::get_rho(int *length_rho) {
   (*length_rho) = N_rho;
   return rho;
 }

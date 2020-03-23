@@ -10,8 +10,9 @@
 #include "./matpak/Mat.h"
 
 int main(int narg, char** argv) {
-	double my_alpha, alpha;
-	double* rho = nullptr;
+	double alpha;
+	int** rho = new int*[3];
+	int anticipated_max = 5;
 
 	int my_rank, num_procs;
   	MPI_Init(&narg, &argv);
@@ -21,7 +22,7 @@ int main(int narg, char** argv) {
   	//-----change N------------
 	int N = 10; 
 	//-------------------------
-	int cycles = 1e6/num_procs; // cycles per proc
+	int cycles = 1e7/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
 
 	// UNCORRELATED
@@ -30,31 +31,32 @@ int main(int narg, char** argv) {
 	Metropolis MC_uncorrelated(&bose_system_uncorrelated, N, 3);
 	Mat R = MC_uncorrelated.get_initial_R();
 	R = MC_uncorrelated.equilibriation(R, equi_cycles);
-	printf("mkht\n");
 	// CALCULATE ONE BODY DENSITY
 	R = MC_uncorrelated.equilibriation(R, equi_cycles);
-	MC_uncorrelated.one_body_density(R, cycles);
-
+	MC_uncorrelated.one_body_density(R, cycles, anticipated_max);
 	int N_rho;
-	double* my_rho = MC_uncorrelated.get_rho(&N_rho);
+	int** my_rho = MC_uncorrelated.get_rho(&N_rho);
 	if (my_rank == 0) {
-		rho = new double [N_rho];
+		rho[0] = new int [N_rho];
+		rho[1] = new int [N_rho];
+		rho[2] = new int [N_rho];
 	}
-	MPI_Reduce(my_rho, rho, N_rho, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	printf("m\n");
+	MPI_Reduce(my_rho[0], rho[0], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(my_rho[1], rho[1], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(my_rho[2], rho[2], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (my_rank == 0) {
 		std::ofstream outfile;
 		std::string filename = "results/part_g/N_";
 		filename.append(std::to_string(N));
 		filename.append("_OB.dat");
   		outfile.open(filename);
-		outfile << "r in [0, 4]";
+  		outfile << anticipated_max << "\n";
+		outfile << "x  y  z";
 		for (int j = 0; j < N_rho; j++) {
-			outfile << "\n" << rho[j];
+			outfile << "\n" << rho[0][j] << " " <<rho[1][j] << " " <<rho[2][j];
 		}
 		outfile.close();
 	}
-	printf("made it\n");
 	// CORRELATED
 
 	// set up
@@ -63,20 +65,17 @@ int main(int narg, char** argv) {
 	R = MC_correlated.get_initial_R();
 	R = MC_correlated.equilibriation(R, equi_cycles);
 
-	// Find alpha (choose mean value of all alphas)
-	R = gradient_descent(&MC_correlated, 0.0, R);
-	my_alpha = MC_correlated.bose->get_alpha();
-	MPI_Reduce(&my_alpha, &alpha, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Bcast(&alpha, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	alpha /= num_procs;
+	alpha = 0.4975;
 	MC_correlated.bose->update_alpha(alpha);
 
 	// CALCULATE ONE BODY DENSITY
 	R = MC_correlated.equilibriation(R, equi_cycles);
-	MC_correlated.one_body_density(R, cycles);
+	MC_correlated.one_body_density(R, cycles, anticipated_max);
 
 	my_rho = MC_correlated.get_rho(&N_rho);
-	MPI_Reduce(my_rho, rho, N_rho, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(my_rho[0], rho[0], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(my_rho[1], rho[1], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(my_rho[2], rho[2], N_rho, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	if (my_rank == 0) {
 		std::ofstream outfile;
@@ -84,12 +83,16 @@ int main(int narg, char** argv) {
 		filename.append(std::to_string(N));
 		filename.append("_T.dat");
   		outfile.open(filename);
-		outfile << "r in [0, 4]";
+  		outfile << anticipated_max << "\n";
+		outfile << "x  y  z";
 		for (int j = 0; j < N_rho; j++) {
-			outfile << "\n" << rho[j];
+			outfile << "\n" << rho[0][j] << " " <<rho[1][j] << " " <<rho[2][j];
 		}
 		outfile.close();
-		delete[] rho;
+		delete[] rho[0];
+		delete[] rho[1];
+		delete[] rho[2];
 	}
+	delete[] rho;
 	MPI_Finalize();
 }

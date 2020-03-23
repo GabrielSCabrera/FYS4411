@@ -15,7 +15,7 @@ protected:
 	double accepted_moves_ratio;
 	double variance;
 	double *E_cycles;
-	double* rho;
+	int** rho;
 	int MC_cycles = 1;
 	void set_to_zero();
 public:
@@ -29,7 +29,7 @@ public:
 	double get_variance();
 	double get_accepted_moves_ratio();
 	double* get_E_cycles();
-	double* get_rho(int *length_rho); 
+	int** get_rho(int *length_rho); 
 	void print_info();
 	void copy_step(Mat* from, Mat* to, int index);
 	double random_normal_distribution();
@@ -40,7 +40,7 @@ public:
 	Mat equilibriation(Mat R, int cycles);
 	Mat sample_energy(Mat R, int cycles);
 	Mat sample_variational_derivatives(Mat R, int cycles);
-	Mat one_body_density(Mat R, int cycles);
+	Mat one_body_density(Mat R, int cycles, int anticipated_max);
 };
 
 #endif

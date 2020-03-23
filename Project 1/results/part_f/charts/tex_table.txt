@@ -1,0 +1,12 @@
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c | c c c c}
+		$N$ & $\alpha$ & $\left\langle E \right\rangle$ & $\left\langle E \right\rangle / N d_r$ & Accept Ratio \\
+		\hline
+		\hline
+		$10$ & $0.4975$ & $24.3985 \pm 0.150454$ & $0.813283 \pm 0.0274691$ & $4.05$ \\
+		\hline
+		$50$ & $0.4891$ & $127.264 \pm 1.28148$ & $0.848427 \pm 0.104632$ & $4.16$ \\
+	\end{tabular}
+	\caption{PART F, $d_r$=3\label{table_5.0}}
+\end{table}

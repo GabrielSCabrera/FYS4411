@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.font_manager import FontProperties
 from multiprocessing import Pool
+from numba import njit, prange
 
 # Timing Decorator
 def timeFunction(f):
@@ -23,12 +24,11 @@ def timeFunction(f):
 
 class dataAnalysisClass:
     # General Init functions
-    def __init__(self, fileName, size=0):
-        self.inputFileName = fileName
-        self.loadData(size)
-        self.avg = np.average(self.data)
-        self.var = np.var(self.data)
-        self.std = np.std(self.data)
+    def __init__(self, data):
+        self.avg = np.mean(data)
+        self.var = np.var(data)
+        self.std = np.std(data)
+        self.data = data
 
     def loadData(self, size=0):
         if size != 0:
@@ -49,15 +49,14 @@ class dataAnalysisClass:
 
     # Statistical Analysis with Multiple Methods
     def runAllAnalyses(self):
-        if len(self.data) <= 100000:
-            print("Autocorrelation...")
-            self.autocorrelation()
-        print("Bootstrap...")
-        self.bootstrap()
-        print("Jackknife...")
-        self.jackknife()
-        print("Blocking...")
-        self.blocking()
+        t0 = time.time()
+        print("Bootstrap ", end = '')
+        self.bootAvg, self.bootVar, self.bootStd = self.bootstrap(self.data)
+        t1 = time.time()
+        print(f"{t1-t0:3.2f}s\tBlocking ", end = '')
+        self.blockingAvg, self.blockingVar, self.blockingStd = self.blocking(self.data)
+        t2 = time.time()
+        print(f"{t2-t1:3.2f}s")
 
     # Standard Autocorrelation
     @timeFunction
@@ -68,55 +67,58 @@ class dataAnalysisClass:
                                             self.data[k:len(self.data)]]))[0,1]
 
     # Bootstrap
-    @timeFunction
-    def bootstrap(self, nBoots = 1000):
+    @staticmethod
+    @njit(cache = True, parallel = True)
+    def bootstrap(data, nBoots = 1000):
         bootVec = np.zeros(nBoots)
-        for k in range(0,nBoots):
-            bootVec[k] = np.average(np.random.choice(self.data, len(self.data)))
-        self.bootAvg = np.average(bootVec)
-        self.bootVar = np.var(bootVec)
-        self.bootStd = np.std(bootVec)
+        for k in prange(0, nBoots):
+            bootVec[k] = np.mean(np.random.choice(data, len(data)))
+        return np.mean(bootVec), np.var(bootVec), np.std(bootVec)
 
     # Jackknife
     @timeFunction
     def jackknife(self):
         jackknVec = np.zeros(len(self.data))
         for k in range(0,len(self.data)):
-            jackknVec[k] = np.average(np.delete(self.data, k))
-        self.jackknAvg = self.avg - (len(self.data) - 1) * (np.average(jackknVec) - self.avg)
+            jackknVec[k] = np.mean(np.delete(self.data, k))
+        self.jackknAvg = self.avg - (len(self.data) - 1) * (np.mean(jackknVec) - self.avg)
         self.jackknVar = float(len(self.data) - 1) * np.var(jackknVec)
         self.jackknStd = np.sqrt(self.jackknVar)
 
     # Blocking
-    @timeFunction
-    def blocking(self, blockSizeMax = 500):
+    @staticmethod
+    @njit(cache = True)
+    def blocking(data, blockSizeMax = 500):
         blockSizeMin = 1
 
-        self.blockSizes = []
-        self.meanVec = []
-        self.varVec = []
+        blockSizes = []
+        meanVec = []
+        varVec = []
 
         for i in range(blockSizeMin, blockSizeMax):
-            if(len(self.data) % i != 0):
+            if(len(data) % i != 0):
                 pass#continue
             blockSize = i
             meanTempVec = []
-            varTempVec = []
             startPoint = 0
             endPoint = blockSize
 
-            while endPoint <= len(self.data):
-                meanTempVec.append(np.average(self.data[startPoint:endPoint]))
+            while endPoint <= len(data):
+                meanTempVec.append(np.mean(data[startPoint:endPoint]))
                 startPoint = endPoint
                 endPoint += blockSize
-            mean, var = np.average(meanTempVec), np.var(meanTempVec)/len(meanTempVec)
-            self.meanVec.append(mean)
-            self.varVec.append(var)
-            self.blockSizes.append(blockSize)
+            vectorized = np.array(meanTempVec)
+            mean = np.mean(vectorized)
+            var = np.var(vectorized)/len(meanTempVec)
+            meanVec.append(mean)
+            varVec.append(var)
+            blockSizes.append(blockSize)
 
-        self.blockingAvg = np.average(self.meanVec[-200:])
-        self.blockingVar = (np.average(self.varVec[-200:]))
-        self.blockingStd = np.sqrt(self.blockingVar)
+        arr_varVec = np.array(varVec[-200:])
+        arr_meanVec = np.array(meanVec[-200:])
+        blockingVar = np.mean(arr_varVec)
+
+        return np.mean(arr_meanVec), np.mean(arr_varVec), np.sqrt(blockingVar)
 
     # Plot of Data, Autocorrelation Function and Histogram
     def plotAll(self):
@@ -230,32 +232,10 @@ class dataAnalysisClass:
                                    'var' : self.bootVar,
                                    'std' : self.bootStd
                                   },
-                    'jackknife' : {
-                                   'avg' : self.jackknAvg,
-                                   'var' : self.jackknVar,
-                                   'std' : self.jackknStd
-                                  },
                     'blocking' : {
                                    'avg' : self.blockingAvg,
                                    'var' : self.blockingVar,
                                    'std' : self.blockingStd
-                                  },
+                                  }
                    }
         return dict_out
-
-if __name__ == '__main__':
-
-    # Initialize the class
-    if len(argv) > 2:
-        dataAnalysis = dataAnalysisClass(argv[1], int(argv[2]))
-    else:
-        dataAnalysis = dataAnalysisClass(argv[1])
-
-    # Run Analyses
-    dataAnalysis.runAllAnalyses()
-
-    # Plot the data
-    dataAnalysis.plotAll()
-
-    # Print Some Output
-    dataAnalysis.printOutput()
