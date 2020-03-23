@@ -1,0 +1,9 @@
+cycles  125000
+workers 8
+
+
+alpha   0.482868
+E       266.196
+E/Nd    0.887322
+var     9.19003
+accept  4.26947
