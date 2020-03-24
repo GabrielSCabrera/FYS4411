@@ -10,11 +10,11 @@ import os
 label_map = {
              'alpha'    :   '$\\alpha$',
              'E'        :   '$\\left\\langle E \\right\\rangle$',
+             'E/Nd'     :   '$\\left\\langle E \\right\\rangle / N d_r$',
              'var'      :   '$\\text{var}(E)$',
-             'error'    :   'Error',
              'accept'   :   'Reject Ratio',
-             'cycles'   :   'Cycles',
-             'workers'  :   'Workers',
+             # 'cycles'   :   'Cycles',
+             # 'workers'  :   'Workers',
              'N'        :   '$N$',
              'dim'      :   '$d_r$',
              'dt'       :   '$\\Delta t$',
@@ -274,18 +274,9 @@ def chart_from_data(col_data, caption = None, fig_num = None, div_col = None):
     chart += '}\n\t\t'
     if div_col is not None:
         chart += f'{label_map[div_col]} & '
-    if 'alpha' in cols:
-        chart += f'{label_map["alpha"]} & '
-    if 'E' in cols and 'error' in cols:
-        chart += f'{label_map["E"]} & '
-        chart += f'{label_map["error"]} & '
     for col in cols:
-        if col == 'alpha':
-            continue
-        elif 'E' in cols and 'error' in cols and col in ['E', 'error']:
-            continue
-        elif div_col is None or col != div_col:
-                chart += f'{label_map[col]} & '
+        if div_col is None or col != div_col:
+            chart += f'{label_map[col]} & '
     chart = chart[:-2] + '\\\\\n\t\t\\hline\n\t\t\\hline\n'
 
     for i in range(len(col_data[cols[0]])):
@@ -299,27 +290,14 @@ def chart_from_data(col_data, caption = None, fig_num = None, div_col = None):
                     chart += '\\hline\n\t\t'
             chart += f'${fmt_exp_float(col_data[div_col][i])}$ & '
 
-        if 'alpha' in cols:
-            chart += f'${col_data["alpha"][i]:.4f}$ & '
-        if 'E' in cols and 'error' in cols:
-            chart += f'${col_data["E"][i]:.6f}$ & '
-            if col_data["error"][i] > 1E-2:
-                chart += f'${col_data["error"][i]:.2f}$ & '
-            else:
-                chart += f'${fmt_exp_float(col_data["error"][i], ".0E", ".0E")}$ & '
-
         for col in cols:
             if col == 'alpha':
-                continue
-            elif 'E' in cols and 'error' in cols and col in ['E', 'error']:
-                continue
-            elif col == 'alpha':
                 chart += f'${fmt_exp_float(col_data[col][i], ".4f")}$ & '
             elif col == 'accept':
-                if 1-col_data[col][i] > 1E-2:
-                    chart += f'${1-col_data[col][i]:.2f}$ & '
+                if 1-col_data[col][i] < 0.01:
+                    chart += f'${fmt_exp_float(1-col_data[col][i])}$ & '
                 else:
-                    chart += f'${fmt_exp_float(1-col_data[col][i], ".0E")}$ & '
+                    chart += f'${fmt_exp_float(1-col_data[col][i], ".2f")}$ & '
             elif col == 'dt':
                 chart += f'${fmt_exp_float(col_data[col][i], ".3f")}$ & '
             elif div_col is None or col != div_col:
@@ -406,11 +384,15 @@ def part_b(path, main_dir, show = False):
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    data['error'] = np.sqrt(data['var']/(data['cycles']*data['workers']))
-    data = sort_col_data(data, ['dim', 'N', 'alpha'])
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['cycles']
-    del data['workers']
+
+    data = sort_col_data(data, ['dim', 'N', 'alpha'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
@@ -434,11 +416,15 @@ def part_c(path, main_dir, show = False):
                 print(f'{key:10s}\t{val:g}')
             print()
 
-    data['error'] = np.sqrt(data['var']/(data['cycles']*data['workers']))
-    data = sort_col_data(data, ['dim', 'N', 'alpha'])
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['cycles']
-    del data['workers']
+
+    data = sort_col_data(data, ['dim','N','alpha','dt'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
@@ -505,11 +491,15 @@ def part_e(path, main_dir, show = False):
                     print(f'{key:10s}\t{val:g}')
             print()
 
-    data['error'] = np.sqrt(data['var']/(data['cycles']*data['workers']))
-    data = sort_col_data(data, ['dim', 'N', 'alpha'])
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['cycles']
-    del data['workers']
+
+    data = sort_col_data(data, ['dim','N','alpha'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
@@ -536,11 +526,15 @@ def part_f(path, main_dir, show = False):
                     print(f'{key:10s}\t{val:g}')
             print()
 
-    data['error'] = np.sqrt(data['var']/(data['cycles']*data['workers']))
-    data = sort_col_data(data, ['dim', 'N', 'alpha'])
+    data['std_1'] = np.sqrt(data['var'])
+    data = combine_cols_uncertainty(data, 'E', 'std_1')
+    del data['std_1']
+    data['std_2'] = np.sqrt(data['var']/(data['N']*data['dim']))
+    data = combine_cols_uncertainty(data, 'E/Nd', 'std_2')
+    del data['std_2']
     del data['var']
-    del data['cycles']
-    del data['workers']
+
+    data = sort_col_data(data, ['dim','N','alpha'])
     sub_data = divide_by(data, 'dim')
 
     out = ''
