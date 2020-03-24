@@ -14,7 +14,7 @@
 
 using namespace std;
 
-void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, int num_procs) {
+void monte_carlo_simulation(Monte_Carlo* MC, int my_rank, int num_procs) {
 	double E, alpha, acceptance_ratio;
 	double my_E, my_alpha, my_acceptance_ratio;
 	double* my_E_cycles;
@@ -40,7 +40,7 @@ void monte_carlo_simulation(Monte_Carlo* MC, double learning_rate, int my_rank, 
 	//-------------------------
 
 	// Find alpha
-	R = gradient_descent(MC, learning_rate, R);
+	R = gradient_descent(MC, R);
 	my_alpha = MC->bose->get_alpha();
 	MPI_Reduce(&my_alpha, &alpha, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&alpha, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);

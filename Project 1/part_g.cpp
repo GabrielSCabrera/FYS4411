@@ -10,7 +10,6 @@
 #include "./matpak/Mat.h"
 
 int main(int narg, char** argv) {
-	double alpha;
 	int** rho = new int*[3];
 	int anticipated_max = 5;
 
@@ -20,7 +19,8 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   	//-----change N------------
-	int N = 10; 
+	int N = 100; 
+	double alpha = 0.4829;
 	//-------------------------
 	int cycles = 1e7/num_procs; // cycles per proc
 	int equi_cycles = 1e3;
@@ -58,14 +58,11 @@ int main(int narg, char** argv) {
 		outfile.close();
 	}
 	// CORRELATED
-
-	// set up
 	Psi_T bose_system_correlated;
 	Metropolis MC_correlated(&bose_system_correlated, N, 3);
 	R = MC_correlated.get_initial_R();
 	R = MC_correlated.equilibriation(R, equi_cycles);
 
-	alpha = 0.4975;
 	MC_correlated.bose->update_alpha(alpha);
 
 	// CALCULATE ONE BODY DENSITY

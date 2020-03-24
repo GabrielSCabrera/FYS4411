@@ -4,7 +4,7 @@
 #include "monte_carlo.h"
 #include "metropolis.h"
 
-
+// udate position of k'th particle
 void Metropolis::random_walk(Mat* R, int k) {
   double r_new;
 	for (int l = 0; l < dim; l++) {
@@ -13,6 +13,7 @@ void Metropolis::random_walk(Mat* R, int k) {
   }
 }
 
+// Acceptance ratio for new position of k'th particle
 double Metropolis::acceptance_ratio(Mat* R_new, Mat* R_old, int k) {
   return bose->probability_density_ratio(R_new, R_old, k);
 }

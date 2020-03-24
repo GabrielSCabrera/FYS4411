@@ -20,7 +20,7 @@ int main(int narg, char** argv) {
   	MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
   //-----change N----------: N = {1, 10, 100, 500}
-	int N = 500;
+	int N = 1;
 	//-------------------------
 
 	double* alphas = new double [3];

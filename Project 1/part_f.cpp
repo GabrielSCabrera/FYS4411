@@ -20,7 +20,6 @@ int main(int narg, char** argv) {
   //-----change N----------: N = {10, 50, 100}
 	int N = 10;
 	//-------------------------
-
 	double alpha = 0.5;
 
 	int cycles = 1e6/num_procs; // cycles per proc
@@ -34,7 +33,7 @@ int main(int narg, char** argv) {
 	R = MC.equilibriation(R, equi_cycles);
 
 	// Find alpha (choose mean value of all alphas)
-	R = gradient_descent(&MC, 0.0, R);
+	R = gradient_descent(&MC, R);
 	my_alpha = MC.bose->get_alpha();
 	MPI_Reduce(&my_alpha, &alpha, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Bcast(&alpha, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);

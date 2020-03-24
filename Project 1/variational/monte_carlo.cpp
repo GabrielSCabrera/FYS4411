@@ -10,6 +10,8 @@ std::mt19937_64 gen(rd());
 std::uniform_real_distribution<double> UniformNumberGenerator(0.0, 1.0);
 std::normal_distribution<double> Normaldistribution(0.0, 1.0);
 
+
+// constructor
 Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
 	N = N_particles;
 	dim = dimensions;
@@ -22,7 +24,7 @@ Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
   L = 0.5*N;
 }
 
-// DESTRUCTOR
+// destructor
 Monte_Carlo::~Monte_Carlo() {
   delete[] E_cycles;
   delete[] rho[0];
@@ -31,31 +33,19 @@ Monte_Carlo::~Monte_Carlo() {
   delete[] rho;
 }
 
-// GETTERS
-double Monte_Carlo::get_energy() {
-  return E;
+// getters
+double Monte_Carlo::get_energy() {return E;}
+double Monte_Carlo::get_energy_mean() {return E/(N*dim);}
+double Monte_Carlo::get_grad_alpha() {return E_alpha;}
+double Monte_Carlo::get_variance() {return EE - E*E;}
+double Monte_Carlo::get_accepted_moves_ratio() {return accepted_moves_ratio;}
+double* Monte_Carlo::get_E_cycles() {return E_cycles;}
+int** Monte_Carlo::get_rho(int *length_rho) {
+  (*length_rho) = N_rho;
+  return rho;
 }
 
-double Monte_Carlo::get_energy_mean() {
-  return E/(N*dim);
-}
-
-double Monte_Carlo::get_grad_alpha() {
-  return E_alpha;
-}
-
-double Monte_Carlo::get_variance() {
-  return EE - E*E;
-}
-
-double Monte_Carlo::get_accepted_moves_ratio() {
-  return accepted_moves_ratio;
-}
-
-double* Monte_Carlo::get_E_cycles() {
-  return E_cycles;
-}
-
+// info (for debugging)
 void Monte_Carlo::print_info() {
   printf("E: %.6lf +/- %8.2e , accept: %.4lf\n", E/(N*dim), std::sqrt((EE - E*E)/(N*dim)), accepted_moves_ratio);
 }
@@ -65,12 +55,9 @@ double Monte_Carlo::random_normal_distribution() {
 }
 
 void Monte_Carlo::set_to_zero() {
-	E = 0.0;
-	EE = 0.0;
-  E_alpha = 0.0;
-  E_2alpha = 0.0;
+	E = 0.0; 
+  EE = 0.0;
 }
-
 
 Mat Monte_Carlo::get_initial_R() {
   Mat R(N, dim);
@@ -136,37 +123,24 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   delete[] E_cycles;
   E_cycles = new double[cycles];         // Cycle-Wise Energy
   MC_cycles = cycles;
-  int accepted_moves = 0;
-  double A;															// Acceptance Ratio
-  double r, E_L;
-  //double psi_R;
+  int accepted_moves = 0;	
+  double E_L;
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
       for (int j = 0; j < N; j++) {
 				random_walk(&R_new, j);
-
 				// Determine whether or not to accept movement
-        A = acceptance_ratio(&R_new, &R, j);
-        r = UniformNumberGenerator(gen);
-        //printf("(%5.2lf,%5.2lf)", A, r);
-        if (A > r) {  // !!!!! FOR DEBUGGING
+        if (acceptance_ratio(&R_new, &R, j) > UniformNumberGenerator(gen)) {  // !!!!! FOR DEBUGGING
           copy_step(&R_new, &R, j);
           accepted_moves++;
-          //printf("+ ");
         } else {
           copy_step(&R, &R_new, j);
-          //printf("- ");
         }
     } // End cycle
     E_L = bose->energy(&R);
-    //psi_R = bose->psi(&R);
-    // debugging:
-    //printf("\t-> %8.3lf : %6.3e \n", E_L/(N*dim), psi_R*psi_R);
-    // Save Total Energy
     E += E_L;
     EE += E_L*E_L;
     E_cycles[i] = E_L;
-
   } // End Monte Carlo
   E /= cycles;
   EE /= cycles;
@@ -174,6 +148,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   return R;
 }
 
+// Calculate the particle density using Monte Carlo 
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new = R;
@@ -182,7 +157,6 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   double E_x_psi_alpha = 0.0;		    // (derivative of Psi with respect to alpha)*E
   double E_x_psi_2alpha = 0.0;
   double psi_alpha_cycle, E_L;
-
 	// Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
     for (int j = 0; j < N; j++) {
@@ -208,16 +182,17 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   psi_2alpha /= cycles;
   E_x_psi_alpha /= cycles;
   E_x_psi_2alpha /= cycles;
-
+  // E' (with respect to alpha)
   E_alpha = 2*(E_x_psi_alpha - psi_alpha*E);
-
+  // E'' (with respect to alpha)
   E_2alpha  = 4*(E_x_psi_2alpha - E_x_psi_alpha*psi_alpha);
-  E_2alpha -= 2*(psi_alpha*E_alpha);
-  E_2alpha -= 4*(psi_2alpha - psi_alpha*psi_alpha);
+  E_2alpha -= 2*(psi_alpha*E_alpha) + 4*(psi_2alpha - psi_alpha*psi_alpha);
   return R;
 }
 
-// for three dim only!!
+/* Calculate the particle density using Monte Carlo. 
+        FOR THREE DIM ONLY!!
+*/
 Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
   Mat R_new = R;
   delete[] rho[0];
@@ -225,11 +200,11 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
   delete[] rho[2];
   delete[] rho;
   int fac = 1e2;
-  N_rho = 2*anticipated_max*fac+ 1;
+  N_rho = 2*anticipated_max*fac + 1;
   rho = new int* [3];
-  rho[0] = new int [N_rho];
-  rho[1] = new int [N_rho];
-  rho[2] = new int [N_rho];
+  rho[0] = new int [N_rho]; // x-direction
+  rho[1] = new int [N_rho]; // y-direction
+  rho[2] = new int [N_rho]; // z-direction
 	for (int i = 0; i < N_rho; i++) {
 		rho[0][i] = 0;
     rho[1][i] = 0;
@@ -255,7 +230,3 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
   return R;
 }
 
-int** Monte_Carlo::get_rho(int *length_rho) {
-  (*length_rho) = N_rho;
-  return rho;
-}

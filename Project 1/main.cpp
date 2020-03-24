@@ -24,7 +24,6 @@ int main(int narg, char** argv) {
   //------CHANGE PARAMETERS-------
   int N = 10;
   int dim = 3;
-  double learning_rate = 1E-4;
   bool importance_samplig = false;
   bool correlated = true;
   //------------------------------
@@ -36,23 +35,23 @@ int main(int narg, char** argv) {
       boson_system.update_beta(1.0);
       boson_system.update_gamma(1.0);
       Hastings MC(&boson_system, N, dim);
-      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+      monte_carlo_simulation(&MC, my_rank, num_procs);
     } else {
       Psi_OB boson_system;
       boson_system.update_alpha(0.7);
       Hastings MC(&boson_system, N, dim);
-      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+      monte_carlo_simulation(&MC, my_rank, num_procs);
     }
   } else {
     if (correlated) {
       Psi_T boson_system;
       Metropolis MC(&boson_system, N, dim);
-      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+      monte_carlo_simulation(&MC, my_rank, num_procs);
     } else {
       Psi_OB boson_system;
       boson_system.update_alpha(0.7);
       Metropolis MC(&boson_system, N, dim);
-      monte_carlo_simulation(&MC, learning_rate, my_rank, num_procs);
+      monte_carlo_simulation(&MC, my_rank, num_procs);
     }
   }
   MPI_Finalize();
