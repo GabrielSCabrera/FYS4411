@@ -32,11 +32,13 @@ double Psi_OB::psi(Mat* R) {
   return std::exp(-alpha*exponent);
 }
 
+// calculate the ratio of the probability densities from the previous particle
+// position configuration, and the new one
 double Psi_OB::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   double phi = 0.0;
   double x;
   int M = R_new->shape1();
-  // calculate:  phi(r^new_k) - phi(r^old_k) 
+  // calculate:  phi(r^new_k) - phi(r^old_k)
   x = R_new->get(k, 0);
   phi -= x*x;
   x = R_old->get(k, 0);
@@ -57,6 +59,7 @@ double Psi_OB::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   return phi*phi;
 }
 
+// calculate the drift force on a particle for importance sampling
 double* Psi_OB::drift_force(Mat* R, int k) {
   int M = R->shape1();
   double* force = new double [M];
@@ -70,6 +73,7 @@ double* Psi_OB::drift_force(Mat* R, int k) {
   return force;
 }
 
+// the one-body part of the wavefunction
 double Psi_OB::energy(Mat* R) {
   double E = 0.0;   // Kinetic Energy
   double V = 0.0;   // Potential
@@ -98,11 +102,13 @@ double Psi_OB::energy(Mat* R) {
   return N*alpha*M_beta + 0.5*V - 2*alpha_squared*E;
 }
 
+// for labeling output data
 std::string Psi_OB::name() {
   std::string name = "delightful";
   return name;
 }
 
+// metadata for use with methods generalized for the Psi abstract class
 bool Psi_OB::interaction() {
   return false;
 }

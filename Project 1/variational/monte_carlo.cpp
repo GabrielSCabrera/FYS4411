@@ -5,11 +5,11 @@
 #include <fstream>
 #include <random>
 
+// initializing random number generators
 std::random_device rd;
 std::mt19937_64 gen(rd());
 std::uniform_real_distribution<double> UniformNumberGenerator(0.0, 1.0);
 std::normal_distribution<double> Normaldistribution(0.0, 1.0);
-
 
 // constructor
 Monte_Carlo::Monte_Carlo(Psi* bosonic_system, int N_particles, int dimensions) {
@@ -50,20 +50,25 @@ void Monte_Carlo::print_info() {
   printf("E: %.6lf +/- %8.2e , accept: %.4lf\n", E/(N*dim), std::sqrt((EE - E*E)/(N*dim)), accepted_moves_ratio);
 }
 
+// wrapper method for imported normal_distribution object
 double Monte_Carlo::random_normal_distribution() {
   return Normaldistribution(gen);
 }
 
+// resetter method for energy and squared energy values
 void Monte_Carlo::set_to_zero() {
-	E = 0.0; 
+	E = 0.0;
   EE = 0.0;
 }
 
+// generates random particle positions
 Mat Monte_Carlo::get_initial_R() {
   Mat R(N, dim);
 	for (int i = 0; i < N*dim; i++) {
     R.set_raw(UniformNumberGenerator(gen)*L, i);
 	}
+	// confirms that the particles do not overlap each other if we are looking
+	// at the non-interacting case
   if (bose->interaction()) {
     double r_ij, dx;
     bool overlap;
@@ -93,14 +98,14 @@ Mat Monte_Carlo::get_initial_R() {
   return R;
 }
 
-
+// to prevent issues with pointers and overwriting of array values
 void Monte_Carlo::copy_step(Mat* from, Mat* to, int index) {
   for (int i = 0; i < dim; i++) {
     to->set(from->get(index, i), index, i);
   }
 }
 
-
+// implements systemwise equilibriation to prepare for the true MC-cycles
 Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
 	Mat R_new = R;
 	for (int i = 0; i < cycles; i++) {
@@ -116,14 +121,14 @@ Mat Monte_Carlo::equilibriation(Mat R, int cycles) {
   return R;
 }
 
-
+// the true MC cycle from which energies are returned (then later written to file)
 Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   set_to_zero();
   Mat R_new = R;
   delete[] E_cycles;
   E_cycles = new double[cycles];         // Cycle-Wise Energy
   MC_cycles = cycles;
-  int accepted_moves = 0;	
+  int accepted_moves = 0;
   double E_L;
   // Monte-Carlo Cycles
   for (int i = 0; i < cycles; i++) {
@@ -148,7 +153,7 @@ Mat Monte_Carlo::sample_energy(Mat R, int cycles) {
   return R;
 }
 
-// Calculate the particle density using Monte Carlo 
+// Calculate the particle density using Monte Carlo
 Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   set_to_zero();
   Mat R_new = R;
@@ -190,7 +195,7 @@ Mat Monte_Carlo::sample_variational_derivatives(Mat R, int cycles) {
   return R;
 }
 
-/* Calculate the particle density using Monte Carlo. 
+/* Calculate the particle density using Monte Carlo.
         FOR THREE DIM ONLY!!
 */
 Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
@@ -229,4 +234,3 @@ Mat Monte_Carlo::one_body_density(Mat R, int cycles, int anticipated_max) {
   }
   return R;
 }
-

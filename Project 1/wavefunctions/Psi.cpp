@@ -3,7 +3,7 @@
 #include "../matpak/Mat.h"
 
 // CONSTRUCTOR
-Psi::Psi() {  
+Psi::Psi() {
   update_alpha(0.5);
   update_beta(1.0);
   update_a(0.0043);
@@ -63,6 +63,7 @@ double Psi::get_gamma() {
 }
 
 // CALCULATIONS
+// calculating Green's ratio for importance sampling
 double Psi::greens_ratio(Mat* R_new, Mat* R_old, double dt, int k) {
   double K = D*dt;
   double* F_new = drift_force(R_new, k);
@@ -81,7 +82,7 @@ double Psi::greens_ratio(Mat* R_new, Mat* R_old, double dt, int k) {
   return std::exp(exponent/(4.0*K));
 }
 
-
+// the gradient of the energy expectation value with respect to alpha
 double Psi::grad_alpha(Mat* R) {
   int M = R->shape1();
   double grad_alpha_phi = 0.0;

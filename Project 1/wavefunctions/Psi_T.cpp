@@ -33,7 +33,7 @@ double Psi_T::psi(Mat* R) {
         exponent_OB += beta*x*x;
         r_i[2] = x;
       }
-    } 
+    }
     // Psi_C
     for (int j = i+1; j < N; j++) {
       r_ij = 0.0;
@@ -54,7 +54,8 @@ double Psi_T::psi(Mat* R) {
   return std::exp(-alpha*exponent_OB)*product_C;
 }
 
-
+// calculate the ratio of the probability densities from the previous particle
+// position configuration, and the new one
 double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   double jastrow = 1.0;
   double phi = 0.0;
@@ -62,7 +63,7 @@ double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   int M = R_new->shape1();
   double* r_old = new double [M];
   double* r_new = new double [M];
-  // calculate:  phi(r^new_k) - phi(r^old_k) 
+  // calculate:  phi(r^new_k) - phi(r^old_k)
   x = R_new->get(k, 0);
   phi -= x*x;
   r_new[0] = x;
@@ -89,7 +90,7 @@ double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
   // calculate ratio of jastrow factor
   for (int i = 0; i < R_new->shape0(); i++) {
     if (i == k) {continue;}
-    r_ki_old = 0.0; 
+    r_ki_old = 0.0;
     r_ki_new = 0.0;
     for (int l = 0; l < M; l++) {
       x = R_old->get(i, l);
@@ -104,7 +105,7 @@ double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
       delete[] r_new;
       delete[] r_old;
       return -0.0;
-    } 
+    }
     if (r_ki_old <= a) {
       delete[] r_new;
       delete[] r_old;
@@ -120,6 +121,7 @@ double Psi_T::probability_density_ratio(Mat* R_new, Mat* R_old, int k) {
 }
 
 // CALCULATIONS
+// calculate the drift force on a particle for importance sampling
 double* Psi_T::drift_force(Mat* R, int k) {
   int M = R->shape1();
   double* force = new double [M];
@@ -160,6 +162,8 @@ double* Psi_T::drift_force(Mat* R, int k) {
   return force;
 }
 
+// calculates the total energy of the system based on the current particle
+// position configuration
 double Psi_T::energy(Mat* R) {
   int N = R->shape0();
   int M = R->shape1();
@@ -171,7 +175,7 @@ double Psi_T::energy(Mat* R) {
   double grad_phi_grad_Psi_C = 0.0;
   double* grad_phi = new double [M];
   double* grad_Psi_C = new double [M];
-  double x, xx, dx; 
+  double x, xx, dx;
   double* r_k = new double [M];
   double r_kj, r_ki, diff_r_kj_r_ki;
   double* diff_r_kj = new double [M];
@@ -247,24 +251,28 @@ double Psi_T::energy(Mat* R) {
   return 0.5*(-K + V);
 }
 
+// subportion of the energy calculation
 double Psi_T::f(double r_ij) {
     return 1.0 - a/r_ij;
 }
 
+// subportion of the energy calculation
 double Psi_T::u_prime(double r_ij) {
     return a/(r_ij*(r_ij - a));
 }
 
+// subportion of the energy calculation
 double Psi_T::u_double_prime(double r_ij, double u_prime_ij) {
     return -u_prime_ij*(1.0/(r_ij - a) + 1.0/r_ij);
 }
 
+// for labeling output data
 std::string Psi_T::name() {
   std::string name = "repulsive";
   return name;
 }
 
+// metadata for use with methods generalized for the Psi abstract class
 bool Psi_T::interaction() {
   return true;
 }
-
