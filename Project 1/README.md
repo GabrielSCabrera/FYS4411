@@ -9,7 +9,7 @@ The vital parts of the implementation of variational Monte Carlo is divided into
 The files in the this folder contain the c++-files for producing raw data for the report. The results are stored in the `result`-folder and further processed using the python scripts in the folder `python_scripts`. 
 
 ## `matpack` 
-Contains class representing a matrix used for the positions $$\vb{R}$$.
+Contains class representing a matrix used for the positions R.
 
 ## `wavefunctions` 
 The super class `Psi` sets up the structure of the classes representing the physical properties of the bosonic systems. Sub-class `Psi_OB` represents non-interacting bosons. The sub-class `Psi_T` represents interacting bosons. All calculations of the quantum mechanical properties can be found in these classes. The classes are generalized to handle 1, 2 and 3 dimensions. This makes the classes flexible, at the cost of speed.
@@ -21,4 +21,4 @@ The abstract super class `Monte_Carlo` containes the implementation of the Monte
 
 The sub-class `Metropolis` implements the brute force random walk, while the sub-class `Hastings` implements the biased random walk using the quantum force. 
 
-The seperate function `gradient_decent` optimizes the variational parameter $$\alpha$$.
+The seperate function `gradient_decent` optimizes the variational parameter alpha.
